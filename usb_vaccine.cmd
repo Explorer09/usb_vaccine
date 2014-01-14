@@ -175,11 +175,10 @@ REM  * function. Otherwise some files won't be deleted due to their file
 REM  * attributes.
 REM  */
 :deleteShortcuts
-    REM The "2^>nul" is to suppress the "Could not find <filename>" message.
     REM The .url shortcuts are harmless here. I won't delete them.
     ECHO --^> Deleting .lnk and .pif shortcuts...
-    DEL /F *.lnk 2>nul
-    DEL /F *.pif 2>nul
+    DEL /F *.lnk
+    DEL /F *.pif
 GOTO :EOF
 
 REM /**
