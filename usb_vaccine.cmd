@@ -164,7 +164,6 @@ REM  */
     FOR /F "usebackq delims=" %%f IN (`DIR /A:HS /B /O:N 2^>nul`) DO (
         SET keep_hidden=false
         FOR %%i IN (%KEEP_HS_ATTRIB_FILES%) DO (
-            SET filename="%%~i"
             IF /I X"%%f"==X"%%~i" (
                 SET keep_hidden=true
             )
@@ -179,7 +178,6 @@ REM  */
     FOR /F "usebackq delims=" %%f IN (`DIR /A:H-S /B /O:N 2^>nul`) DO (
         SET keep_hidden=false
         FOR %%i IN (%KEEP_H_ATTRIB_FILES%) DO (
-            SET filename="%%~i"
             IF /I X"%%f"==X"%%~i" (
                 SET keep_hidden=true
             )
