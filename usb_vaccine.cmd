@@ -50,6 +50,7 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         %%d:
         CD \
         CALL :unhideAllFiles
+        CALL :deleteShortcuts
         FOR %%f IN (autorun.inf) DO (
             ECHO --^> %%f
             CALL :fileToDirectory %%f
@@ -62,50 +63,12 @@ PAUSE
 ENDLOCAL
 GOTO :EOF
 
-REM /**
-REM  * Force delete the file and create a directory of the same name.
-REM  * @param %1 File name to be converted into a directory.
-REM  */
-:fileToDirectory
-    IF EXIST %1 (
-        IF EXIST %1\* (
-            REM If file exists and is a directory, keep it.
-            attrib +R +H +S %1
-        ) ELSE (
-            REM Else, delete the file and make it into a directory.
-            attrib -R -H -S %1
-            DEL /F %1
-            CALL :makeDirectory %1
-        )
-    ) ELSE (
-        CALL :makeDirectory %1
-    )
-GOTO :EOF
+REM ---------------------------------------------------------------------------
 
 REM /**
-REM  * Creates a directory named %1 and writes a file named DO_NOT_DELETE.txt
-REM  * inside it.
-REM  * @param %1 Directory name
-REM  */
-:makeDirectory
-    MKDIR %1
-    IF ERRORLEVEL 1 (
-        ECHO     Error creating directory "%~1".
-    ) ELSE (
-        (
-            ECHO This folder, "autorun.inf", is to protect your disk from injecting a malicious
-            ECHO autorun.inf file.
-            ECHO Your disk may still carry the autorun malware, but it will NOT be executed
-            ECHO anymore.
-            ECHO Please do not delete this folder. If you do, you'll lose the protection.
-        ) >%1\DO_NOT_DELETE.txt
-        attrib +R +H +S %1
-    )
-GOTO :EOF
-
-REM /**
-REM  * Remove hidden and system attributes of all files in current directory.
-REM  * Note that this function will have problems with files with newlines ('\n') in its filename.
+REM  * Clear hidden and system attributes of all files in current directory.
+REM  * Note that this function will have problems with files with newlines
+REM  * ('\n') in its filename.
 REM  */
 :unhideAllFiles
     REM Files to keep hidden - these are REAL system files and it's best to
@@ -159,7 +122,7 @@ REM  */
     REM -----------------------------------------------------------------------
     REM The "2^>nul" is to suppress the "File not found" output by dir command.
 
-    ECHO --^> Removing hidden and/or system attributes...
+    ECHO --^> Clearing hidden and/or system file attributes...
 
     FOR /F "usebackq delims=" %%f IN (`DIR /A:HS /B /O:N 2^>nul`) DO (
         SET keep_hidden=false
@@ -202,5 +165,60 @@ REM  */
             ECHO     attrib -S "%%f"
             attrib -S "%%f"
         )
+    )
+GOTO :EOF
+
+REM /**
+REM  * Delete .lnk and .pif shortcut files.
+REM  * Note that :unhideAllFiles must be called first before calling this
+REM  * function. Otherwise some files won't be deleted due to their file
+REM  * attributes.
+REM  */
+:deleteShortcuts
+    REM The "2^>nul" is to suppress the "Could not find <filename>" message.
+    REM The .url shortcuts are harmless here. I won't delete them.
+    ECHO --^> Deleting .lnk and .pif shortcuts...
+    DEL /F *.lnk 2>nul
+    DEL /F *.pif 2>nul
+GOTO :EOF
+
+REM /**
+REM  * Force delete the file and create a directory of the same name.
+REM  * @param %1 File name to be converted into a directory.
+REM  */
+:fileToDirectory
+    IF EXIST %1 (
+        IF EXIST %1\* (
+            REM If file exists and is a directory, keep it.
+            attrib +R +H +S %1
+        ) ELSE (
+            REM Else, delete the file and make it into a directory.
+            attrib -R -H -S %1
+            DEL /F %1
+            CALL :makeDirectory %1
+        )
+    ) ELSE (
+        CALL :makeDirectory %1
+    )
+GOTO :EOF
+
+REM /**
+REM  * Creates a directory named %1 and writes a file named DO_NOT_DELETE.txt
+REM  * inside it.
+REM  * @param %1 Directory name
+REM  */
+:makeDirectory
+    MKDIR %1
+    IF ERRORLEVEL 1 (
+        ECHO     Error creating directory "%~1".
+    ) ELSE (
+        (
+            ECHO This folder, "autorun.inf", is to protect your disk from injecting a malicious
+            ECHO autorun.inf file.
+            ECHO Your disk may still carry the autorun malware, but it will NOT be executed
+            ECHO anymore.
+            ECHO Please do not delete this folder. If you do, you'll lose the protection.
+        ) >%1\DO_NOT_DELETE.txt
+        attrib +R +H +S %1
     )
 GOTO :EOF
