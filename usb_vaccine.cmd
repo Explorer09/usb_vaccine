@@ -212,8 +212,8 @@ REM  */
         ECHO     Error creating directory "%~1".
     ) ELSE (
         (
-            ECHO This folder, "autorun.inf", is to protect your disk from injecting a malicious
-            ECHO autorun.inf file.
+            ECHO This folder, "%~1", is to protect your disk from injecting a
+            ECHO malicious %1 file.
             ECHO Your disk may still carry the autorun malware, but it will NOT be executed
             ECHO anymore.
             ECHO Please do not delete this folder. If you do, you'll lose the protection.
