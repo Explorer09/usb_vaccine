@@ -19,8 +19,9 @@ REM License along with this program. If not, see
 REM <http://www.gnu.org/licenses/>.
 REM ---------------------------------------------------------------------------
 
+SET AUTORUN_REG_KEY="HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\IniFileMapping\autorun.inf"
 SET has_reg_entry=true
-reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\IniFileMapping\autorun.inf" /ve >NUL 2>NUL
+reg query %AUTORUN_REG_KEY% /ve >nul 2>nul
 IF ERRORLEVEL 1 (
     SET has_reg_entry=false
     ECHO.
@@ -33,7 +34,7 @@ ECHO I recommend you to install anti-virus software to protect your computer.
 PAUSE
 ECHO.
 IF "!has_reg_entry!"=="false" (
-    reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\IniFileMapping\autorun.inf" /ve /t REG_SZ /d "@SYS:DoesNotExist" >NUL 2>NUL
+    reg add %AUTORUN_REG_KEY% /ve /t REG_SZ /d "@SYS:DoesNotExist" >nul 2>nul
     IF ERRORLEVEL 1 (
         ECHO ERROR: Cannot write registry value ^(IniFileMapping\autorun.inf^).
         ECHO        You need to run this script with administrator privileges.
@@ -107,7 +108,6 @@ REM  */
     ) DO (
         SET KEEP_HS_ATTRIB_FILES=!KEEP_HS_ATTRIB_FILES! %%i
     )
-
     FOR %%i IN (
         "ProgramData"
         "MSOCache"
