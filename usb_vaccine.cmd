@@ -29,10 +29,15 @@ IF ERRORLEVEL 1 (
     ECHO.
 )
 ECHO This program can help you disable AutoRun and clean the autorun.inf file on 
-ECHO your disk, but it cannot remove the malware.
+ECHO your disk, but it DOES NOT remove the malware.
 ECHO I recommend you to install anti-virus software to protect your computer.
 PAUSE
 ECHO.
+REM Credit to Nick Brown for the solution to disable AutoRun. See also:
+REM http://nickbrown-france.blogspot.tw/2007/10/memory-stick-worms.html
+REM http://blogs.computerworld.com/the_best_way_to_disable_autorun_to_be_protected_from_infected_usb_flash_drives
+REM Works with Windows 7 too, and I believe it's safer to disable ALL AutoRuns
+REM in Windows 7, rather than let go some devices.
 IF "!has_reg_entry!"=="false" (
     reg add %AUTORUN_REG_KEY% /ve /t REG_SZ /d "@SYS:DoesNotExist" >nul 2>nul
     IF ERRORLEVEL 1 (
