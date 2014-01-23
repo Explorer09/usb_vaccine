@@ -19,6 +19,36 @@ REM License along with this program. If not, see
 REM <http://www.gnu.org/licenses/>.
 REM ---------------------------------------------------------------------------
 
+REM Detect if cmd.exe shell has an AutoRun, and try to remove it.
+IF NOT "X%1"=="X_no_cmd_autorun" (
+    SET has_cmd_autorun=false
+    FOR %%k IN (
+        "HKLM\SOFTWARE\Microsoft\Command Processor"
+        "HKCU\Software\Microsoft\Command Processor"
+    ) DO (
+        REM "reg query" always output blank lines. Suppress them.
+        reg query %%k /v "AutoRun" >nul 2>nul
+        IF NOT ERRORLEVEL 1 (
+            SET has_cmd_autorun=true
+            REM Show user the AutoRun values. Key name included in output.
+            reg query %%k /v "AutoRun"
+        )
+    )
+    IF "!has_cmd_autorun!"=="true" (
+        ECHO *** NOTICE: Your cmd.exe interpreter contains AutoRun commands, which have
+        ECHO been run before this message is displayed and might be malicious. For the
+        ECHO security reason, the registry value "AutoRun" in two keys
+        ECHO "{HKLM,HKCU}\Software\Microsoft\Command Processor" will be deleted.
+        PAUSE
+        reg delete "HKLM\SOFTWARE\Microsoft\Command Processor" /v "AutoRun" /f >nul 2>nul
+        reg delete "HKCU\Software\Microsoft\Command Processor" /v "AutoRun" /f >nul 2>nul
+        ECHO Registry values deleted ^(when possible^).
+        ECHO Restarting the script without cmd.exe AutoRun commands...
+        cmd /d /c "%0 _no_cmd_autorun"
+        GOTO :EOF
+    )
+)
+
 SET AUTORUN_REG_KEY="HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\IniFileMapping\autorun.inf"
 SET has_reg_entry=true
 reg query %AUTORUN_REG_KEY% /ve 2>nul | find "@SYS:" /I >nul
@@ -26,11 +56,14 @@ IF ERRORLEVEL 1 (
     SET has_reg_entry=false
     ECHO.
     ECHO *** DANGER: Your computer is vulnerable to the AutoRun malware! ***
-    ECHO.
 )
-ECHO This program can help you disable AutoRun and clean the autorun.inf file on 
-ECHO your disk, but it DOES NOT remove the malware.
-ECHO I recommend you to install anti-virus software to protect your computer.
+ECHO.
+ECHO This program can help you disable AutoRun, clean the autorun.inf files on your
+ECHO disks, delete shortcuts and reveal hidden files, undoing the damage that might
+ECHO be done by an AutoRun malware.
+ECHO This program DOES NOT remove the malware and so is not a substitute for
+ECHO anti-virus software. Please install anti-virus software to protect your
+ECHO computer.
 PAUSE
 ECHO.
 REM Credit to Nick Brown for the solution to disable AutoRun. See also:
@@ -42,9 +75,10 @@ IF "!has_reg_entry!"=="false" (
     reg add %AUTORUN_REG_KEY% /ve /t REG_SZ /d "@SYS:DoesNotExist" >nul 2>nul
     IF ERRORLEVEL 1 (
         ECHO *** ERROR: Cannot write registry value ^(IniFileMapping\autorun.inf^).
-        ECHO ***        You need to run this script with administrator privileges.
+        ECHO ***        You need to run this program with administrator privileges.
         PAUSE
     ) ELSE (
+        reg delete "HKLM\SOFTWARE\DoesNotExist" /f >nul 2>nul
         ECHO AutoRun disabled.
         ECHO.
     )
@@ -64,7 +98,7 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
     )
 )
 ECHO.
-ECHO All autorun.inf files are removed (when possible).
+ECHO All autorun.inf files are removed ^(when possible^).
 PAUSE
 ENDLOCAL
 GOTO :EOF
