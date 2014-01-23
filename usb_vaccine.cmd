@@ -21,7 +21,7 @@ REM ---------------------------------------------------------------------------
 
 SET AUTORUN_REG_KEY="HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\IniFileMapping\autorun.inf"
 SET has_reg_entry=true
-reg query %AUTORUN_REG_KEY% /ve >nul 2>nul
+reg query %AUTORUN_REG_KEY% /ve 2>nul | find "@SYS:" /I >nul
 IF ERRORLEVEL 1 (
     SET has_reg_entry=false
     ECHO.
@@ -36,8 +36,8 @@ ECHO.
 IF "!has_reg_entry!"=="false" (
     reg add %AUTORUN_REG_KEY% /ve /t REG_SZ /d "@SYS:DoesNotExist" >nul 2>nul
     IF ERRORLEVEL 1 (
-        ECHO ERROR: Cannot write registry value ^(IniFileMapping\autorun.inf^).
-        ECHO        You need to run this script with administrator privileges.
+        ECHO *** ERROR: Cannot write registry value ^(IniFileMapping\autorun.inf^).
+        ECHO ***        You need to run this script with administrator privileges.
         PAUSE
     ) ELSE (
         ECHO AutoRun disabled.
