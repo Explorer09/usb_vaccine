@@ -83,6 +83,14 @@ IF "!has_reg_entry!"=="false" (
         ECHO.
     )
 )
+
+SET MOUNTPOINTS2_REG_KEY="HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2"
+REM "reg delete" returns 1 if the key is missing, so its exit code is
+REM unreliable.
+reg delete %MOUNTPOINTS2_REG_KEY% /f >nul 2>nul
+reg add %MOUNTPOINTS2_REG_KEY% /f >nul 2>nul
+ECHO MountPoints2 registry cache cleaned for current user.
+
 FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
     IF EXIST %%d:\ (
         ECHO.
