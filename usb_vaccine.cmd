@@ -40,8 +40,12 @@ IF NOT "X%1"=="X_no_cmd_autorun" (
         ECHO security reason, the registry value "AutoRun" in two keys
         ECHO "{HKLM,HKCU}\Software\Microsoft\Command Processor" will be deleted.
         PAUSE
-        reg delete "HKLM\SOFTWARE\Microsoft\Command Processor" /v "AutoRun" /f >nul 2>nul
-        reg delete "HKCU\Software\Microsoft\Command Processor" /v "AutoRun" /f >nul 2>nul
+        FOR %%k IN (
+            "HKLM\SOFTWARE\Microsoft\Command Processor"
+            "HKCU\Software\Microsoft\Command Processor"
+        ) DO (
+            reg delete %%k /v "AutoRun" /f >nul 2>nul
+        )
         ECHO Registry values deleted ^(when possible^).
         ECHO Restarting the script without cmd.exe AutoRun commands...
         cmd /d /c "%0 _no_cmd_autorun"
@@ -84,11 +88,12 @@ IF "!has_reg_entry!"=="false" (
     )
 )
 
-SET MOUNTPOINTS2_REG_KEY="HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2"
-REM "reg delete" returns 1 if the key is missing, so its exit code is
-REM unreliable.
-reg delete %MOUNTPOINTS2_REG_KEY% /f >nul 2>nul
-reg add %MOUNTPOINTS2_REG_KEY% /f >nul 2>nul
+SET MOUNT2_REG_KEY="HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2"
+reg delete %MOUNT2_REG_KEY% /f >nul 2>nul
+REM Create a dummy value so that "reg add" won't affect the default value of
+REM the key.
+reg add %MOUNT2_REG_KEY% /v "dummyValue" /f >nul 2>nul
+reg delete %MOUNT2_REG_KEY% /v "dummyValue" /f >nul 2>nul
 ECHO MountPoints2 registry cache cleaned for current user.
 
 FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
