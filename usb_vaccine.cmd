@@ -71,7 +71,7 @@ ECHO computer.
 PAUSE
 ECHO.
 REM Credit to Nick Brown for the solution to disable AutoRun. See also:
-REM http://nickbrown-france.blogspot.tw/2007/10/memory-stick-worms.html
+REM http://archive.today/CpwOH
 REM http://blogs.computerworld.com/the_best_way_to_disable_autorun_to_be_protected_from_infected_usb_flash_drives
 REM Works with Windows 7 too, and I believe it's safer to disable ALL AutoRuns
 REM in Windows 7, rather than let go some devices.
