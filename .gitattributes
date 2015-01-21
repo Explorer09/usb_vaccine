@@ -11,3 +11,5 @@
 *.cmd text eol=crlf
 *.txt text eol=crlf
 *.reg text eol=crlf
+
+*.sh text eol=lf
