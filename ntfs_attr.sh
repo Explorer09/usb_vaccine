@@ -83,7 +83,7 @@ Attributes: ( ! = unchangable with this utility )
   n ! Normal (i.e. no other attributes set)
   t - Temporary
   p ! Sparse file
-  l ! Symbolic link (i.e. has reparse point)
+  l ! Symbolic link / Junction / Mount point / has a reparse point
   c - Compressed (flag changable with directories only)
   o - Offline
   i - Not content indexed
