@@ -16,13 +16,17 @@ Here are limitations known in Windows NT 4 Command Processor environment:
   "reg query KeyName\ValueName" rather than "reg query KeyName /v ValueName",
   the latter allowing a subkey and value to share the name name.
   (<http://www.robvanderwoude.com/ntregquery.php>)
-- "SETLOCAL EnableDelayedExpansion" does not work, which is required for
-  secure "SET /P" user input processing. %var% is vulnerable to command
+- "SETLOCAL EnableDelayedExpansion" does not work, which is required for secure
+  "SET /P" (or "FOR /F") user input processing. %var% is vulnerable to command
   injection.
   (<http://www.robvanderwoude.com/local.php>)
+- "SET /P" does not work, and choice.exe is available only in Resouce Kit, and
+  so there's no way to write interactive scripts. 
+  (<http://www.robvanderwoude.com/ntset.php>)
+- Negative number in substring expansion (%VAR:~0,-5%) does not work.
 - "%~1" does not work.
   (<http://www.robvanderwoude.com/ntcall.php>)
-- "EXIT /b" does not work, which is required for return codes in subroutines.
+- "EXIT /B" does not work, which is required for return codes in subroutines.
   (<http://www.robvanderwoude.com/exit.php>)
 - 'FOR /F "usebackq"' does not work.
   (<http://www.robvanderwoude.com/ntfor.php>)
