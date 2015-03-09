@@ -54,7 +54,7 @@ attr_a=0
 attr_t=0 # Supported in ntfs-3g. Never worked with Windows's attrib.
 attr_c=0 # Supported only in recovery console and not in normal Windows.
 attr_o=0 # Supported in ntfs-3g. Never worked with Windows's attrib.
-attr_i=0 # Supported since Windows 7.
+attr_i=0 # Supported since Windows Vista.
 
 # Mode 'show' or 'edit' attributes
 attr_mode=show
@@ -74,7 +74,7 @@ Display or change attributes on an NTFS filesystem.
   -L, --no-dereference  affect symbolic links instead of referenced files
 
 Attributes: ( ! = unchangable with this utility )
-  r - Read only
+  r - Read-only
   h - Hidden
   s - System
   v ! Volume label (obsolete in NTFS)
@@ -88,6 +88,8 @@ Attributes: ( ! = unchangable with this utility )
   o - Offline
   i - Not content indexed
   e ! Encrypted
+  V ! Integrity (Windows 8 ReFS only)
+  x ! No scrub (Windows 8 ReFS only)
 USAGE
 }
 
@@ -148,10 +150,9 @@ for f in "$@"; do
     [ "$attr_show_hex" ] && printf '%s ' "$attr_hex"
     if [ "$attr_mode" = show ]; then
         attr_mask=0x1
-        # Attributes without an abbreviated letter:
-        # DEVICE (0x40), INTEGRITY_STREAM (0x8000), VIRTUAL (0x10000),
-        # NO_SCRUB_DATA (0x20000)
-        for i in r h s v d a + n t p l c o i e + + +; do
+        # Attributes that are reserved and never have an abbreviated letter:
+        # DEVICE (0x40), VIRTUAL (0x10000)
+        for i in r h s v d a + n t p l c o i e V + x; do
             if [ $(($attr_hex & $attr_mask)) -gt 0 ]; then
                 printf '%c' "$i"
             else
