@@ -1,0 +1,228 @@
+It's not just AutoRun, USB malware is more than that.
+
+One of the reasons that USB malware is hard to defeat and so widespread on
+Windows systems is that Windows, originated from DOS, do not have proper enough
+execution prevention mechanisms. Generally, user should be aware of that he is
+_unintentionally_ running an _arbitrary_ program, when he opens a drive or a
+file inside it.
+
+Unix/Linux already have execution mode bits, and the (optional) 'noexec' mount
+option. It's not perfect, but DOES prevent most of the tricks that USB worms
+could do on Windows. There's no execute bit on Windows, so we have to let user
+aware by other means.
+
+There are several factors that a Windows user might mistakenly runs a program,
+thinking he is opening a (legitimate) file:
+- File extension displayed on Windows Explorer (_displayed_, so may be fake)
+- File icon, whether it is static or dynamic based on file content (malicious
+  file can have a icon faking the user that it's something safe)
+- Shortcut arrows
+- Whether file itself is loaded and executed directly by the OS, executed only
+  via an interpreter, or have no execution data at all
+
+Technically these correspond to the following things:
+
+1. "Hide extension for known file types" checkbox in Folder Settings, which in
+   registry is "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\
+   Advanced" value "HideFileExt"
+2. "NeverShowExt" registry value in class key of the file type
+3. "DefaultIcon" registry subkey of class key of the file type
+4. "IsShortcut" registry value in class key of the file type
+5. "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Icons" value
+   "29" (if present this overrides the shortcut overlay arrow icon provided by
+   shell32.dll)
+6. Default value of "shell\open\command" subkey of class key of the file type,
+   whether it begins with "%1", or ends with "%*", or both
+
+Ideally on a secure system,
+
+1. "HideFileExt" should be 0 (false).
+2. No "NeverShowExt" value should be present for every file type.
+3. "DefaultIcon" should be dynamic only if there's no executable code in file
+   contents, and static otherwise.
+4. "IsShortcut" be present for all file types that represents a link to
+   another file, especially files that may be executable.
+5. The "Shell Icons" registry value "29" should either not exist or refer to an
+   icon that is not blank icon.
+6. Files that are not binary self-executable (PE, MZ, or old DOS COM format)
+   shouldn't have "%1" in the beginning of their "shell\open\command", and
+   files that are no executable code (script or binary) shouldn't have "%*" in
+   end of "shell\open\command".
+
+One exception can be made for scripts that contain shebang indicating which
+interpreter it is meant to be run in, and so will be necessary for OS kernel to
+load it and parses the shebang. This is true for perl/python/shell scripts, but
+not batch scripts. (And so having the default value of '"%1" %*' in "HKCR\
+batfile\shell\open\command" is a bad idea. Should be 'cmd /c "%1" %*'. It might
+be left as is for historical reasons, I don't know.)
+
+Below I list some common file types and whether they fit the conditions listed
+above. To ensure safety, at least 2 of the 6 cells should be "safe" for every
+file type, otherwise the user might be tricked into running malicious code.
+
+file | HideFileExt | NeverShow- | icon    | shortcut  | %1        | %* ending
+ext. | (safe:0,    | Ext (safe: | (safe:  | arrow     | beginning | (safe:no)
+     | default:1)  | absent)    | static) |           | (safe:no) |
+-----+-------------+------------+---------+-----------+-----------+----------
+.bat   user          (safe)       (safe)    no[1]       yes         yes
+.cmd   user          (safe)       (safe)    no[1]       yes         yes
+
+.exe   user          (safe)       dynamic   no[1]       yes         yes
+.com   user          (safe)       dynamic   no[1]       yes         yes
+.scr   user          (safe)       dynamic   no[1]       yes         no[2]
+
+.pif   n/a           present      dynamic   yes(safe)   yes         yes
+.lnk   n/a           present      dynamic   yes(safe)   n/a[3]      n/a[3]
+.url   n/a           present      safe[4]   yes(safe)   no(safe)    no(safe)
+.WSH   user          (safe)       (safe)    yes(safe)   no(safe)    yes
+
+.js    user          (safe)       (safe)    no[1]       no(safe)    yes
+.vbs   user          (safe)       (safe)    no[1]       no(safe)    yes
+
+[1] Not a shortcut, however as it is executable code, it may contain code that
+    executes other programs.
+[2] .scr is self-executable (PE format), so %* technically doesn't matter.
+    Therefore no "safe" is marked on this field.
+[3] "shell" registry subkey is not interpreted for '.lnk' file type. Windows
+    shells (cmd.exe or Explorer) handle it transparently and fetches shell
+    commands from target file type instead.
+[4] May not display a static icon in Thumbnail View in some Windows versions.
+
+As the reader can see, there are only one "safe" mark for '.exe', '.com',
+'.scr', and '.pif'. Malicious programs disguised as files or folders may not be
+spotted by user with these file entensions. However, with "HideFileExt"
+disabled by user, we can get another "safe" mark for '.exe', '.com' and '.scr'.
+By removing "NeverShowExt" for '.pif', we can get another for '.pif' (without
+reducing functionality). So in usb_vaccine.cmd I decide to do both, to make
+users aware.
+
+-------------------------------------------------------------------------------
+
+File types with "%1" default value of their "DefaultIcon" subkey:
+
+Ext      Software  Class registry key (technically called ProgID)
+.ani               HKCR\anifile
+.cdf     IE6-      HKCR\ChannelFile
+(CLSID)  IE6-      HKCR\ChannelShortcut
+.cur               HKCR\curfile
+.exe               HKCR\exefile
+.ht      WinXP-    HKCR\htfile ("HyperTerminal File")
+.ico               HKCR\icofile
+.msc               HKCR\MSCFile
+.otf     WinXP-    HKCR\otffile
+.ttc     WinXP-    HKCR\ttcfile
+.ttf     WinXP-    HKCR\ttffile
+
+In Windows XP or earlier, the font file types ('.otf', '.ttc', '.ttf', except
+'.fon') have "%1" in default value of their respective "DefaultIcon" subkey.
+Font files can never contain an icon, so it is fontext.dll that provides the
+icon for those fonts (depending on format, e.g. TrueType or "OpenType with
+TrueType outlines", both having '.ttf' file extension).
+
+-------------------------------------------------------------------------------
+
+File types that contain "IsShortcut" and "NeverShowExt" registry values:
+Extension   Software     Class registry key (technically called ProgID)
+.appref-ms  .NET2.0+     HKCR\Application.Reference
+.cnf        WinXP-       HKCR\ConferenceLink (NetMeeting "SpeedDial")
+.shb        WinXP-       HKCR\DocShortcut ("Shortcut into a document")
+.url                     HKCR\InternetShortcut
+(unused)    WinVista+    HKCR\IE.AssocFile.URL
+(unused)    IE9+         HKCR\IE.AssocFile.WEBSITE
+.website    IE9+         HKCR\Microsoft.Website ("Pinned Site Shortcut")
+.lnk                     HKCR\lnkfile
+.pif                     HKCR\piffile
+.WSH                     HKCR\WSHFile
+.maw        MSOffice     HKCR\Access.Shortcut.DataAccessPage.1
+.mag        MSOffice     HKCR\Access.Shortcut.Diagram.1
+.maf        MSOffice     HKCR\Access.Shortcut.Form.1
+.mau        MSOffice     HKCR\Access.Shortcut.Function.1
+.mam        MSOffice     HKCR\Access.Shortcut.Macro.1
+.mad        MSOffice     HKCR\Access.Shortcut.Module.1
+.maq        MSOffice     HKCR\Access.Shortcut.Query.1
+.mar        MSOffice     HKCR\Access.Shortcut.Report.1
+.mas        MSOffice     HKCR\Access.Shortcut.StoredProcedure.1
+.mat        MSOffice     HKCR\Access.Shortcut.Table.1
+.mav        MSOffice     HKCR\Access.Shortcut.View.1
+.glk        Office2007+  HKCR\GrooveLinkFile
+
+(Note to developers: Do not add every shortcut introduced in third party
+applications. There may be countless number of them. Only note those that
+appear in Windows components or Microsoft Office.)
+
+-------------------------------------------------------------------------------
+
+File types and CLSIDs that contain "NeverShowExt" registry value but not
+"IsShortcut":
+Extension            Software   Class registry key (ProgID)
+.accountpicture-ms   Win8+      HKCR\accountpicturefile
+.appcontent-ms       Win8.1+    HKCR\ApplicationContent
+.library-ms          Win7+      HKCR\LibraryFolder
+.searchConnector-ms  Win7+      HKCR\SearchConnectorFolder
+.search-ms           WinVista+  HKCR\SearchFolder ("Saved Search")
+.settingcontent-ms   Win8.1+    HKCR\SettingContent
+.scf                            HKCR\SHCmdFile ("Windows Explorer Command")
+.shs                 WinXP-     HKCR\ShellScrap ("Scrap object")
+HKCR\CLSID\{888DCA60-FC0A-11CF-8F0F-00C04FD7D062} ("Compressed (zipped) Folder
+                                                    SendTo Target")
+HKCR\CLSID\{9E56BE60-C50F-11CF-9A2C-00A0C90A90CE} ("Mail Service")
+HKCR\CLSID\{9E56BE61-C50F-11CF-9A2C-00A0C90A90CE} ("Desktop Shortcut")
+HKCR\CLSID\{ECF03A32-103D-11d2-854D-006008059367} ("MyDocs Drop Target")
+
+-------------------------------------------------------------------------------
+
+File types that are self-executable (i.e. their "shell\open\command" default
+value begins with "%1"):
+    batfile, cmdfile, comfile, exefile, piffile, scrfile
+
+For these extensions, the "NeverShowExt" value in their class key should never
+be created. It is possible to have a PE executable in one of these extensions
+(even '.pif'!)
+
+-------------------------------------------------------------------------------
+
+File types that contain "%*" in their "shell\open\command" default value:
+Extension  Software    Class registry key (ProgID)
+.bat                   HKCR\batfile
+.cmd                   HKCR\cmdfile
+.com                   HKCR\comfile
+.exe                   HKCR\exefile
+.hta                   HKCR\htafile
+(unused)   IE9+        HKCR\IE.AssocFile.WEBSITE
+(multi)    MSIME2010+  HKCR\IMEDictionaryCompiler
+.JSE                   HKCR\JSEFile
+.js                    HKCR\JSFile
+.msu       WinVista+   HKCR\Microsoft.System.Update.1
+.website   IE9+        HKCR\Microsoft.Website ("Pinned Site Shortcut")
+.msc                   HKCR\MSCFile
+.msi                   HKCR\Msi.Package
+.msp                   HKCR\Msi.Patch
+.pif                   HKCR\piffile
+.VBE                   HKCR\VBEFile
+.vbs                   HKCR\VBSFile
+.xaml      .NET3.0+    HKCR\Windows.XamlDocument
+.xbap      .NET3.0+    HKCR\Windows.Xbap
+(multi)    WinVista+   HKCR\Windows.XPSReachViewer
+.WSF                   HKCR\WSFFile
+.WSH                   HKCR\WSHFile
+(multi)    .NET3.0+    HKCR\XPSViewer.Document.1
+
+IMEDictionaryCompiler is associated with 2 file extensions: .dctx .dctxc
+XPSViewer.Document.1 is associated with 3 file extensions: .dwfx .jtx .xps
+Windows.XPSReachViewer is associated with 6 file extensions (7 extensions in
+Windows 8 or later): .dwfx .jtx .xps .easmx .edrwx .eprtx (.oxps)
+
+-------------------------------------------------------------------------------
+
+The 'ASSOC' command in Windows NT is simply a registry program reading and
+writing default value of "HKLM\SOFTWARE\Classes\<key>", ignoring the
+equivalent key in HKCU. There is an unintentional feature: "ASSOC exefile"
+works, and shows the name of the file type or ProgID in question.
+
+Similarly, 'FTYPE' command reads and writes the "shell\open\command" subkey for
+a given file type. It ignores the default value of "shell" subkey.
+
+As Microsoft does not document the details of these commands, neither of them
+are reliable across Windows versions. (Can't ensure they always read HKLM and
+never HKCU.) We will just use "reg query" or "reg add" for accurate reading and
+writing.
