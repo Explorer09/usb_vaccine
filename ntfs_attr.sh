@@ -73,7 +73,7 @@ Display or change attributes on an NTFS filesystem.
 
   -L, --no-dereference  affect symbolic links instead of referenced files
 
-Attributes: ( ! = unchangable with this utility )
+Attributes: ( ! = unchangeable with this utility )
   r - Read-only
   h - Hidden
   s - System
