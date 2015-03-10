@@ -67,8 +67,8 @@ ext. | (safe:0,    | Ext (safe: | (safe:  | arrow     | beginning | (safe:no)
 .bat   user          (safe)       (safe)    no[1]       yes         yes
 .cmd   user          (safe)       (safe)    no[1]       yes         yes
 
-.exe   user          (safe)       dynamic   no[1]       yes         yes
 .com   user          (safe)       dynamic   no[1]       yes         yes
+.exe   user          (safe)       dynamic   no[1]       yes         yes
 .scr   user          (safe)       dynamic   no[1]       yes         no[2]
 
 .pif   n/a           present      dynamic   yes(safe)   yes         yes
@@ -77,7 +77,12 @@ ext. | (safe:0,    | Ext (safe: | (safe:  | arrow     | beginning | (safe:no)
 .WSH   user          (safe)       (safe)    yes(safe)   no(safe)    yes
 
 .js    user          (safe)       (safe)    no[1]       no(safe)    yes
+.JSE   user          (safe)       (safe)    no[1]       no(safe)    yes
 .vbs   user          (safe)       (safe)    no[1]       no(safe)    yes
+.VBE   user          (safe)       (safe)    no[1]       no(safe)    yes
+.WSF   user          (safe)       (safe)    no[1]       no(safe)    yes
+
+.msc   user          (safe)       dynamic   no[1]       no(safe)    yes
 
 [1] Not a shortcut, however as it is executable code, it may contain code that
     executes other programs.
