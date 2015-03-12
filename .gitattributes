@@ -6,6 +6,7 @@
 
 *.sfx binary
 *.ico binary
+*.png binary
 
 *.bat text eol=crlf
 *.cmd text eol=crlf
