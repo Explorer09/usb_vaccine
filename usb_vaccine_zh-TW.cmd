@@ -35,6 +35,11 @@ SET MOUNT2_REG_SUBKEY=Software\Microsoft\Windows\CurrentVersion\Explorer\MountPo
 SET ADVANCED_REG_SUBKEY=Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced
 SET SHELL_ICON_REG_KEY="HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Icons"
 
+REM BIG5 許蓋功問題 workaround
+SET "BIG5_A15E=）"
+SET "BIG5_AE7C=徑"
+SET "BIG5_B77C=會"
+
 REM Files to keep - these are REAL system files and it's best to leave these
 REM untouched. (Last updated for Windows 10 Technical Preview)
 
@@ -169,8 +174,8 @@ FOR %%k IN (HKLM HKCU) DO (
     )
 )
 IF "!has_cmd_autorun!"=="1" (
-    ECHO *** NOTICE: Your cmd.exe interpreter contains AutoRun commands, which have been>&2
-    ECHO     run before this message is displayed and might be malicious.>&2
+    ECHO *** 警告：在此訊息顯示之前，您的命令直譯器 ^(cmd.exe^) 已經自動執行了一些命令，這>&2
+    ECHO     些命令可能為惡意程式。>&2
 )
 IF "X!opt_help!"=="X1" GOTO :main_help
 IF "X!opt_cmd_autorun!"=="XSKIP" GOTO :main_inf_mapping
@@ -178,11 +183,10 @@ IF "!has_cmd_autorun!"=="1" (
     IF NOT "X!opt_cmd_autorun!"=="XALL_USERS" (
         ECHO.
         ECHO [cmd-autorun]
-        ECHO For security reasons, the registry value "AutoRun" in two keys
-        ECHO "{HKLM,HKCU}\%CMD_REG_SUBKEY%" will be deleted.
-        ECHO ^(Affects machine and current user settings. To also delete other users'
-        ECHO settings, please specify '--all-users-cmd-autorun' option. This action cannot
-        ECHO be undone.^)
+        ECHO 為了安全性的原因，在 "{HKLM,HKCU}\%CMD_REG_SUBKEY%" 兩個機
+        ECHO 碼裡面的 "AutoRun" 登錄值將!BIG5_B77C!被刪除。
+        ECHO （影響全機與目前使用者的設定，若要同時刪除其它使用者的設定，請指定
+        ECHO '--all-users-cmd-autorun' 選項。此動作無法復原。!BIG5_A15E!
         CALL :continue_prompt || GOTO :main_inf_mapping
     )
     FOR %%k IN (HKLM HKCU) DO (
@@ -202,21 +206,18 @@ SET has_reg_inf_mapping=1
 reg query %INF_MAPPING_REG_KEY% /ve 2>nul | find "@SYS:" /I >nul || (
     SET has_reg_inf_mapping=0
     ECHO.
-    ECHO *** DANGER: Your computer is vulnerable to the AutoRun malware^^!>&2
+    ECHO *** 警告：您的電腦易受 AutoRun 惡意軟體的攻擊！>&2
 )
 ECHO.
-ECHO This program can help you disable AutoRun, clean the autorun.inf files on your
-ECHO disks, delete shortcuts and reveal hidden files. All of these undo the damage
-ECHO that might be done by AutoRun malware.
-ECHO This program DOES NOT remove the malware itself and so is not a substitute for
-ECHO anti-virus software. Please install anti-virus software to protect your
-ECHO computer.
+ECHO 本程式可以幫助您關閉自動執行 ^(AutoRun^)、清理您磁碟裡的 autorun.inf 檔案、刪除捷
+ECHO !BIG5_AE7C!並顯示被隱藏的檔案。這些動作復原 AutoRun 惡意軟體做造成的傷害。
+ECHO 本程式「並不!BIG5_B77C!」移除惡意軟體本身，所以不能用來取代防毒軟體。請安裝一套防毒軟體
+ECHO 來保護您的電腦。
 ECHO.
-ECHO If you are using Windows 2000, XP, Server 2003, Vista, or Server 2008, it is
-ECHO strongly recommended that you install KB967715 and KB971029 updates from
-ECHO Microsoft. These two updates correct bugs in AutoRun implementations ^(even
-ECHO though we will disable AutoRun entirely later on^).
-ECHO Please see ^<https://technet.microsoft.com/library/security/967940.aspx^>
+ECHO 如果您使用 Windows 2000, XP, Server 2003, Vista 或 Server 2008，我們強烈建議您
+ECHO 安裝微軟的 KB967715 與 KB971029 更新，此二更新修正了 AutoRun 實作的臭蟲（即使我
+ECHO 們接下來!BIG5_B77C!停止所有的 AutoRun!BIG5_A15E!。
+ECHO 請見 ^<https://technet.microsoft.com/library/security/967940.aspx^>
 
 REM Credit to Nick Brown for the solution to disable AutoRun. See:
 REM http://archive.today/CpwOH
@@ -230,15 +231,13 @@ IF "!has_reg_inf_mapping!"=="1" GOTO :main_mountpoints2
 IF "X!opt_inf_mapping!"=="XSKIP" GOTO :main_mountpoints2
 ECHO.
 ECHO [inf-mapping]
-ECHO When you insert a disc, or click the icon of a CD-ROM drive, Windows will
-ECHO automatically run some ^(setup^) programs by default. Originally meant for
-ECHO convenience, this AutoRun design is easily misused by malware, running
-ECHO automatically without awareness of users.
-ECHO We will disable AutoRun entirely, and stop Windows from parsing any autorun.inf
-ECHO file. After AutoRun is disabled, if you wish to install or run software from a
-ECHO disc, you will have to manually click the Setup.exe inside. This doesn't affect
-ECHO the AutoPlay feature of music, video discs, or USB devices.
-ECHO ^(This is a machine setting.^)
+ECHO Windows 在預設情況下!BIG5_B77C!在您放入光碟，或滑鼠點擊光碟機圖示時，自動執行某些（安
+ECHO 裝!BIG5_A15E!程式。原本是提供方便，但此設計卻容易被惡意軟體利用，在使用者未查覺的情況下
+ECHO 自動執行。
+ECHO 我們將關閉所有自動執行 ^(AutoRun^)，並停止 Windows 剖析任何 autorun.inf 檔案，包
+ECHO 括光碟機。關閉 AutoRun 後，如果您要從光碟裡面安裝或執行軟體，您必須手動點擊裡面
+ECHO 的 Setup.exe。這不影響音樂，電影光碟，或 USB 裝置的自動播放 ^(AutoPlay^) 功能。
+ECHO （這是全機設定。!BIG5_A15E!
 CALL :continue_prompt || GOTO :main_mountpoints2
 reg add %INF_MAPPING_REG_KEY% /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >nul || (
     CALL :show_reg_write_error "IniFileMapping\autorun.inf"
@@ -250,10 +249,9 @@ CALL :delete_reg_key "HKLM\SOFTWARE\DoesNotExist" "HKLM\SOFTWARE\DoesNotExist"
 IF "X!opt_mountpoints2!"=="XSKIP" GOTO :main_known_ext
 ECHO.
 ECHO [mountpoints2]
-ECHO The MountPoints2 registry keys are the AutoRun cache used by the OS. After
-ECHO AutoRun is disabled, clean the registry keys in order to prevents AutoRun
-ECHO threats from previous devices.
-ECHO ^(Affects all users' settings. This action cannot be undone.^)
+ECHO MountPoints2 登錄機碼為作業系統 AutoRun 的快取資料，在 AutoRun 關閉之後，清理機
+ECHO 碼以避免之前裝置的 AutoRun 威脅。
+ECHO （影響所有使用者的設定。此動作無法復原。!BIG5_A15E!
 CALL :continue_prompt || GOTO :main_known_ext
 CALL :prepare_sids
 FOR %%i IN (!g_sids!) DO (
@@ -270,22 +268,18 @@ REM We include PIF because it's executable in Windows!
 REM It's possible to rename a PE .exe to .pif and run when user clicks it.
 ECHO.
 ECHO [known-ext]
-ECHO Windows will hide extensions for known file types by default. However, as
-ECHO applications may have custom icons, with the file extensions hidden, it is
-ECHO possible for malicious programs to use icons to disguise themselves as regular
-ECHO files, tricking users into clicking them.
-ECHO We will disable "Hide extensions for known file types" in "Control Panel" -^>
-ECHO "Folder Options", so that common file extensions ^(except shortcuts^) are always
-ECHO shown. Users may recognize whether a file is executable ^(and malicious^) through
-ECHO the extensions. The following are executable:
-ECHO     .exe ^(Application^)           .bat ^(Batch file^)
-ECHO     .com ^(MS-DOS application^)    .cmd ^(Windows NT command script^)
-ECHO     .scr ^(Screen saver^)          .pif ^(Shortcut to MS-DOS program^)
-ECHO We will also delete the "NeverShowExt" registry value for the file types above.
-ECHO The value always hides the extension for that file type. Unless it is a
-ECHO shortcut file, the value should not exist.
-ECHO ^(Affects machine and current user settings. To also change other users'
-ECHO settings, please specify '--all-users-known-ext' option.^)
+ECHO Windows 預設將已知檔案類型的副檔名隱藏起來。但是，由於應用程式有自訂的圖示，在
+ECHO 副檔名隱藏的時候，惡意程式可以使用圖示來偽裝成一般檔案，誘騙使用者去點擊它們。
+ECHO 我們將取消「控制台」→「資料夾選項」的「隱藏已知檔案類型的副檔名」，使得常用的
+ECHO 副檔名（除捷!BIG5_AE7C!外!BIG5_A15E!永遠被顯示。使用者可以透過副檔名來辨認檔案是否為（惡意!BIG5_A15E!執行
+ECHO 檔，以下副檔名為可執行檔：
+ECHO     .exe（應用程式!BIG5_A15E!           .bat（批次檔案!BIG5_A15E!
+ECHO     .com（MS-DOS 應用程式!BIG5_A15E!    .cmd（Windows NT 命令腳本!BIG5_A15E!
+ECHO     .scr（螢幕保護程式!BIG5_A15E!       .pif（MS-DOS 程式捷!BIG5_AE7C!!BIG5_A15E!
+ECHO 我們!BIG5_B77C!同時刪除以上檔案類型的 "NeverShowExt" 登錄值，該登錄值!BIG5_B77C!永遠隱藏該檔案類
+ECHO 型的副檔名，除了捷!BIG5_AE7C!檔以外不應存在該登錄值。
+ECHO （影響全機與目前使用者的設定，若要同時更改其它使用者的設定，請指定
+ECHO '--all-users-known-ext' 選項。!BIG5_A15E!
 CALL :continue_prompt || GOTO :main_shortcut_icon
 REM "HideFileExt" is enabled (0x1) if value does not exist.
 reg add "HKCU\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >nul || (
@@ -316,13 +310,11 @@ IF "X!opt_known_ext!"=="XALL_USERS" (
 IF "X!opt_shortcut_icon!"=="XSKIP" GOTO :main_all_drives
 ECHO.
 ECHO [shortcut-icon]
-ECHO All shortcut files should have a small arrow icon on them, especially shortcuts
-ECHO pointing to executable files. As the extensions of shortcut files are usually
-ECHO hidden, users may only recognize shortcut files through its arrow icon.
-ECHO We will restore arrow icons of common shortcut types, .lnk and .pif, which may
-ECHO be pointing to executables. If you have customized the shortcut arrow icon, the
-ECHO custom icon will be used here.
-ECHO ^(This is a machine setting.^)
+ECHO 所有的捷!BIG5_AE7C!檔案都應有箭頭的小圖示，尤其是指向執行檔的捷!BIG5_AE7C!。由於捷!BIG5_AE7C!的副檔名常被
+ECHO 隱藏起來，使用者只能透過箭頭的圖示來辨認捷!BIG5_AE7C!檔。
+ECHO 我們將復原常見的捷!BIG5_AE7C!檔案類型 .lnk 與 .pif 的箭頭圖示。此二類型是可以指向執行檔
+ECHO 的。如果您有自訂的捷!BIG5_AE7C!箭頭圖示，在此!BIG5_B77C!使用自訂的圖示。
+ECHO （這是全機設定。!BIG5_A15E!
 CALL :continue_prompt || GOTO :main_all_drives
 FOR %%i IN (lnk pif) DO (
     CALL :delete_reg_key "HKCU\Software\Classes\.%%i" "HKCU\Software\Classes\.%%i"
@@ -340,63 +332,55 @@ IF "X!opt_shortcut_icon!"=="XDEFAULT" (
 
 :main_all_drives
 ECHO.
-ECHO All registry tasks are completed. Now we are processing the root directories of
-ECHO all disk drives.
-ECHO Please insert all storage devices that are affected by malware, including USB
-ECHO flash drives, external hard drives, memory cards, PDAs, smartphones, or digital
-ECHO cameras. If you have CD- or DVD-RW discs in your drives, it is recommended that
-ECHO you eject them, lest burning actions be triggered accidentally.
+ECHO 所有登錄檔工作皆已完成。現在我們將處理所有磁碟機的根目錄。
+ECHO 請插入所有受惡意軟體影響的儲存裝置，包括 USB 隨身碟、外接硬碟、記憶卡、PDA、智
+ECHO 慧型手機與數位相機。如果您有 CD- 或 DVD-RW 光碟在光碟機裡，建議您退出它們，以免
+ECHO 誤啟動燒錄的動作。
 PAUSE
 
 IF NOT "X!opt_symlinks!"=="XSKIP" (
     ECHO.
     ECHO [symlinks]
-    ECHO In Windows Vista or later, the NTFS file system supports "symbolic links",
-    ECHO which are a kind of special files that function like shortcuts, and also have a
-    ECHO shortcut arrow icon. But symbolic links are a file system feature, and do not
-    ECHO need file extensions. Some malware will create symbolic links that point to a
-    ECHO ^(malicious^) executable file, tricking users into clicking them.
-    ECHO In the root directories, we will delete all symbolic links that point to files
-    ECHO ^(not directories^).
+    ECHO 在 Windows Vista 之後，NTFS 檔案系統支援「符號連結」^(Symbolic link^)。符號連結是
+    ECHO 一種特殊的檔案，功能類似捷!BIG5_AE7C!檔，也帶有捷!BIG5_AE7C!的箭頭圖示，但是符號連結屬於檔案系統
+    ECHO 的功能，而且不需帶有副檔名。有些惡意軟體!BIG5_B77C!建立指向（惡意!BIG5_A15E!執行檔的符號連結，以
+    ECHO 誘騙使用者去點擊它們。
+    ECHO 我們將刪除根目錄中所有指向檔案（非目錄!BIG5_A15E!的符號連結。
     CALL :continue_prompt || SET opt_symlinks=SKIP
 )
 IF NOT "X!opt_attrib!"=="XSKIP" (
     ECHO.
     ECHO [attrib]
-    ECHO With the "Hidden" or "System" attribute set on files, they will no longer be
-    ECHO visible by default in Windows Explorer or 'DIR' command. Some malware will hide
-    ECHO the files and generate executable files ^(or shortcuts to executables^) with the
-    ECHO same name, tricking users into clicking them. ^(No malware will actually delete
-    ECHO the files, otherwise the disk space freed through deletion might draw attention
-    ECHO of users or anti-virus software.^)
-    ECHO Except for real known operating system files, we will clear both "Hidden" and
-    ECHO "System" attributes of all files in the root directories. This restores files
-    ECHO that are hidden by the malware ^(and might reveal the malware file itself^).
+    ECHO 當檔案有設定「隱藏」或「系統」屬性，它們就預設不!BIG5_B77C!在 Windows 檔案總管或 DIR 命
+    ECHO 令中顯示。有些惡意軟體!BIG5_B77C!隱藏檔案，並產生相同名稱的執行檔（或是指向執行檔的捷
+    ECHO !BIG5_AE7C!!BIG5_A15E!，以誘騙使用者去點擊它們。（惡意軟體並不!BIG5_B77C!真正刪除掉檔案，不然刪除檔案時空
+    ECHO 出的磁碟空間很容易引起使用者或防毒軟體的注意。!BIG5_A15E!
+    ECHO 除了已知真正的作業系統檔案，我們將解除根目錄中所有檔案的「隱藏」與「系統」屬
+    ECHO 性。這復原所有被惡意軟體給隱藏的檔案（同時有可能顯示惡意軟體檔案本身!BIG5_A15E!。
     CALL :continue_prompt || SET opt_attrib=SKIP
 )
 IF NOT "X!opt_shortcuts!"=="XSKIP" (
     ECHO.
     ECHO [shortcuts]
-    ECHO We will delete all shortcuts of .lnk or .pif file type in the root directories.
+    ECHO 我們將刪除根目錄中所有 .lnk 與 .pif 檔案類型的捷!BIG5_AE7C!。
     CALL :continue_prompt || SET opt_shortcuts=SKIP
 )
 IF NOT "X!opt_folder_exe!"=="XSKIP" (
     ECHO.
     ECHO [folder-exe]
-    ECHO Some malware will hide the folders and generate executable files with the same
-    ECHO names, usually with also the folder icon, tricking users into clicking them.
-    ECHO In the root directories, we will delete all executable files that carry the
-    ECHO same name as a folder. File types that will be deleted are .com, .exe and .scr.
-    ECHO WARNING: This may delete legitimate applications. When in doubt, skip this.
+    ECHO 有些惡意軟體!BIG5_B77C!隱藏資料夾，並產生相同名稱的執行檔，通常同時帶著資料夾圖
+    ECHO 示，以誘騙使用者去點擊它們。
+    ECHO 我們將刪除根目錄中所有與資料夾相同名稱的執行檔。!BIG5_B77C!刪除的檔案類型有 .com, .exe
+    ECHO 與 .scr。
+    ECHO 警告：這可能!BIG5_B77C!刪除到合法的應用程式，若有疑慮，請跳過此步驟。
     CALL :continue_prompt || SET opt_folder_exe=SKIP
 )
 IF NOT "X!opt_files!"=="XSKIP" (
     ECHO.
     ECHO [files]
-    ECHO Some malware will create the autorun.inf file, so that malware itself may be
-    ECHO automatically run on computers that didn't have AutoRun disabled. Except for
-    ECHO optical drives, no other drives should ever contain a file named "autorun.inf".
-    ECHO We will delete them.
+    ECHO 有些惡意軟體!BIG5_B77C!建立 autorun.inf 檔案，使自己在尚未關閉 AutoRun 的電腦裡自動被執
+    ECHO 行。除了光碟機以外，其它磁碟機都不應該含有名為 autorun.inf 的檔案。
+    ECHO 我們將刪除它們。
     CALL :continue_prompt || SET opt_files=SKIP
 )
 IF "X!opt_files!"=="XSKIP" (
@@ -405,10 +389,9 @@ IF "X!opt_files!"=="XSKIP" (
 IF NOT "X!opt_mkdir!"=="XSKIP" (
     ECHO.
     ECHO [mkdir]
-    ECHO With the autorun.inf file deleted, in order to prevent malware from creating it
-    ECHO again, we will create a folder with the same name. This folder will be hidden -
-    ECHO users won't see it, but can interfere with the malware. Unless it has the
-    ECHO ability to delete the folder, the drive won't be infected by AutoRun any more.
+    ECHO 刪除 autorun.inf 檔案後，為了避免惡意軟體重新建立它，我們將建立相同名稱的資料
+    ECHO 夾，此資料夾!BIG5_B77C!是隱藏的，使用者看不到，但可干擾惡意軟體，除非它有能力刪除資料
+    ECHO 夾，否則磁碟機將無法被 AutoRun 感染。
     CALL :continue_prompt || SET opt_mkdir=SKIP
 )
 
@@ -417,13 +400,12 @@ REM "safely removed", but is a bug to pop up on floppy drives. Guides on the
 REM web mostly refer this to malware, or suggest suppressing it. Both are
 REM wrong. Instead we just inform the user about the error dialog here.
 ECHO.
-ECHO When accessing drives, if an error dialog pops up saying ^"Windows - No Disk.
-ECHO Exception Processing Message c0000013^", please press "Cancel". ^(It is normal
-ECHO when happening on empty floppy drives.^)
+ECHO 如果在存取磁碟機代號時，出現錯誤交談窗「Windows - 沒有磁片。Exception
+ECHO Processing Message c0000013」，請按「取消」。（這在空軟碟機上發生時是正常的!BIG5_A15E!
 FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
     IF EXIST %%d:\ (
         CD /D %%d:\
-        ECHO Drive %%d:
+        ECHO 磁碟 %%d：
         REM Symlinks have to be handled first because we can't guarantee that
         REM user's 'attrib' utility supports '/L' (don't follow symlinks).
         IF NOT "X!opt_symlinks!"=="XSKIP" CALL :delete_symlinks
@@ -440,35 +422,34 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
     )
 )
 ECHO.
-ECHO All done. Press any key to close this program.
+ECHO 全部完成。請按任意鍵關閉本程式。
 PAUSE >nul
 GOTO :main_end
 
 :main_help
 ECHO.
-ECHO   --help                   show this help
-ECHO   --no-restart             don't restart script ^(default will restart when
-ECHO                            Command Processor AutoRun is detected^)
-ECHO   --skip-cmd-autorun       don't delete Command Processor AutoRun registry
-ECHO   --all-users-cmd-autorun  delete ALL USERS' cmd.exe AutoRun ^(default: no^)
-ECHO   --no-inf-mapping         don't stop parsing of autorun.inf
-ECHO   --skip-mountpoints2      don't clean MountPoints2 registry keys ^(caches^)
-ECHO   --skip-known-ext         don't show extensions of known file types
-ECHO   --all-users-known-ext    ALL USERS show extensions of known file types
-ECHO                            ^(default: no^)
-ECHO   --skip-shortcut-icon     don't restore arrow icons of shortcut files
-ECHO   --default-shortcut-icon  unset custom shortcut icon and use system default
-ECHO The following procedures apply to root directories of all drives:
-ECHO   --keep-symlinks          don't delete symbolic links
-ECHO   --keep-attrib            keep all files' Hidden or System attributes
-ECHO   --keep-shortcuts         don't delete shortcut files ^(.lnk and .pif^)
-ECHO   --keep-folder-exe        don't delete executables with same name as folders
-ECHO   --keep-files             don't delete autorun.inf or other malicious files
-ECHO   --no-mkdir               don't create directories after deleting files
+ECHO   --help                   顯示此說明
+ECHO   --no-restart             不重新啟動腳本（預設!BIG5_B77C!在偵測到命令處裡程式的 AutoRun
+ECHO                            時重新啟動!BIG5_A15E!
+ECHO   --skip-cmd-autorun       不刪除命令處裡程式的 AutoRun 登錄值
+ECHO   --all-users-cmd-autorun  刪除*所有使用者*的 cmd.exe AutoRun（預設不進行!BIG5_A15E!
+ECHO   --no-inf-mapping         不停止 autorun.inf 的剖析
+ECHO   --skip-mountpoints2      不清理 MountPoints2 登錄機碼（快取!BIG5_A15E!
+ECHO   --skip-known-ext         不顯示已知檔案類型的副檔名
+ECHO   --all-users-known-ext    *所有使用者*皆顯示已知檔案類型的副檔名（預設不進行!BIG5_A15E!
+ECHO   --skip-shortcut-icon     不復原捷!BIG5_AE7C!檔案的箭頭圖示
+ECHO   --default-shortcut-icon  取消自訂的捷!BIG5_AE7C!圖示並使用系統預設圖示
+ECHO 以下程序是套用在所有磁碟機的根目錄：
+ECHO   --keep-symlinks          不刪除符號連結 ^(symbolic link^)
+ECHO   --keep-attrib            保留所有檔案的「隱藏」、「系統」屬性
+ECHO   --keep-shortcuts         不刪除捷!BIG5_AE7C!檔案（.lnk 與 .pif!BIG5_A15E!
+ECHO   --keep-folder-exe        不刪除與資料夾相同名稱的執行檔
+ECHO   --keep-files             不刪除 autorun.inf 或其它可能惡意的檔案
+ECHO   --no-mkdir               不在刪除檔案後建立資料夾
 GOTO :main_end
 
 :main_restart
-ECHO Restarting this program without cmd.exe AutoRun commands...
+ECHO 在停止 cmd.exe 的自動執行 ^(AutoRun^) 命令下，重新啟動本程式...
 cmd /d /c "%0 --no-restart !args!"
 GOTO :main_end
 
@@ -485,7 +466,7 @@ REM @return 0 if user says to continue, or 1 if says to skip
     REM Note: If the user answers empty string after a "SET /P", The variable
     REM is kept the previous value and NOT set to the empty string.
     SET prompt=
-    SET /P prompt="Press Enter to continue, or type 'skip' to skip this step: "
+    SET /P prompt="請按 Enter 鍵繼續，或是輸入 'skip' 跳過此步驟："
     IF "X!prompt!"=="X" EXIT /B 0
     IF /I "X!prompt!"=="XY" EXIT /B 0
     IF /I "X!prompt!"=="XSKIP" EXIT /B 1
@@ -496,10 +477,10 @@ REM Displays a (generic) error message for any write error in registry.
 REM (add key, delete key, add value, etc.)
 REM @param %1 Short name about the registry key or value.
 :show_reg_write_error
-    ECHO Error occurred when modifying registry: "%~1">&2
+    ECHO 修改登錄時發生錯誤："%~1">&2
     IF NOT "X!g_has_error_displayed!"=="X1" (
         SET g_has_error_displayed=1
-        ECHO You may need to re-run this program with administrator privileges.>&2
+        ECHO 您可能需要用系統管理員的權限重新執行此程式。>&2
         PAUSE
     )
 GOTO :EOF
@@ -596,9 +577,9 @@ REM in their filenames.
     REM The "2^>nul" is to suppress the "File not found" output by DIR command.
     FOR /F "usebackq delims=" %%f IN (`DIR /A:L-D /B /O:N 2^>nul`) DO (
         CALL :is_file_to_keep SYMLINK "%%~f" && (
-            ECHO Symbolic link "%%~f" skipped for safety.
+            ECHO 為了安全因素，跳過符號連結 "%%~f"
         ) || (
-            ECHO Delete symbolic link "%%~f"
+            ECHO 刪除符號連結 "%%~f"
             CALL :delete_symlink "%%~f"
         )
     )
@@ -619,25 +600,25 @@ REM in their filenames.
     REM The "2^>nul" is to suppress the "File not found" output by DIR command.
     FOR /F "usebackq delims=" %%f IN (`DIR /A:HS /B /O:N 2^>nul`) DO (
         CALL :is_file_to_keep HS_ATTRIB "%%~f" && (
-            ECHO File "%%~f" ^(Hidden+System attributes^) skipped for safety.
+            ECHO 為了安全因素，跳過檔案 "%%~f"（隱藏+系統屬性!BIG5_A15E!
         ) || (
-            ECHO Clear Hidden+System attributes of "%%~f"
+            ECHO 解除隱藏+系統屬性 "%%~f"
             attrib -H -S "%%~f"
         )
     )
     FOR /F "usebackq delims=" %%f IN (`DIR /A:H-S /B /O:N 2^>nul`) DO (
         CALL :is_file_to_keep H_ATTRIB "%%~f" && (
-            ECHO File "%%~f" ^(Hidden attribute^) skipped for safety.
+            ECHO 為了安全因素，跳過檔案 "%%~f"（隱藏屬性!BIG5_A15E!
         ) || (
-            ECHO Clear Hidden attribute of "%%~f"
+            ECHO 解除隱藏屬性 "%%~f"
             attrib -H "%%~f"
         )
     )
     FOR /F "usebackq delims=" %%f IN (`DIR /A:S-H /B /O:N 2^>nul`) DO (
         CALL :is_file_to_keep S_ATTRIB "%%~f" && (
-            ECHO File "%%~f" ^(System attribute^) skipped for safety.
+            ECHO 為了安全因素，跳過檔案 "%%~f"（系統屬性!BIG5_A15E!
         ) || (
-            ECHO Clear System attribute of "%%~f"
+            ECHO 解除系統屬性 "%%~f"
             attrib -S "%%~f"
         )
     )
@@ -645,7 +626,7 @@ GOTO :EOF
 
 REM Delete .lnk and .pif shortcut files in current directory.
 :delete_shortcuts
-    ECHO Deleting .lnk and .pif shortcuts...
+    ECHO 正在刪除 .lnk 與 .pif 捷!BIG5_AE7C!...
     DEL /F *.lnk
     DEL /F *.pif
 GOTO :EOF
@@ -661,9 +642,9 @@ REM as a folder in current directory.
             `DIR /A:-D /B /O:N "%%~d.com" "%%~d.exe" "%%~d.scr" 2^>nul`
         ) DO (
             CALL :is_file_to_keep EXECUTE "%%~e" && (
-                ECHO File "%%~e" skipped for safety.
+                ECHO 為了安全因素，跳過檔案 "%%~e"
             ) || (
-                ECHO Delete "%%~e"
+                ECHO 刪除 "%%~e"
                 DEL /F "%%~e"
             )
         )
@@ -679,7 +660,7 @@ REM @param %1 File name to be converted into a directory
             attrib +R +H +S "%~1"
             EXIT /B 0
         )
-        ECHO Delete "%~1"
+        ECHO 刪除 "%~1"
         DEL /F "%~1"
         IF EXIST %1 EXIT /B 1
     )
@@ -690,7 +671,7 @@ REM Create a directory and write a file named DO_NOT_DELETE.txt inside it.
 REM @param %1 Directory name
 :make_directory
     MKDIR %1 || (
-        ECHO Error occurred when creating directory: "%~1">&2
+        ECHO 建立資料夾時發生錯誤："%~1">&2
         EXIT /B 1
     )
     REM Don't localize the text below. I want this file to be readable despite
