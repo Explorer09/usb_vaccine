@@ -213,10 +213,9 @@ ECHO 本程式可以幫助您關閉自動執行 ^(AutoRun^)、清理您磁碟裡的 autorun.inf 檔案、
 ECHO !BIG5_AE7C!並顯示被隱藏的檔案。這些動作復原 AutoRun 惡意軟體做造成的傷害。
 ECHO 本程式「並不!BIG5_B77C!」移除惡意軟體本身，所以不能用來取代防毒軟體。請安裝一套防毒軟體
 ECHO 來保護您的電腦。
-ECHO.
 ECHO 如果您使用 Windows 2000, XP, Server 2003, Vista 或 Server 2008，我們強烈建議您
 ECHO 安裝微軟的 KB967715 與 KB971029 更新，此二更新修正了 AutoRun 實作的臭蟲（即使我
-ECHO 們接下來!BIG5_B77C!停止所有的 AutoRun!BIG5_A15E!。
+ECHO 們!BIG5_B77C!停止所有的 AutoRun!BIG5_A15E!。
 ECHO 請見 ^<https://technet.microsoft.com/library/security/967940.aspx^>
 
 REM Credit to Nick Brown for the solution to disable AutoRun. See:

@@ -208,14 +208,12 @@ ECHO.
 ECHO This program can help you disable AutoRun, clean the autorun.inf files on your
 ECHO disks, delete shortcuts and reveal hidden files. All of these undo the damage
 ECHO that might be done by AutoRun malware.
-ECHO This program DOES NOT remove the malware itself and so is not a substitute for
-ECHO anti-virus software. Please install anti-virus software to protect your
-ECHO computer.
-ECHO.
+ECHO This DOES NOT remove the malware itself and so is not a substitute for anti-
+ECHO virus software. Please install anti-virus software to protect your computer.
 ECHO If you are using Windows 2000, XP, Server 2003, Vista, or Server 2008, it is
 ECHO strongly recommended that you install KB967715 and KB971029 updates from
 ECHO Microsoft. These two updates correct bugs in AutoRun implementations ^(even
-ECHO though we will disable AutoRun entirely later on^).
+ECHO though we will disable AutoRun entirely^).
 ECHO Please see ^<https://technet.microsoft.com/library/security/967940.aspx^>
 
 REM Credit to Nick Brown for the solution to disable AutoRun. See:
