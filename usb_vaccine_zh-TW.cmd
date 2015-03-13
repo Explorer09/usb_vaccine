@@ -167,7 +167,7 @@ FOR %%k IN (HKLM HKCU) DO (
     REM "reg query" always output blank lines. Suppress them.
     reg query "%%k\%CMD_REG_SUBKEY%" /v "AutoRun" >nul 2>nul && (
         SET has_cmd_autorun=1
-        IF NOT "X!opt_restart!"=="XSKIP" GOTO :main_restart
+        IF NOT "X!opt_restart!"=="XSKIP" GOTO main_restart
         REM Show user the AutoRun values along with error message below.
         REM Key name included in "reg query" output.
         reg query "%%k\%CMD_REG_SUBKEY%" /v "AutoRun" >&2
@@ -177,8 +177,8 @@ IF "!has_cmd_autorun!"=="1" (
     ECHO *** Äµ§i¡G¦b¦¹°T®§Åã¥Ü¤§«e¡A±zªº©R¥Oª½Ä¶¾¹ ^(cmd.exe^) ¤w¸g¦Û°Ê°õ¦æ¤F¤@¨Ç©R¥O¡A³o>&2
     ECHO     ¨Ç©R¥O¥i¯à¬°´c·Nµ{¦¡¡C>&2
 )
-IF "X!opt_help!"=="X1" GOTO :main_help
-IF "X!opt_cmd_autorun!"=="XSKIP" GOTO :main_inf_mapping
+IF "X!opt_help!"=="X1" GOTO main_help
+IF "X!opt_cmd_autorun!"=="XSKIP" GOTO main_inf_mapping
 IF "!has_cmd_autorun!"=="1" (
     IF NOT "X!opt_cmd_autorun!"=="XALL_USERS" (
         ECHO.
@@ -187,7 +187,7 @@ IF "!has_cmd_autorun!"=="1" (
         ECHO ½X¸Ì­±ªº "AutoRun" µn¿ý­È±N!BIG5_B77C!³Q§R°£¡C
         ECHO ¡]¼vÅT¥þ¾÷»P¥Ø«e¨Ï¥ÎªÌªº³]©w¡A­Y­n¦P®É§R°£¨ä¥¦¨Ï¥ÎªÌªº³]©w¡A½Ð«ü©w
         ECHO '--all-users-cmd-autorun' ¿ï¶µ¡C¦¹°Ê§@µLªk´_­ì¡C!BIG5_A15E!
-        CALL :continue_prompt || GOTO :main_inf_mapping
+        CALL :continue_prompt || GOTO main_inf_mapping
     )
     FOR %%k IN (HKLM HKCU) DO (
         CALL :delete_reg_value "%%k\%CMD_REG_SUBKEY%" "AutoRun" "Command Processor /v AutoRun"
@@ -227,8 +227,8 @@ REM in Windows 7, rather than let go some devices.
 REM Other references:
 REM http://www.kb.cert.org/vuls/id/889747
 REM https://www.us-cert.gov/ncas/alerts/TA09-020A
-IF "!has_reg_inf_mapping!"=="1" GOTO :main_mountpoints2
-IF "X!opt_inf_mapping!"=="XSKIP" GOTO :main_mountpoints2
+IF "!has_reg_inf_mapping!"=="1" GOTO main_mountpoints2
+IF "X!opt_inf_mapping!"=="XSKIP" GOTO main_mountpoints2
 ECHO.
 ECHO [inf-mapping]
 ECHO Windows ¦b¹w³]±¡ªp¤U!BIG5_B77C!¦b±z©ñ¤J¥úºÐ¡A©Î·Æ¹«ÂIÀ»¥úºÐ¾÷¹Ï¥Ü®É¡A¦Û°Ê°õ¦æ¬Y¨Ç¡]¦w
@@ -238,21 +238,21 @@ ECHO §Ú­Ì±NÃö³¬©Ò¦³¦Û°Ê°õ¦æ ^(AutoRun^)¡A¨Ã°±¤î Windows ­åªR¥ô¦ó autorun.inf ÀÉ®
 ECHO ¬A¥úºÐ¾÷¡CÃö³¬ AutoRun «á¡A¦pªG±z­n±q¥úºÐ¸Ì­±¦w¸Ë©Î°õ¦æ³nÅé¡A±z¥²¶·¤â°ÊÂIÀ»¸Ì­±
 ECHO ªº Setup.exe¡C³o¤£¼vÅT­µ¼Ö¡A¹q¼v¥úºÐ¡A©Î USB ¸Ë¸mªº¦Û°Ê¼½©ñ ^(AutoPlay^) ¥\¯à¡C
 ECHO ¡]³o¬O¥þ¾÷³]©w¡C!BIG5_A15E!
-CALL :continue_prompt || GOTO :main_mountpoints2
+CALL :continue_prompt || GOTO main_mountpoints2
 reg add %INF_MAPPING_REG_KEY% /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >nul || (
     CALL :show_reg_write_error "IniFileMapping\autorun.inf"
-    GOTO :main_mountpoints2
+    GOTO main_mountpoints2
 )
 CALL :delete_reg_key "HKLM\SOFTWARE\DoesNotExist" "HKLM\SOFTWARE\DoesNotExist"
 
 :main_mountpoints2
-IF "X!opt_mountpoints2!"=="XSKIP" GOTO :main_known_ext
+IF "X!opt_mountpoints2!"=="XSKIP" GOTO main_known_ext
 ECHO.
 ECHO [mountpoints2]
 ECHO MountPoints2 µn¿ý¾÷½X¬°§@·~¨t²Î AutoRun ªº§Ö¨ú¸ê®Æ¡A¦b AutoRun Ãö³¬¤§«á¡A²M²z¾÷
 ECHO ½X¥HÁ×§K¤§«e¸Ë¸mªº AutoRun «Â¯Ù¡C
 ECHO ¡]¼vÅT©Ò¦³¨Ï¥ÎªÌªº³]©w¡C¦¹°Ê§@µLªk´_­ì¡C!BIG5_A15E!
-CALL :continue_prompt || GOTO :main_known_ext
+CALL :continue_prompt || GOTO main_known_ext
 CALL :prepare_sids
 FOR %%i IN (!g_sids!) DO (
     ECHO SID %%i
@@ -263,7 +263,7 @@ FOR %%i IN (!g_sids!) DO (
 REM The value shouldn't exist in HKLM and doesn't work there. Silently delete.
 reg delete "HKLM\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /f >nul 2>nul
 
-IF "X!opt_known_ext!"=="XSKIP" GOTO :main_shortcut_icon
+IF "X!opt_known_ext!"=="XSKIP" GOTO main_shortcut_icon
 REM We include PIF because it's executable in Windows!
 REM It's possible to rename a PE .exe to .pif and run when user clicks it.
 ECHO.
@@ -280,7 +280,7 @@ ECHO §Ú­Ì!BIG5_B77C!¦P®É§R°£¥H¤WÀÉ®×Ãþ«¬ªº "NeverShowExt" µn¿ý­È¡A¸Óµn¿ý­È!BIG5_
 ECHO «¬ªº°ÆÀÉ¦W¡A°£¤F±¶!BIG5_AE7C!ÀÉ¥H¥~¤£À³¦s¦b¸Óµn¿ý­È¡C
 ECHO ¡]¼vÅT¥þ¾÷»P¥Ø«e¨Ï¥ÎªÌªº³]©w¡A­Y­n¦P®É§ó§ï¨ä¥¦¨Ï¥ÎªÌªº³]©w¡A½Ð«ü©w
 ECHO '--all-users-known-ext' ¿ï¶µ¡C!BIG5_A15E!
-CALL :continue_prompt || GOTO :main_shortcut_icon
+CALL :continue_prompt || GOTO main_shortcut_icon
 REM "HideFileExt" is enabled (0x1) if value does not exist.
 reg add "HKCU\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >nul || (
     CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
@@ -307,7 +307,7 @@ IF "X!opt_known_ext!"=="XALL_USERS" (
 )
 
 :main_shortcut_icon
-IF "X!opt_shortcut_icon!"=="XSKIP" GOTO :main_all_drives
+IF "X!opt_shortcut_icon!"=="XSKIP" GOTO main_all_drives
 ECHO.
 ECHO [shortcut-icon]
 ECHO ©Ò¦³ªº±¶!BIG5_AE7C!ÀÉ®×³£À³¦³½bÀYªº¤p¹Ï¥Ü¡A¤×¨ä¬O«ü¦V°õ¦æÀÉªº±¶!BIG5_AE7C!¡C¥Ñ©ó±¶!BIG5_AE7C!ªº°ÆÀÉ¦W±`³Q
@@ -315,7 +315,7 @@ ECHO ÁôÂÃ°_¨Ó¡A¨Ï¥ÎªÌ¥u¯à³z¹L½bÀYªº¹Ï¥Ü¨Ó¿ë»{±¶!BIG5_AE7C!ÀÉ¡C
 ECHO §Ú­Ì±N´_­ì±`¨£ªº±¶!BIG5_AE7C!ÀÉ®×Ãþ«¬ .lnk »P .pif ªº½bÀY¹Ï¥Ü¡C¦¹¤GÃþ«¬¬O¥i¥H«ü¦V°õ¦æÀÉ
 ECHO ªº¡C¦pªG±z¦³¦Û­qªº±¶!BIG5_AE7C!½bÀY¹Ï¥Ü¡A¦b¦¹!BIG5_B77C!¨Ï¥Î¦Û­qªº¹Ï¥Ü¡C
 ECHO ¡]³o¬O¥þ¾÷³]©w¡C!BIG5_A15E!
-CALL :continue_prompt || GOTO :main_all_drives
+CALL :continue_prompt || GOTO main_all_drives
 FOR %%i IN (lnk pif) DO (
     CALL :delete_reg_key "HKCU\Software\Classes\.%%i" "HKCU\Software\Classes\.%%i"
     CALL :delete_reg_key "HKCU\Software\Classes\%%ifile" "HKCU\Software\Classes\.%%ifile"
@@ -424,7 +424,7 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
 ECHO.
 ECHO ¥þ³¡§¹¦¨¡C½Ð«ö¥ô·NÁäÃö³¬¥»µ{¦¡¡C
 PAUSE >nul
-GOTO :main_end
+GOTO main_end
 
 :main_help
 ECHO.
@@ -446,12 +446,12 @@ ECHO   --keep-shortcuts         ¤£§R°£±¶!BIG5_AE7C!ÀÉ®×¡].lnk »P .pif!BIG5_A15E!
 ECHO   --keep-folder-exe        ¤£§R°£»P¸ê®Æ§¨¬Û¦P¦WºÙªº°õ¦æÀÉ
 ECHO   --keep-files             ¤£§R°£ autorun.inf ©Î¨ä¥¦¥i¯à´c·NªºÀÉ®×
 ECHO   --no-mkdir               ¤£¦b§R°£ÀÉ®×«á«Ø¥ß¸ê®Æ§¨
-GOTO :main_end
+GOTO main_end
 
 :main_restart
 ECHO ¦b°±¤î cmd.exe ªº¦Û°Ê°õ¦æ ^(AutoRun^) ©R¥O¤U¡A­«·s±Ò°Ê¥»µ{¦¡...
 cmd /d /c "%0 --no-restart !args!"
-GOTO :main_end
+GOTO main_end
 
 :main_end
 ENDLOCAL

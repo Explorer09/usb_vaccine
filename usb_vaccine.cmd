@@ -162,7 +162,7 @@ FOR %%k IN (HKLM HKCU) DO (
     REM "reg query" always output blank lines. Suppress them.
     reg query "%%k\%CMD_REG_SUBKEY%" /v "AutoRun" >nul 2>nul && (
         SET has_cmd_autorun=1
-        IF NOT "X!opt_restart!"=="XSKIP" GOTO :main_restart
+        IF NOT "X!opt_restart!"=="XSKIP" GOTO main_restart
         REM Show user the AutoRun values along with error message below.
         REM Key name included in "reg query" output.
         reg query "%%k\%CMD_REG_SUBKEY%" /v "AutoRun" >&2
@@ -172,8 +172,8 @@ IF "!has_cmd_autorun!"=="1" (
     ECHO *** NOTICE: Your cmd.exe interpreter contains AutoRun commands, which have been>&2
     ECHO     run before this message is displayed and might be malicious.>&2
 )
-IF "X!opt_help!"=="X1" GOTO :main_help
-IF "X!opt_cmd_autorun!"=="XSKIP" GOTO :main_inf_mapping
+IF "X!opt_help!"=="X1" GOTO main_help
+IF "X!opt_cmd_autorun!"=="XSKIP" GOTO main_inf_mapping
 IF "!has_cmd_autorun!"=="1" (
     IF NOT "X!opt_cmd_autorun!"=="XALL_USERS" (
         ECHO.
@@ -183,7 +183,7 @@ IF "!has_cmd_autorun!"=="1" (
         ECHO ^(Affects machine and current user settings. To also delete other users'
         ECHO settings, please specify '--all-users-cmd-autorun' option. This action cannot
         ECHO be undone.^)
-        CALL :continue_prompt || GOTO :main_inf_mapping
+        CALL :continue_prompt || GOTO main_inf_mapping
     )
     FOR %%k IN (HKLM HKCU) DO (
         CALL :delete_reg_value "%%k\%CMD_REG_SUBKEY%" "AutoRun" "Command Processor /v AutoRun"
@@ -226,8 +226,8 @@ REM in Windows 7, rather than let go some devices.
 REM Other references:
 REM http://www.kb.cert.org/vuls/id/889747
 REM https://www.us-cert.gov/ncas/alerts/TA09-020A
-IF "!has_reg_inf_mapping!"=="1" GOTO :main_mountpoints2
-IF "X!opt_inf_mapping!"=="XSKIP" GOTO :main_mountpoints2
+IF "!has_reg_inf_mapping!"=="1" GOTO main_mountpoints2
+IF "X!opt_inf_mapping!"=="XSKIP" GOTO main_mountpoints2
 ECHO.
 ECHO [inf-mapping]
 ECHO When you insert a disc, or click the icon of a CD-ROM drive, Windows will
@@ -239,22 +239,22 @@ ECHO file. After AutoRun is disabled, if you wish to install or run software fro
 ECHO disc, you will have to manually click the Setup.exe inside. This doesn't affect
 ECHO the AutoPlay feature of music, video discs, or USB devices.
 ECHO ^(This is a machine setting.^)
-CALL :continue_prompt || GOTO :main_mountpoints2
+CALL :continue_prompt || GOTO main_mountpoints2
 reg add %INF_MAPPING_REG_KEY% /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >nul || (
     CALL :show_reg_write_error "IniFileMapping\autorun.inf"
-    GOTO :main_mountpoints2
+    GOTO main_mountpoints2
 )
 CALL :delete_reg_key "HKLM\SOFTWARE\DoesNotExist" "HKLM\SOFTWARE\DoesNotExist"
 
 :main_mountpoints2
-IF "X!opt_mountpoints2!"=="XSKIP" GOTO :main_known_ext
+IF "X!opt_mountpoints2!"=="XSKIP" GOTO main_known_ext
 ECHO.
 ECHO [mountpoints2]
 ECHO The MountPoints2 registry keys are the AutoRun cache used by the OS. After
 ECHO AutoRun is disabled, clean the registry keys in order to prevents AutoRun
 ECHO threats from previous devices.
 ECHO ^(Affects all users' settings. This action cannot be undone.^)
-CALL :continue_prompt || GOTO :main_known_ext
+CALL :continue_prompt || GOTO main_known_ext
 CALL :prepare_sids
 FOR %%i IN (!g_sids!) DO (
     ECHO SID %%i
@@ -265,7 +265,7 @@ FOR %%i IN (!g_sids!) DO (
 REM The value shouldn't exist in HKLM and doesn't work there. Silently delete.
 reg delete "HKLM\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /f >nul 2>nul
 
-IF "X!opt_known_ext!"=="XSKIP" GOTO :main_shortcut_icon
+IF "X!opt_known_ext!"=="XSKIP" GOTO main_shortcut_icon
 REM We include PIF because it's executable in Windows!
 REM It's possible to rename a PE .exe to .pif and run when user clicks it.
 ECHO.
@@ -286,7 +286,7 @@ ECHO The value always hides the extension for that file type. Unless it is a
 ECHO shortcut file, the value should not exist.
 ECHO ^(Affects machine and current user settings. To also change other users'
 ECHO settings, please specify '--all-users-known-ext' option.^)
-CALL :continue_prompt || GOTO :main_shortcut_icon
+CALL :continue_prompt || GOTO main_shortcut_icon
 REM "HideFileExt" is enabled (0x1) if value does not exist.
 reg add "HKCU\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >nul || (
     CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
@@ -313,7 +313,7 @@ IF "X!opt_known_ext!"=="XALL_USERS" (
 )
 
 :main_shortcut_icon
-IF "X!opt_shortcut_icon!"=="XSKIP" GOTO :main_all_drives
+IF "X!opt_shortcut_icon!"=="XSKIP" GOTO main_all_drives
 ECHO.
 ECHO [shortcut-icon]
 ECHO All shortcut files should have a small arrow icon on them, especially shortcuts
@@ -323,7 +323,7 @@ ECHO We will restore arrow icons of common shortcut types, .lnk and .pif, which 
 ECHO be pointing to executables. If you have customized the shortcut arrow icon, the
 ECHO custom icon will be used here.
 ECHO ^(This is a machine setting.^)
-CALL :continue_prompt || GOTO :main_all_drives
+CALL :continue_prompt || GOTO main_all_drives
 FOR %%i IN (lnk pif) DO (
     CALL :delete_reg_key "HKCU\Software\Classes\.%%i" "HKCU\Software\Classes\.%%i"
     CALL :delete_reg_key "HKCU\Software\Classes\%%ifile" "HKCU\Software\Classes\.%%ifile"
@@ -442,7 +442,7 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
 ECHO.
 ECHO All done. Press any key to close this program.
 PAUSE >nul
-GOTO :main_end
+GOTO main_end
 
 :main_help
 ECHO.
@@ -465,12 +465,12 @@ ECHO   --keep-shortcuts         don't delete shortcut files ^(.lnk and .pif^)
 ECHO   --keep-folder-exe        don't delete executables with same name as folders
 ECHO   --keep-files             don't delete autorun.inf or other malicious files
 ECHO   --no-mkdir               don't create directories after deleting files
-GOTO :main_end
+GOTO main_end
 
 :main_restart
 ECHO Restarting this program without cmd.exe AutoRun commands...
 cmd /d /c "%0 --no-restart !args!"
-GOTO :main_end
+GOTO main_end
 
 :main_end
 ENDLOCAL
