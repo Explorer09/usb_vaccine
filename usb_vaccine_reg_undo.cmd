@@ -33,13 +33,17 @@ REM ---------------------------------------------------------------------------
 REM MAIN
 
 :main_undo_inf_mapping
-ECHO [inf-mapping]
-CALL :undo_prompt || GOTO :main_undo_known_ext
+ECHO Undo [inf-mapping]
+ECHO We will remove autorun.inf file from IniFileMapping list. This re-enables
+ECHO AutoRun.
+CALL :confirm_prompt || GOTO main_undo_known_ext
 reg delete %INF_MAPPING_REG_KEY% /f >nul
 
 :main_undo_known_ext
-ECHO [known-ext]
-CALL :undo_prompt || GOTO :main_undone
+ECHO Undo [known-ext]
+ECHO We will re-enable "Hide extensions for known file types" option, and also
+ECHO restore the "NeverShowExt" value for .pif shortcuts. 
+CALL :confirm_prompt || GOTO main_undone
 reg delete "HKCU\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /f >nul
 reg add "HKLM\SOFTWARE\Classes\piffile" /v "NeverShowExt" /t REG_SZ /f >nul
 
@@ -53,13 +57,13 @@ GOTO :EOF
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES
 
-:undo_prompt
+:confirm_prompt
     SET prompt=
-    SET /P prompt="Undo this change [Y/n]? "
+    SET /P prompt="Confirm [Y/n]? "
     IF "X!prompt!"=="X" EXIT /B 0
     IF /I "X!prompt!"=="XY" EXIT /B 0
     IF /I "X!prompt!"=="XYES" EXIT /B 0
     IF /I "X!prompt!"=="XN" EXIT /B 1
     IF /I "X!prompt!"=="XNO" EXIT /B 1
-    GOTO undo_prompt
+    GOTO confirm_prompt
 GOTO :EOF
