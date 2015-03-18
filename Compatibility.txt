@@ -20,7 +20,7 @@ Here are limitations known in Windows NT 4 Command Processor environment:
   "SET /P" (or "FOR /F") user input processing. %var% is vulnerable to command
   injection.
   (<http://www.robvanderwoude.com/local.php>)
-- "SET /P" does not work, and choice.exe is available only in Resouce Kit, and
+- "SET /P" does not work, and choice.exe is available only in Resource Kit, and
   so there's no way to write interactive scripts. 
   (<http://www.robvanderwoude.com/ntset.php>)
 - Negative number in substring expansion (%VAR:~0,-5%) does not work.
