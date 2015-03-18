@@ -4,7 +4,7 @@ usb_vaccine.cmd
 USB malware immunity script and hidden files revealer.
 
 **Does not remove malware.**
-**Must be used in conjunction with an antivirus program.**
+**Must be used in conjunction with an anti-virus program.**
 
 [Download](https://github.com/Explorer09/usb_vaccine/raw/master/usb_vaccine.cmd)
 
@@ -39,7 +39,7 @@ All actions may be skipped and not done by user request.
 What does it NOT do
 -------------------
 
-* It does NOT kill or remove the malware. This is antivirus program's job.
+* It does NOT kill or remove the malware. This is anti-virus program's job.
 * It does NOT make an already-infected system clean. This scripts is useful on
   **non-infected** system, to enhance security and prevent new infections.
 * It does NOT sit in the system tray or monitor every insertion/removal of USB
