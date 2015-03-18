@@ -95,7 +95,7 @@ ext. | (safe:0,    | Ext (safe: | (safe:  | arrow     | beginning | (safe:no)
 
 As the reader can see, there are only one "safe" mark for '.exe', '.com',
 '.scr', and '.pif'. Malicious programs disguised as files or folders may not be
-spotted by user with these file entensions. However, with "HideFileExt"
+spotted by user with these file extensions. However, with "HideFileExt"
 disabled by user, we can get another "safe" mark for '.exe', '.com' and '.scr'.
 By removing "NeverShowExt" for '.pif', we can get another for '.pif' (without
 reducing functionality). So in usb_vaccine.cmd I decide to do both, to make
