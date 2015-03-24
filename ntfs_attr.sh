@@ -56,6 +56,10 @@ attr_c=0 # Supported only in recovery console and not in normal Windows.
 attr_o=0 # Supported in ntfs-3g. Never worked with Windows's attrib.
 attr_i=0 # Supported since Windows Vista.
 
+# The 'Not content indexed' attribute is displayed as 'N' instead of 'I' in
+# Explorer in Windows Vista (bug, fixed in Windows 7):
+# http://superuser.com/questions/516709/what-is-the-n-folder-attribute-on-windows
+
 # Mode 'show' or 'edit' attributes
 attr_mode=show
 
@@ -86,7 +90,7 @@ Attributes: ( ! = unchangeable with this utility )
   l ! Symbolic link / Junction / Mount point / has a reparse point
   c - Compressed (flag changable with directories only)
   o - Offline
-  i - Not content indexed
+  i - Not content indexed (displayed as N in Explorer in Windows Vista)
   e ! Encrypted
   V ! Integrity (Windows 8 ReFS only)
   x ! No scrub (Windows 8 ReFS only)
