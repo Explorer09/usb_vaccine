@@ -6,7 +6,7 @@ USB malware immunity script and hidden files revealer.
 **Does not remove malware.**
 **Must be used in conjunction with an anti-virus program.**
 
-[Download](https://github.com/Explorer09/usb_vaccine/raw/master/usb_vaccine.cmd)
+[Download](https://github.com/Explorer09/usb_vaccine/archive/master.zip)
 
 ![Screenshot](./images/usb_vaccine_en-US.png "Screenshot")
 
@@ -53,7 +53,8 @@ How to use
 Requires Windows 2000 or later. Tested to work with Windows 2000 through
 Windows 10.
 
-1. Download the script file (usb_vaccine.cmd).
+1. [Download](https://github.com/Explorer09/usb_vaccine/archive/master.zip) and
+   unpack to get the script file (usb_vaccine.cmd).
 2. Unplug all of your USB flash drives, so that if your USB flash drives are
    infected they won't interfere with your computer.
 3. Right-click on "usb_vaccine.cmd" file and select "Run as administrator".
@@ -83,7 +84,7 @@ USB 病毒免疫暨隱藏檔現形程式
 
 **注意：不會真正移除病毒，請搭配防毒軟體一起使用**
 
-[下載](https://github.com/Explorer09/usb_vaccine/raw/master/usb_vaccine_zh-TW.cmd)
+[下載](https://github.com/Explorer09/usb_vaccine/archive/master.zip)
 
 ![螢幕擷圖](./images/usb_vaccine_zh-TW.png "螢幕擷圖")
 
@@ -125,7 +126,8 @@ USB 病毒免疫暨隱藏檔現形程式
 
 需要 Windows 2000 以上。從 Windows 2000 到 Windows 10 都有測試過可以使用。
 
-1. 下載腳本檔 (usb_vaccine_zh-TW.cmd)
+1. [下載](https://github.com/Explorer09/usb_vaccine/archive/master.zip)並解壓縮
+   取出腳本檔 (usb_vaccine_zh-TW.cmd)
 2. 拔除所有的 USB 隨身碟。這樣如果 USB 隨身碟受到感染，您的電腦就不會受隨身碟
    的影響。
 3. 在 usb_vaccine_zh-TW.cmd 檔案上按滑鼠右鍵，選取「以系統管理員身分執行」。
