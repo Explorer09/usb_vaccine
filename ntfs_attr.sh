@@ -58,7 +58,7 @@ attr_i=0 # Supported since Windows Vista.
 
 # The 'Not content indexed' attribute is displayed as 'N' instead of 'I' in
 # Explorer in Windows Vista (bug, fixed in Windows 7):
-# http://superuser.com/questions/516709/what-is-the-n-folder-attribute-on-windows
+# http://superuser.com/questions/516709
 
 # Mode 'show' or 'edit' attributes
 attr_mode=show
