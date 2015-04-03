@@ -7,7 +7,7 @@ _unintentionally_ running an _arbitrary_ program, when he opens a drive or a
 file inside it.
 
 Unix/Linux already have execution mode bits, and the (optional) 'noexec' mount
-option. It's not perfect, but DOES prevent most of the tricks that USB worms
+option. It's not perfect, but DOES prevent most of the tricks that USB malware
 could do on Windows. There's no execute bit on Windows, so we have to let user
 aware by other means.
 
