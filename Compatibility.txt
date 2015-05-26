@@ -30,3 +30,27 @@ Here are limitations known in Windows NT 4 Command Processor environment:
   (<http://www.robvanderwoude.com/exit.php>)
 - 'FOR /F "usebackq"' does not work.
   (<http://www.robvanderwoude.com/ntfor.php>)
+
+usb_vaccine.cmd contains code that checks whether the Command Processors
+environment is okay. The code is copied below, with comments added:
+
+    @ECHO OFF
+    REM The CMDEXTVERSION check may be available only after cmd extensions are
+    REM enabled. Expect a "Bad command" error for COMMAND.COM in DOS or Win9x.
+    SETLOCAL EnableExtensions
+    REM Expect a "syntax error" for those not supporting.
+    IF CMDEXTVERSION 2 GOTO cmd_ext_ok
+    REM Error message. No ">&2" redirection because DOS COMMAND.COM don't
+    REM recognize it and will instead write to a file named "&2".
+    ECHO Requires Windows 2000 or later.
+    REM The EXIT command doesn't always terminate batch execution - it does
+    REM nothing when the batch is run on the topmost shell (in real DOS), or
+    REM it kills the current layer of the shell (command interpreter).
+    REM It is more reliable to GOTO an end label, but we keep the EXIT command
+    REM as a fallback.
+    GOTO EOF
+    EXIT
+    :cmd_ext_ok
+    ENDLOCAL
+    ... main code here ...
+    :EOF

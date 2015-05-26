@@ -1,9 +1,10 @@
 @ECHO OFF
 SETLOCAL EnableExtensions
-IF NOT CMDEXTVERSION 2 (
-    ECHO Requires Windows 2000 or later.
-    EXIT
-)
+IF CMDEXTVERSION 2 GOTO cmd_ext_ok
+ECHO Requires Windows 2000 or later.
+GOTO EOF
+EXIT
+:cmd_ext_ok
 ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
@@ -41,7 +42,7 @@ SET "BIG5_AE7C=®|"
 SET "BIG5_B77C=·|"
 
 REM Files to keep - these are REAL system files and it's best to leave these
-REM untouched. (Last updated for Windows 10 Technical Preview)
+REM untouched. (Last updated for Windows 10 Insider Preview build 10074)
 
 SET KEEP_SYMLINK_FILES=
 FOR %%i IN (
@@ -689,3 +690,6 @@ REM @param %1 Directory name
     attrib +R +H +S "%~1"
     EXIT /B 0
 GOTO :EOF
+
+REM ---------------------------------------------------------------------------
+:EOF

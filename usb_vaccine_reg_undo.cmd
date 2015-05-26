@@ -1,9 +1,10 @@
 @ECHO OFF
 SETLOCAL EnableExtensions
-IF NOT CMDEXTVERSION 2 (
-    ECHO Requires Windows 2000 or later.
-    EXIT
-)
+IF CMDEXTVERSION 2 GOTO cmd_ext_ok
+ECHO Requires Windows 2000 or later.
+GOTO EOF
+EXIT
+:cmd_ext_ok
 ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
@@ -67,3 +68,6 @@ REM SUBROUTINES
     IF /I "X!prompt!"=="XNO" EXIT /B 1
     GOTO confirm_prompt
 GOTO :EOF
+
+REM ---------------------------------------------------------------------------
+:EOF
