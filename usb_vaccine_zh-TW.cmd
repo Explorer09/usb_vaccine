@@ -1,6 +1,7 @@
 @ECHO OFF
 SETLOCAL EnableExtensions
 IF CMDEXTVERSION 2 GOTO cmd_ext_ok
+ENDLOCAL
 ECHO Requires Windows 2000 or later.
 GOTO EOF
 EXIT

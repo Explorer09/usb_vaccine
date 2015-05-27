@@ -40,6 +40,7 @@ environment is okay. The code is copied below, with comments added:
     SETLOCAL EnableExtensions
     REM Expect a "syntax error" for those not supporting.
     IF CMDEXTVERSION 2 GOTO cmd_ext_ok
+    ENDLOCAL
     REM Error message. No ">&2" redirection because DOS COMMAND.COM don't
     REM recognize it and will instead write to a file named "&2".
     ECHO Requires Windows 2000 or later.
