@@ -163,10 +163,9 @@ reg query "HKCU" >nul 2>nul || (
     ECHO.
     ECHO *** ERROR: Can't access Windows registry with reg.exe^^!>&2
     ECHO.
-    ECHO If you are using Windows 2000, please install reg.exe from Windows 2000 Support
-    ECHO Tools. For details, see ^<https://support.microsoft.com/kb/301423^>
-    ECHO You may download the Support Tools from
-    ECHO ^<https://www.microsoft.com/download/details.aspx?id=18614^>
+    ECHO If you are using Windows 2000, please install Windows 2000 Support Tools. See
+    ECHO ^<https://support.microsoft.com/kb/301423^> for details. You may download the
+    ECHO Support Tools from ^<https://www.microsoft.com/download/details.aspx?id=18614^>
     IF "X!opt_help!"=="X1" GOTO main_help
     ECHO.
     ECHO All registry tasks will be SKIPPED.
@@ -355,7 +354,7 @@ IF "X!opt_shortcut_icon!"=="XDEFAULT" (
 
 :main_all_drives
 ECHO.
-ECHO Now we are processing the root directories of all disk drives.
+ECHO Now we will process the root directories of all disk drives.
 ECHO Please insert all storage devices that are affected by malware, including USB
 ECHO flash drives, external hard drives, memory cards, PDAs, smartphones, or digital
 ECHO cameras. If you have CD- or DVD-RW discs in your drives, it is recommended that

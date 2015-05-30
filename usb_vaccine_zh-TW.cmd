@@ -168,7 +168,7 @@ reg query "HKCU" >nul 2>nul || (
     ECHO.
     ECHO *** 錯誤：無法使用 reg.exe 來存取 Windows 登錄！>&2
     ECHO.
-    ECHO 如果您使用 Windows 2000，請安裝 Windows 2000 支援工具裡的 reg.exe。
+    ECHO 如果您使用 Windows 2000，請安裝 Windows 2000 支援工具。
     ECHO 詳情請見 ^<https://support.microsoft.com/kb/301423^>，您可以從此下載支援工具：
     ECHO ^<https://www.microsoft.com/download/details.aspx?id=18614^>
     IF "X!opt_help!"=="X1" GOTO main_help
