@@ -163,6 +163,20 @@ IF NOT "X%~1"=="X" (
     GOTO main_parse_options
 )
 
+:main_sanity_test
+reg query "HKCU" >nul 2>nul || (
+    ECHO.
+    ECHO *** 錯誤：無法使用 reg.exe 來存取 Windows 登錄！>&2
+    ECHO.
+    ECHO 如果您使用 Windows 2000，請安裝 Windows 2000 支援工具裡的 reg.exe。
+    ECHO 詳情請見 ^<https://support.microsoft.com/kb/301423^>，您可以從此下載支援工具：
+    ECHO ^<https://www.microsoft.com/download/details.aspx?id=18614^>
+    IF "X!opt_help!"=="X1" GOTO main_help
+    ECHO.
+    ECHO 所有登錄檔工作將!BIG5_B77C!被跳過。
+    GOTO main_all_drives
+)
+
 :main_cmd_autorun
 SET has_cmd_autorun=0
 FOR %%k IN (HKLM HKCU) DO (
@@ -333,7 +347,7 @@ IF "X!opt_shortcut_icon!"=="XDEFAULT" (
 
 :main_all_drives
 ECHO.
-ECHO 所有登錄檔工作皆已完成。現在我們將處理所有磁碟機的根目錄。
+ECHO 現在我們將處理所有磁碟機的根目錄。
 ECHO 請插入所有受惡意軟體影響的儲存裝置，包括 USB 隨身碟、外接硬碟、記憶卡、PDA、智
 ECHO 慧型手機與數位相機。如果您有 CD- 或 DVD-RW 光碟在光碟機裡，建議您退出它們，以免
 ECHO 誤啟動燒錄的動作。
@@ -506,7 +520,9 @@ REM @param %1 Key name, including root key
 REM @param %2 Short hint of the key, displayed in error messages
 REM @return 0 if key doesn't exist or is deleted successfully, or 1 on error
 :delete_reg_key
-    reg query "%~1" /ve >nul 2>nul || EXIT /B 0
+    REM Must query the whole key. 'reg' in Windows 2000/XP returns failure on a
+    REM "value not set" default with '/ve', while in Vista it returns success.
+    reg query "%~1" >nul 2>nul || EXIT /B 0
     reg delete "%~1" /f >nul && EXIT /B 0
     CALL :show_reg_write_error %2
     EXIT /B 1

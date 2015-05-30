@@ -34,7 +34,15 @@ SET ADVANCED_REG_SUBKEY=Software\Microsoft\Windows\CurrentVersion\Explorer\Advan
 REM ---------------------------------------------------------------------------
 REM MAIN
 
+:main_sanity_test
+reg query "HKCU" >nul 2>nul || (
+    ECHO.
+    ECHO *** ERROR: Can't access Windows registry with reg.exe^^!>&2
+    GOTO main_undone
+)
+
 :main_undo_inf_mapping
+ECHO.
 ECHO Undo [inf-mapping]
 ECHO We will remove autorun.inf file from IniFileMapping list. This re-enables
 ECHO AutoRun.
@@ -42,6 +50,7 @@ CALL :confirm_prompt || GOTO main_undo_known_ext
 reg delete %INF_MAPPING_REG_KEY% /f >nul
 
 :main_undo_known_ext
+ECHO.
 ECHO Undo [known-ext]
 ECHO We will re-enable "Hide extensions for known file types" option, and also
 ECHO restore the "NeverShowExt" value for .pif shortcuts. 

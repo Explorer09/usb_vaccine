@@ -158,6 +158,21 @@ IF NOT "X%~1"=="X" (
     GOTO main_parse_options
 )
 
+:main_sanity_test
+reg query "HKCU" >nul 2>nul || (
+    ECHO.
+    ECHO *** ERROR: Can't access Windows registry with reg.exe^^!>&2
+    ECHO.
+    ECHO If you are using Windows 2000, please install reg.exe from Windows 2000 Support
+    ECHO Tools. For details, see ^<https://support.microsoft.com/kb/301423^>
+    ECHO You may download the Support Tools from
+    ECHO ^<https://www.microsoft.com/download/details.aspx?id=18614^>
+    IF "X!opt_help!"=="X1" GOTO main_help
+    ECHO.
+    ECHO All registry tasks will be SKIPPED.
+    GOTO main_all_drives
+)
+
 :main_cmd_autorun
 SET has_cmd_autorun=0
 FOR %%k IN (HKLM HKCU) DO (
@@ -340,8 +355,7 @@ IF "X!opt_shortcut_icon!"=="XDEFAULT" (
 
 :main_all_drives
 ECHO.
-ECHO All registry tasks are completed. Now we are processing the root directories of
-ECHO all disk drives.
+ECHO Now we are processing the root directories of all disk drives.
 ECHO Please insert all storage devices that are affected by malware, including USB
 ECHO flash drives, external hard drives, memory cards, PDAs, smartphones, or digital
 ECHO cameras. If you have CD- or DVD-RW discs in your drives, it is recommended that
@@ -524,7 +538,9 @@ REM @param %1 Key name, including root key
 REM @param %2 Short hint of the key, displayed in error messages
 REM @return 0 if key doesn't exist or is deleted successfully, or 1 on error
 :delete_reg_key
-    reg query "%~1" /ve >nul 2>nul || EXIT /B 0
+    REM Must query the whole key. 'reg' in Windows 2000/XP returns failure on a
+    REM "value not set" default with '/ve', while in Vista it returns success.
+    reg query "%~1" >nul 2>nul || EXIT /B 0
     reg delete "%~1" /f >nul && EXIT /B 0
     CALL :show_reg_write_error %2
     EXIT /B 1
