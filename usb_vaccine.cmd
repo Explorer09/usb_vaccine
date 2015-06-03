@@ -482,7 +482,12 @@ GOTO main_end
 
 :main_restart
 ECHO Restarting this program without cmd.exe AutoRun commands...
-cmd /d /c "%0 --no-restart !args!"
+cmd /d /c "%0 --no-restart !args!" || (
+    ECHO Error occurred when restarting. Please rerun this script using the following>&2
+    ECHO command ^(note the '/d' and '--no-restart' options^):>&2
+    ECHO cmd /d /c ^"%0 --no-restart !args!^">&2
+    PAUSE
+)
 GOTO main_end
 
 :main_end
