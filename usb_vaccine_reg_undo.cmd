@@ -63,7 +63,7 @@ ECHO.
 ECHO Press any key to close this program.
 PAUSE >nul
 ENDLOCAL
-GOTO :EOF
+EXIT /B 0
 
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES

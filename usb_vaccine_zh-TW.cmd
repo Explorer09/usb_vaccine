@@ -470,7 +470,7 @@ GOTO main_end
 
 :main_end
 ENDLOCAL
-GOTO :EOF
+EXIT /B 0
 
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES
