@@ -465,13 +465,12 @@ GOTO main_end
 
 :main_restart
 ECHO 在停止 cmd.exe 的自動執行 ^(AutoRun^) 命令下，重新啟動本程式...
-cmd /d /c "%0 --no-restart !args!" || (
-    ECHO 重新啟動時發生錯誤。請以下列命令來重新執行本腳本（注意 '/d' 與 '--no-restart'>&2
-    ECHO 選項!BIG5_A15E!：>&2
-    ECHO cmd /d /c ^"%0 --no-restart !args!^">&2
-    PAUSE
-)
-GOTO main_end
+cmd /d /c "%0 --no-restart !args!" && GOTO main_end
+ECHO 重新啟動時發生錯誤。請以下列命令來重新執行本腳本（注意 '/d' 與 '--no-restart'>&2
+ECHO 選項!BIG5_A15E!：>&2
+ECHO cmd /d /c ^"%0 --no-restart !args!^">&2
+PAUSE
+GOTO :EOF
 
 :main_end
 ENDLOCAL
