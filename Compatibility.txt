@@ -13,15 +13,16 @@ available pre-installed.)
 
 Here are limitations known in Windows NT 4 Command Processor environment:
 - reg.exe v1.0 (in Win NT 4) has a different syntax than later version. It's
-  "reg query KeyName\ValueName" rather than "reg query KeyName /v ValueName",
-  the latter allowing a subkey and value to share the name name.
+  "reg query KeyName\ValueName" rather than "reg query KeyName /v ValueName".
+  The latter syntax can distinguish a subkey and value of the same name
+  (possible in Win NT 4 registry).
   (<http://www.robvanderwoude.com/ntregquery.php>)
 - "SETLOCAL EnableDelayedExpansion" does not work, which is required for secure
   "SET /P" (or "FOR /F") user input processing. %var% is vulnerable to command
   injection.
   (<http://www.robvanderwoude.com/local.php>)
 - "SET /P" does not work, and choice.exe is available only in Resource Kit, and
-  so there's no way to write interactive scripts. 
+  so there's no way to write interactive scripts.
   (<http://www.robvanderwoude.com/ntset.php>)
 - Negative number in substring expansion (%VAR:~0,-5%) does not work.
 - "%~1" does not work.
@@ -30,6 +31,8 @@ Here are limitations known in Windows NT 4 Command Processor environment:
   (<http://www.robvanderwoude.com/exit.php>)
 - 'FOR /F "usebackq"' does not work.
   (<http://www.robvanderwoude.com/ntfor.php>)
+- No dynamic variable %CMDEXTVERSION%. (For checking Win NT 4 environment you
+  should use "IF CMDEXTVERSION 1" and not "IF %CMDEXTVERSION% GEQ 1".)
 
 usb_vaccine.cmd contains code that checks whether the Command Processors
 environment is okay. The code is copied below, with comments added:
@@ -38,7 +41,8 @@ environment is okay. The code is copied below, with comments added:
     REM The CMDEXTVERSION check may be available only after cmd extensions are
     REM enabled. Expect a "Bad command" error for COMMAND.COM in DOS or Win9x.
     SETLOCAL EnableExtensions
-    REM Expect a "syntax error" for those not supporting.
+    REM Expect a "syntax error" for those not supporting. Win9x continues after
+    REM error; Win NT 3.* halts here; OS/2 is untested.
     IF CMDEXTVERSION 2 GOTO cmd_ext_ok
     ENDLOCAL
     REM Error message. No ">&2" redirection because DOS COMMAND.COM don't
@@ -55,3 +59,10 @@ environment is okay. The code is copied below, with comments added:
     ENDLOCAL
     ... main code here ...
     :EOF
+
+Note also for ReactOS and Wine:
+ReactOS supports %CMDEXTVERSION% variable (=2) in v0.2.7 (SVN commit #16495).
+ReactOS supports "IF /I" and "IF CMDEXTVERSION" checks in v0.3.8 (SVN commit
+#38280).
+Wine does not yet support %CMDEXTVERSION% or "IF CMDEXTVERSION" as of June
+2015. (See <https://bugs.winehq.org/show_bug.cgi?id=32680>)
