@@ -14,8 +14,8 @@ available pre-installed.)
 Here are limitations known in Windows NT 4 Command Processor environment:
 - reg.exe v1.0 (in Win NT 4) has a different syntax than later versions. It's
   "reg query KeyName\ValueName" rather than "reg query KeyName /v ValueName".
-  The latter syntax can distinguish a subkey and value of the same name (which
-  is possible in Win NT 4 registry).
+  The latter syntax can distinguish between a subkey and value of the same name
+  (which is possible in Win NT 4 registry).
   (<http://www.robvanderwoude.com/ntregquery.php>)
 - "SETLOCAL EnableDelayedExpansion" does not work, which is required for secure
   "SET /P" (or "FOR /F") user input processing. %var% is vulnerable to command
