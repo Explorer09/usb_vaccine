@@ -479,7 +479,7 @@ EXIT /B 0
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES
 
-REM Prompt user to continue or skip.
+REM Prompts user to continue or skip.
 REM @return 0 if user says to continue, or 1 if says to skip
 :continue_prompt
     REM Note: If the user answers empty string after a "SET /P", The variable
@@ -504,7 +504,7 @@ REM @param %1 Short name about the registry key or value.
     )
 GOTO :EOF
 
-REM Prepare g_sids global variable (list of all user SIDs on the computer.)
+REM Prepares g_sids global variable (list of all user SIDs on the computer).
 :prepare_sids
     IF NOT "X!g_sids!"=="X" GOTO :EOF
     FOR /F "usebackq delims=" %%k IN (`reg query HKU 2^>nul`) DO (
@@ -519,7 +519,7 @@ REM Prepare g_sids global variable (list of all user SIDs on the computer.)
     )
 GOTO :EOF
 
-REM Delete a registry key (if it exists).
+REM Deletes a registry key (if it exists).
 REM @param %1 Key name, including root key
 REM @param %2 Short hint of the key, displayed in error messages
 REM @return 0 if key doesn't exist or is deleted successfully, or 1 on error
@@ -532,7 +532,7 @@ REM @return 0 if key doesn't exist or is deleted successfully, or 1 on error
     EXIT /B 1
 GOTO :EOF
 
-REM Clean a registry key (if it exists).
+REM Cleans a registry key (if it exists).
 REM @param %1 Key name, including root key
 REM @param %2 Short hint of the key, displayed in error messages
 REM @return 0 if key doesn't exist or is cleaned successfully, or 1 on error
@@ -544,7 +544,7 @@ REM @return 0 if key doesn't exist or is cleaned successfully, or 1 on error
     reg delete "%~1" /v "dummyValue" /f >nul 2>nul
 GOTO :EOF
 
-REM Delete a non-default registry value (if it exists).
+REM Deletes a non-default registry value (if it exists).
 REM @param %1 Key name, including root key
 REM @param %2 Value name
 REM @param %3 Short hint of the entry, displayed in error messages
@@ -556,7 +556,7 @@ REM @return 0 if value doesn't exist or is deleted, or 1 on error
     EXIT /B 1
 GOTO :EOF
 
-REM Check if the file is in one of the list of files to keep.
+REM Checks if the file is in one of the list of files to keep.
 REM @param %1 Category
 REM @param %2 File to check
 REM @return 0 (true) if the file is in the list
@@ -576,19 +576,19 @@ REM @return 0 (true) if the file is in the list
     EXIT /B 1
 GOTO :EOF
 
-REM Delete a specified symlink.
+REM Deletes a specified symlink.
 REM @param %1 Symlink name
-REM @return 0 on success
 :delete_symlink
     REM 'attrib' without '/L' follows symlinks so can't be used here, but
     REM "DEL /F /A:<attrib>" could do.
+    REM The exit code of DEL command is unreliable.
     SET attr=
     ECHO.%~a1 | find "h" >nul 2>nul && SET attr=h
     ECHO.%~a1 | find "s" >nul 2>nul && SET attr=!attr!s
     DEL /F /A:!attr! "%~1"
 GOTO :EOF
 
-REM Delete all file symlinks in current directory.
+REM Deletes all file symlinks in current directory.
 REM Note that this function will have problems with files with newlines ('\n')
 REM in their filenames.
 :delete_symlinks
@@ -611,7 +611,7 @@ REM in their filenames.
     REM directory (SAFE).
 GOTO :EOF
 
-REM Clear hidden and system attributes of all files in current directory.
+REM Clears hidden and system attributes of all files in current directory.
 REM Note that this function will have problems with files with newlines ('\n')
 REM in their filenames.
 :clear_files_attrib
@@ -645,19 +645,18 @@ REM in their filenames.
     )
 GOTO :EOF
 
-REM Delete .lnk and .pif shortcut files in current directory.
+REM Deletes .lnk and .pif shortcut files in current directory.
 :delete_shortcuts
     ECHO 正在刪除 .lnk 與 .pif 捷!BIG5_AE7C!...
     DEL /F *.lnk
     DEL /F *.pif
 GOTO :EOF
 
-REM Delete all executable files (.com, .exe and .scr) that carry the same name
+REM Deletes all executable files (.com, .exe and .scr) that carry the same name
 REM as a folder in current directory.
 :delete_folder_exes
     REM Note: .bat and .cmd are self-executable, but their icons are static, so
     REM leave them alone.
-    REM The exit code of DEL command is unreliable.
     FOR /F "usebackq delims=" %%d IN (`DIR /A:D /B /O:N 2^>nul`) DO (
         FOR /F "usebackq delims=" %%e IN (
             `DIR /A:-D /B /O:N "%%~d.com" "%%~d.exe" "%%~d.scr" 2^>nul`
@@ -672,12 +671,13 @@ REM as a folder in current directory.
     )
 GOTO :EOF
 
-REM Force delete a file and create a directory with the same name.
+REM Force deletes a file and creates a directory with the same name.
 REM @param %1 File name to be converted into a directory
+REM @return 0 if directory exists or is created successfully, or 1 on error
 :file_to_directory
     IF EXIST %1 (
         ECHO.%~a1 | find "d" >nul 2>nul && (
-            REM If file exists and is a directory, keep it.
+            REM File exists and is a directory. Keep it.
             attrib +R +H +S "%~1"
             EXIT /B 0
         )
@@ -688,10 +688,11 @@ REM @param %1 File name to be converted into a directory
     IF NOT "X!opt_mkdir!"=="XSKIP" CALL :make_directory %1
 GOTO :EOF
 
-REM Create a directory and write a file named DO_NOT_DELETE.txt inside it.
+REM Creates a directory and writes a file named DO_NOT_DELETE.txt inside it.
 REM @param %1 Directory name
+REM @return 0 if directory is created successfully (despite the file within)
 :make_directory
-    MKDIR %1 || (
+    MKDIR "%~1" || (
         ECHO 建立資料夾時發生錯誤："%~1">&2
         EXIT /B 1
     )

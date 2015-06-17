@@ -68,6 +68,8 @@ EXIT /B 0
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES
 
+REM Prompts user to confirm or not.
+REM @return 0 if user says YES, or 1 if says NO
 :confirm_prompt
     SET prompt=
     SET /P prompt="Confirm [Y/n]? "
