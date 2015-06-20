@@ -164,6 +164,12 @@ IF NOT "X%~1"=="X" (
 )
 
 :main_sanity_test
+REM Humbly quit when we get a Unix 'find' utility. We won't bother with 'grep'.
+find . 2>nul && (
+    ECHO *** 嚴重錯誤：不是 DOS/Windows 的 'find' 命令。>&2
+    ENDLOCAL
+    EXIT /B 1
+)
 reg query "HKCU" >nul 2>nul || (
     ECHO.
     ECHO *** 錯誤：無法使用 reg.exe 來存取 Windows 登錄！>&2
@@ -219,7 +225,7 @@ IF "X!opt_cmd_autorun!"=="XALL_USERS" (
 
 :main_inf_mapping
 SET has_reg_inf_mapping=1
-reg query %INF_MAPPING_REG_KEY% /ve 2>nul | find "@SYS:" /I >nul || (
+reg query %INF_MAPPING_REG_KEY% /ve 2>nul | find /I "@SYS:" >nul || (
     SET has_reg_inf_mapping=0
     ECHO.
     ECHO *** 警告：您的電腦易受 AutoRun 惡意軟體的攻擊！>&2

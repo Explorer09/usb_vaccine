@@ -159,6 +159,12 @@ IF NOT "X%~1"=="X" (
 )
 
 :main_sanity_test
+REM Humbly quit when we get a Unix 'find' utility. We won't bother with 'grep'.
+find . 2>nul && (
+    ECHO *** FATAL ERROR: Not a DOS/Windows 'find' command.>&2
+    ENDLOCAL
+    EXIT /B 1
+)
 reg query "HKCU" >nul 2>nul || (
     ECHO.
     ECHO *** ERROR: Can't access Windows registry with reg.exe^^!>&2
@@ -215,7 +221,7 @@ IF "X!opt_cmd_autorun!"=="XALL_USERS" (
 
 :main_inf_mapping
 SET has_reg_inf_mapping=1
-reg query %INF_MAPPING_REG_KEY% /ve 2>nul | find "@SYS:" /I >nul || (
+reg query %INF_MAPPING_REG_KEY% /ve 2>nul | find /I "@SYS:" >nul || (
     SET has_reg_inf_mapping=0
     ECHO.
     ECHO *** DANGER: Your computer is vulnerable to the AutoRun malware^^!>&2
