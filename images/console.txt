@@ -1,0 +1,8 @@
+Font:
+Terminal (the "Raster Fonts")
+8 x 12 pixels (for Code Page 437)
+8 x 16 pixels (for Code Page 950)
+Screen Buffer Size:
+Width 80 (chars); Height 300 (lines)
+Window Size:
+Width 80 (chars); Height 25 (lines)
