@@ -160,7 +160,7 @@ IF NOT "X%~1"=="X" (
 
 :main_sanity_test
 REM Humbly quit when we get a Unix 'find' utility. We won't bother with 'grep'.
-find . 2>nul && (
+find . -prune >nul 2>nul && (
     ECHO *** FATAL ERROR: Not a DOS/Windows 'find' command.>&2
     ENDLOCAL
     EXIT /B 1

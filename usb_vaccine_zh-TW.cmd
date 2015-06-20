@@ -165,7 +165,7 @@ IF NOT "X%~1"=="X" (
 
 :main_sanity_test
 REM Humbly quit when we get a Unix 'find' utility. We won't bother with 'grep'.
-find . 2>nul && (
+find . -prune >nul 2>nul && (
     ECHO *** 嚴重錯誤：不是 DOS/Windows 的 'find' 命令。>&2
     ENDLOCAL
     EXIT /B 1
