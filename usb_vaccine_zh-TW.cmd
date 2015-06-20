@@ -132,28 +132,28 @@ IF NOT "X%~1"=="X" (
     )
     IF "X!arg1:~0,5!"=="X--no-" (
         FOR %%i IN (restart inf_mapping mkdir) DO (
-            IF "X!arg1:-=_!"=="X__no_%%i" (
+            IF "!arg1:-=_!"=="__no_%%i" (
                 SET "opt_%%i=SKIP"
             )
         )
     )
     IF "X!arg1:~0,7!"=="X--skip-" (
         FOR %%i IN (cmd_autorun mountpoints2 known_ext shortcut_icon) DO (
-            IF "X!arg1:-=_!"=="X__skip_%%i" (
+            IF "!arg1:-=_!"=="__skip_%%i" (
                 SET "opt_%%i=SKIP"
             )
         )
     )
     IF "X!arg1:~0,7!"=="X--keep-" (
-        FOR %%i IN (symlinks attrib shortcuts folder-exe files) DO (
-            IF "X!arg1:-=_!"=="X__keep_%%i" (
+        FOR %%i IN (symlinks attrib shortcuts folder_exe files) DO (
+            IF "!arg1:-=_!"=="__keep_%%i" (
                 SET "opt_%%i=SKIP"
             )
         )
     )
     IF "X!arg1:~0,12!"=="X--all-users-" (
-        FOR %%i IN (cmd-autorun known-ext) DO (
-            IF "X!arg1:-=_!"=="X__all_users_%%i" (
+        FOR %%i IN (cmd_autorun known_ext) DO (
+            IF "!arg1:-=_!"=="__all_users_%%i" (
                 SET "opt_%%i=ALL_USERS"
             )
         )
