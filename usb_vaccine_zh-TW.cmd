@@ -460,7 +460,7 @@ ECHO   --keep-attrib            保留所有檔案的「隱藏」、「系統」屬性
 ECHO   --keep-shortcuts         不刪除捷!BIG5_AE7C!檔案（.lnk 與 .pif!BIG5_A15E!
 ECHO   --keep-folder-exe        不刪除與資料夾相同名稱的執行檔
 ECHO   --keep-files             不刪除 autorun.inf 或其它可能惡意的檔案
-ECHO   --no-mkdir               不在刪除檔案後建立資料夾
+ECHO   --no-mkdir               不在刪除檔案後建立目錄
 GOTO main_end
 
 :main_restart
@@ -693,7 +693,7 @@ REM @param %1 Directory name
 REM @return 0 if directory is created successfully (despite the file within)
 :make_directory
     MKDIR "%~1" || (
-        ECHO 建立資料夾時發生錯誤："%~1">&2
+        ECHO 建立目錄時發生錯誤："%~1">&2
         EXIT /B 1
     )
     REM Don't localize the text below. I want this file to be readable despite
