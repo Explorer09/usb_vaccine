@@ -91,7 +91,10 @@ ext. | (safe:0,    | Ext (safe: | (safe:  | arrow     | beginning | (safe:no)
 [3] "shell" registry subkey is not interpreted for '.lnk' file type. Windows
     shells (cmd.exe or Explorer) handle it transparently and fetches shell
     commands from target file type instead.
-[4] May not display a static icon in Thumbnail View in some Windows versions.
+[4] In Thumbnail View before Windows XP SP1 and Windows Vista, the content of
+    the target page will be shown as thumbnail of the shortcut. In that case
+    it can be considered a "dynamic" icon.
+    (<https://support.microsoft.com/kb/327833>)
 
 As the reader can see, there are only one "safe" mark for '.exe', '.com',
 '.scr', and '.pif'. Malicious programs disguised as files or folders may not be
@@ -105,24 +108,27 @@ users aware.
 
 File types with "%1" default value of their "DefaultIcon" subkey:
 
-Ext      Software  Class registry key (technically called ProgID)
-.ani               HKCR\anifile
-.cdf     IE6-      HKCR\ChannelFile
-(CLSID)  IE6-      HKCR\ChannelShortcut
-.cur               HKCR\curfile
-.exe               HKCR\exefile
-.ht      WinXP-    HKCR\htfile ("HyperTerminal File")
-.ico               HKCR\icofile
-.msc               HKCR\MSCFile
-.otf     WinXP-    HKCR\otffile
-.ttc     WinXP-    HKCR\ttcfile
-.ttf     WinXP-    HKCR\ttffile
+Ext      Software       Class registry key (technically called ProgID)
+.ani                    HKCR\anifile
+.cdf     IE4-IE6        HKCR\ChannelFile
+(CLSID)  IE4-IE6        HKCR\ChannelShortcut
+.cur                    HKCR\curfile
+.exe                    HKCR\exefile
+.ht      WinXP-         HKCR\htfile ("HyperTerminal File")
+.ico                    HKCR\icofile
+.msc     Win2000+ (NT)  HKCR\MSCFile
+.otf     Win2000-Vista  HKCR\otffile
+.ttc     Win2000-Vista  HKCR\ttcfile
+.ttf     Win2000-Vista  HKCR\ttffile
 
-In Windows XP or earlier, the font file types ('.otf', '.ttc', '.ttf', except
-'.fon') have "%1" in default value of their respective "DefaultIcon" subkey.
-Font files can never contain an icon, so it is fontext.dll that provides the
-icon for those fonts (depending on format, e.g. TrueType or "OpenType with
-TrueType outlines", both having '.ttf' file extension).
+Win95 only  HKCR\CLSID\{00028B05-0000-0000-C000-000000000046}
+                ("Shortcut to The Microsoft Network")
+
+In Windows 2000, XP, or Vista, the font file types ('.otf', '.ttc', '.ttf',
+except '.fon') have "%1" in default value of their respective "DefaultIcon"
+subkey. Font files can never contain an icon, so it is fontext.dll that
+provides the icon for those fonts (depending on format, e.g. TrueType or
+"OpenType with TrueType outlines", both having '.ttf' file extension).
 
 -------------------------------------------------------------------------------
 
@@ -131,13 +137,12 @@ Extension   Software     Class registry key (technically called ProgID)
 .appref-ms  .NET2.0+     HKCR\Application.Reference
 .cnf        WinXP-       HKCR\ConferenceLink (NetMeeting "SpeedDial")
 .shb        WinXP-       HKCR\DocShortcut ("Shortcut into a document")
-.url                     HKCR\InternetShortcut
+.url        IE           HKCR\InternetShortcut
 (unused)    WinVista+    HKCR\IE.AssocFile.URL
 (unused)    IE9+         HKCR\IE.AssocFile.WEBSITE
 .website    IE9+         HKCR\Microsoft.Website ("Pinned Site Shortcut")
 .lnk                     HKCR\lnkfile
 .pif                     HKCR\piffile
-.WSH                     HKCR\WSHFile
 .maw        MSOffice     HKCR\Access.Shortcut.DataAccessPage.1
 .mag        MSOffice     HKCR\Access.Shortcut.Diagram.1
 .maf        MSOffice     HKCR\Access.Shortcut.Form.1
@@ -150,6 +155,14 @@ Extension   Software     Class registry key (technically called ProgID)
 .mat        MSOffice     HKCR\Access.Shortcut.Table.1
 .mav        MSOffice     HKCR\Access.Shortcut.View.1
 .glk        Office2007+  HKCR\GrooveLinkFile
+
+File types that contain "IsShortcut" registry value but not "NeverShowExt":
+Extension   Software     Class registry key (ProgID)
+.mcc        Win95 only   HKCR\Dialer10CallingCard
+                             ("Shortcut to The Microsoft Network")
+.ccr        MSChat       HKCR\ComicChatRoomShortcut
+.ccr        MSChat2.5    HKCR\MicrosoftChatRoomShortcut
+.WSH        IE5+         HKCR\WSHFile
 
 (Note to developers: Do not add every shortcut introduced in third party
 applications. There may be countless number of them. Only note those that
@@ -166,13 +179,17 @@ Extension            Software   Class registry key (ProgID)
 .searchConnector-ms  Win7+      HKCR\SearchConnectorFolder
 .search-ms           WinVista+  HKCR\SearchFolder ("Saved Search")
 .settingcontent-ms   Win8.1+    HKCR\SettingContent
-.scf                            HKCR\SHCmdFile ("Windows Explorer Command")
+.scf                 IE4+       HKCR\SHCmdFile ("Windows Explorer Command")
 .shs                 WinXP-     HKCR\ShellScrap ("Scrap object")
-HKCR\CLSID\{888DCA60-FC0A-11CF-8F0F-00C04FD7D062} ("Compressed (zipped) Folder
-                                                    SendTo Target")
-HKCR\CLSID\{9E56BE60-C50F-11CF-9A2C-00A0C90A90CE} ("Mail Service")
-HKCR\CLSID\{9E56BE61-C50F-11CF-9A2C-00A0C90A90CE} ("Desktop Shortcut")
-HKCR\CLSID\{ECF03A32-103D-11d2-854D-006008059367} ("MyDocs Drop Target")
+
+Win98 only  HKCR\CLSID\{450D8FBA-AD25-11D0-98A8-0800361B1103} ("My Documents")
+WinME+      HKCR\CLSID\{888DCA60-FC0A-11CF-8F0F-00C04FD7D062}
+                ("Compressed (zipped) Folder SendTo Target")
+            HKCR\CLSID\{9E56BE60-C50F-11CF-9A2C-00A0C90A90CE} ("Mail Service")
+IE4+        HKCR\CLSID\{9E56BE61-C50F-11CF-9A2C-00A0C90A90CE}
+                ("Desktop Shortcut")
+Win2000+    HKCR\CLSID\{ECF03A32-103D-11d2-854D-006008059367}
+                ("MyDocs Drop Target")
 
 -------------------------------------------------------------------------------
 
@@ -187,35 +204,41 @@ be created. It is possible to have a PE executable in one of these extensions
 -------------------------------------------------------------------------------
 
 File types that contain "%*" in their "shell\open\command" default value:
-Extension  Software    Class registry key (ProgID)
-.bat                   HKCR\batfile
-.cmd                   HKCR\cmdfile
-.com                   HKCR\comfile
-.exe                   HKCR\exefile
-.hta                   HKCR\htafile
-(unused)   IE9+        HKCR\IE.AssocFile.WEBSITE
-(multi)    MSIME2010+  HKCR\IMEDictionaryCompiler
-.JSE                   HKCR\JSEFile
-.js                    HKCR\JSFile
-.msu       WinVista+   HKCR\Microsoft.System.Update.1
-.website   IE9+        HKCR\Microsoft.Website ("Pinned Site Shortcut")
-.msc                   HKCR\MSCFile
-.msi                   HKCR\Msi.Package
-.msp                   HKCR\Msi.Patch
-.pif                   HKCR\piffile
-.VBE                   HKCR\VBEFile
-.vbs                   HKCR\VBSFile
-.xaml      .NET3.0+    HKCR\Windows.XamlDocument
-.xbap      .NET3.0+    HKCR\Windows.Xbap
-(multi)    WinVista+   HKCR\Windows.XPSReachViewer
-.WSF                   HKCR\WSFFile
-.WSH                   HKCR\WSHFile
-(multi)    .NET3.0+    HKCR\XPSViewer.Document.1
+Extension  Software       Class registry key (ProgID)
+.bat                      HKCR\batfile
+.cmd       WinNT4+        HKCR\cmdfile
+.com                      HKCR\comfile
+.exe                      HKCR\exefile
+.hta       IE5+           HKCR\htafile
+(unused)   IE9+           HKCR\IE.AssocFile.WEBSITE
+(multi)    MSIME2010+     HKCR\IMEDictionaryCompiler
+.JSE       IE5.01+        HKCR\JSEFile
+.js        IE5+           HKCR\JSFile
+.msu       WinVista+      HKCR\Microsoft.System.Update.1 (See note below)
+.website   IE9+           HKCR\Microsoft.Website ("Pinned Site Shortcut")
+.msc       Win2000+ (NT)  HKCR\MSCFile
+.msi       Win2000+       HKCR\Msi.Package
+.msp       Win2000+       HKCR\Msi.Patch
+.pif                      HKCR\piffile
+.VBE       IE5.01+        HKCR\VBEFile
+.vbs       IE5+           HKCR\VBSFile
+.xaml      .NET3.0+       HKCR\Windows.XamlDocument
+.xbap      .NET3.0+       HKCR\Windows.Xbap
+(multi)    Win7+          HKCR\Windows.XPSReachViewer
+.WSF       IE5.01+        HKCR\WSFFile
+.WSH       IE5+           HKCR\WSHFile
+(multi)    .NET3.0+       HKCR\XPSViewer.Document.1
 
 IMEDictionaryCompiler is associated with 2 file extensions: .dctx .dctxc
 XPSViewer.Document.1 is associated with 3 file extensions: .dwfx .jtx .xps
 Windows.XPSReachViewer is associated with 6 file extensions (7 extensions in
 Windows 8 or later): .dwfx .jtx .xps .easmx .edrwx .eprtx (.oxps)
+
+The Microsoft.System.Update.1 is special that it doesn't use "%*" for passing
+multiple arguments. Instead in its "shell\open\command" default value it uses
+"\"%1\" %2 %3 %4" (Vista). Windows 7 and later extends the command line to %9.
+
+.cpl (HKCR\cplfile) contains "%*" in its "shell\cplopen\command" default value.
 
 -------------------------------------------------------------------------------
 
