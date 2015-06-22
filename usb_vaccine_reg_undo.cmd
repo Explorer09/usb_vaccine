@@ -2,9 +2,9 @@
 SETLOCAL EnableExtensions
 IF CMDEXTVERSION 2 GOTO cmd_ext_ok
 ENDLOCAL
-ECHO Requires Windows 2000 or later.
+echo Requires Windows 2000 or later.
 GOTO EOF
-EXIT
+exit
 :cmd_ext_ok
 ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
