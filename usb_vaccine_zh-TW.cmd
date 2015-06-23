@@ -287,21 +287,23 @@ reg delete "HKLM\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /f >nul 2>nul
 IF "X!opt_known_ext!"=="XSKIP" GOTO main_shortcut_icon
 REM We include PIF because it's executable in Windows!
 REM It's possible to rename a PE .exe to .pif and run when user clicks it.
-ECHO.
-ECHO [known-ext]
-ECHO Windows 預設將已知檔案類型的副檔名隱藏起來。但是，由於應用程式有自訂的圖示，在
-ECHO 副檔名隱藏的時候，惡意程式可以使用圖示來偽裝成一般檔案，誘騙使用者去點擊它們。
-ECHO 我們將取消「控制台」→「資料夾選項」的「隱藏已知檔案類型的副檔名」，使得常用的
-ECHO 副檔名（除捷!BIG5_AE7C!外!BIG5_A15E!永遠被顯示。使用者可以透過副檔名來辨認檔案是否為（惡意!BIG5_A15E!執行
-ECHO 檔，以下副檔名為可執行檔：
-ECHO     .exe（應用程式!BIG5_A15E!           .bat（批次檔案!BIG5_A15E!
-ECHO     .com（MS-DOS 應用程式!BIG5_A15E!    .cmd（Windows NT 命令腳本!BIG5_A15E!
-ECHO     .scr（螢幕保護程式!BIG5_A15E!       .pif（MS-DOS 程式捷!BIG5_AE7C!!BIG5_A15E!
-ECHO 我們!BIG5_B77C!同時刪除以上檔案類型的 "NeverShowExt" 登錄值，該登錄值!BIG5_B77C!永遠隱藏該檔案類
-ECHO 型的副檔名，除了捷!BIG5_AE7C!檔以外不應存在該登錄值。
-ECHO （影響全機與目前使用者的設定，若要同時更改其它使用者的設定，請指定
-ECHO '--all-users-known-ext' 選項。!BIG5_A15E!
-CALL :continue_prompt || GOTO main_shortcut_icon
+IF NOT "X!opt_known_ext!"=="XALL_USERS" (
+    ECHO.
+    ECHO [known-ext]
+    ECHO Windows 預設將已知檔案類型的副檔名隱藏起來。但是，由於應用程式有自訂的圖示，在
+    ECHO 副檔名隱藏的時候，惡意程式可以使用圖示來偽裝成一般檔案，誘騙使用者去點擊它們。
+    ECHO 我們將取消「控制台」→「資料夾選項」的「隱藏已知檔案類型的副檔名」，使得常用的
+    ECHO 副檔名（除捷!BIG5_AE7C!外!BIG5_A15E!永遠被顯示。使用者可以透過副檔名來辨認檔案是否為（惡意!BIG5_A15E!執行
+    ECHO 檔，以下副檔名為可執行檔：
+    ECHO     .exe（應用程式!BIG5_A15E!           .bat（批次檔案!BIG5_A15E!
+    ECHO     .com（MS-DOS 應用程式!BIG5_A15E!    .cmd（Windows NT 命令腳本!BIG5_A15E!
+    ECHO     .scr（螢幕保護程式!BIG5_A15E!       .pif（MS-DOS 程式捷!BIG5_AE7C!!BIG5_A15E!
+    ECHO 我們!BIG5_B77C!同時刪除以上檔案類型的 "NeverShowExt" 登錄值，該登錄值!BIG5_B77C!永遠隱藏該檔案類
+    ECHO 型的副檔名，除了捷!BIG5_AE7C!檔以外不應存在該登錄值。
+    ECHO （影響全機與目前使用者的設定，若要同時更改其它使用者的設定，請指定
+    ECHO '--all-users-known-ext' 選項。!BIG5_A15E!
+    CALL :continue_prompt || GOTO main_shortcut_icon
+)
 REM "HideFileExt" is enabled (0x1) if value does not exist.
 reg add "HKCU\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >nul || (
     CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
@@ -331,22 +333,24 @@ IF "X!opt_known_ext!"=="XALL_USERS" (
 
 :main_shortcut_icon
 IF "X!opt_shortcut_icon!"=="XSKIP" GOTO main_all_drives
-ECHO.
-ECHO [shortcut-icon]
-ECHO 所有的捷!BIG5_AE7C!檔案都應有箭頭的小圖示，尤其是指向執行檔的捷!BIG5_AE7C!。由於捷!BIG5_AE7C!的副檔名常被
-ECHO 隱藏起來，使用者只能透過箭頭的圖示來辨認捷!BIG5_AE7C!檔。
-ECHO 我們將復原常見的捷!BIG5_AE7C!檔案類型 .lnk 與 .pif 的箭頭圖示。此二類型是可以指向執行檔
-ECHO 的。如果您有自訂的捷!BIG5_AE7C!箭頭圖示，在此!BIG5_B77C!使用自訂的圖示。
-ECHO （這是全機設定。!BIG5_A15E!
-CALL :continue_prompt || GOTO main_all_drives
-FOR %%i IN (lnk pif) DO (
-    CALL :delete_reg_key "HKCU\Software\Classes\.%%i" "HKCU\Software\Classes\.%%i"
-    CALL :delete_reg_key "HKCU\Software\Classes\%%ifile" "HKCU\Software\Classes\.%%ifile"
-    reg add "HKLM\SOFTWARE\Classes\.%%i" /ve /t REG_SZ /d "%%ifile" /f >nul || (
-        CALL :show_reg_write_error "HKLM\SOFTWARE\Classes\%%i"
+IF NOT "X!opt_shortcut_icon!"=="XDEFAULT" (
+    ECHO.
+    ECHO [shortcut-icon]
+    ECHO 所有的捷!BIG5_AE7C!檔案都應有箭頭的小圖示，尤其是指向執行檔的捷!BIG5_AE7C!。由於捷!BIG5_AE7C!的副檔名常被
+    ECHO 隱藏起來，使用者只能透過箭頭的圖示來辨認捷!BIG5_AE7C!檔。
+    ECHO 我們將復原常見的捷!BIG5_AE7C!檔案類型 .lnk 與 .pif 的箭頭圖示。此二類型是可以指向執行檔
+    ECHO 的。如果您有自訂的捷!BIG5_AE7C!箭頭圖示，在此!BIG5_B77C!使用自訂的圖示。
+    ECHO （這是全機設定。!BIG5_A15E!
+    CALL :continue_prompt || GOTO main_all_drives
+)
+FOR %%e IN (lnk pif) DO (
+    CALL :delete_reg_key "HKCU\Software\Classes\.%%e" "HKCU\Software\Classes\.%%e"
+    CALL :delete_reg_key "HKCU\Software\Classes\%%efile" "HKCU\Software\Classes\%%efile"
+    reg add "HKLM\SOFTWARE\Classes\.%%e" /ve /t REG_SZ /d "%%efile" /f >nul || (
+        CALL :show_reg_write_error "HKLM\SOFTWARE\Classes\%%e"
     )
-    reg add "HKLM\SOFTWARE\Classes\%%ifile" /v "IsShortcut" /t REG_SZ /f >nul || (
-        CALL :show_reg_write_error "HKCR\%%ifile /v IsShortcut"
+    reg add "HKLM\SOFTWARE\Classes\%%efile" /v "IsShortcut" /t REG_SZ /f >nul || (
+        CALL :show_reg_write_error "HKCR\%%efile /v IsShortcut"
     )
 )
 IF "X!opt_shortcut_icon!"=="XDEFAULT" (

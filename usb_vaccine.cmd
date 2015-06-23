@@ -288,25 +288,27 @@ reg delete "HKLM\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /f >nul 2>nul
 IF "X!opt_known_ext!"=="XSKIP" GOTO main_shortcut_icon
 REM We include PIF because it's executable in Windows!
 REM It's possible to rename a PE .exe to .pif and run when user clicks it.
-ECHO.
-ECHO [known-ext]
-ECHO Windows will hide extensions for known file types by default. However, as
-ECHO applications may have custom icons, with the file extensions hidden, it is
-ECHO possible for malicious programs to use icons to disguise themselves as regular
-ECHO files, tricking users into clicking them.
-ECHO We will disable "Hide extensions for known file types" in "Control Panel" -^>
-ECHO "Folder Options", so that common file extensions ^(except shortcuts^) are always
-ECHO shown. Users may recognize whether a file is executable ^(and malicious^) through
-ECHO the extensions. The following are executable:
-ECHO     .exe ^(Application^)           .bat ^(Batch file^)
-ECHO     .com ^(MS-DOS application^)    .cmd ^(Windows NT command script^)
-ECHO     .scr ^(Screen saver^)          .pif ^(Shortcut to MS-DOS program^)
-ECHO We will also delete the "NeverShowExt" registry value for the file types above.
-ECHO The value always hides the extension for that file type. Unless it is a
-ECHO shortcut file, the value should not exist.
-ECHO ^(Affects machine and current user settings. To also change other users'
-ECHO settings, please specify '--all-users-known-ext' option.^)
-CALL :continue_prompt || GOTO main_shortcut_icon
+IF NOT "X!opt_known_ext!"=="XALL_USERS" (
+    ECHO.
+    ECHO [known-ext]
+    ECHO Windows will hide extensions for known file types by default. However, as
+    ECHO applications may have custom icons, with the file extensions hidden, it is
+    ECHO possible for malicious programs to use icons to disguise themselves as regular
+    ECHO files, tricking users into clicking them.
+    ECHO We will disable "Hide extensions for known file types" in "Control Panel" -^>
+    ECHO "Folder Options", so that common file extensions ^(except shortcuts^) are always
+    ECHO shown. Users may recognize whether a file is executable ^(and malicious^) through
+    ECHO the extensions. The following are executable:
+    ECHO     .exe ^(Application^)           .bat ^(Batch file^)
+    ECHO     .com ^(MS-DOS application^)    .cmd ^(Windows NT command script^)
+    ECHO     .scr ^(Screen saver^)          .pif ^(Shortcut to MS-DOS program^)
+    ECHO We will also delete the "NeverShowExt" registry value for the file types above.
+    ECHO The value always hides the extension for that file type. Unless it is a
+    ECHO shortcut file, the value should not exist.
+    ECHO ^(Affects machine and current user settings. To also change other users'
+    ECHO settings, please specify '--all-users-known-ext' option.^)
+    CALL :continue_prompt || GOTO main_shortcut_icon
+)
 REM "HideFileExt" is enabled (0x1) if value does not exist.
 reg add "HKCU\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >nul || (
     CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
@@ -336,24 +338,26 @@ IF "X!opt_known_ext!"=="XALL_USERS" (
 
 :main_shortcut_icon
 IF "X!opt_shortcut_icon!"=="XSKIP" GOTO main_all_drives
-ECHO.
-ECHO [shortcut-icon]
-ECHO All shortcut files should have a small arrow icon on them, especially shortcuts
-ECHO pointing to executable files. As the extensions of shortcut files are usually
-ECHO hidden, users may only recognize shortcut files through its arrow icon.
-ECHO We will restore arrow icons of common shortcut types, .lnk and .pif, which may
-ECHO be pointing to executables. If you have customized the shortcut arrow icon, the
-ECHO custom icon will be used here.
-ECHO ^(This is a machine setting.^)
-CALL :continue_prompt || GOTO main_all_drives
-FOR %%i IN (lnk pif) DO (
-    CALL :delete_reg_key "HKCU\Software\Classes\.%%i" "HKCU\Software\Classes\.%%i"
-    CALL :delete_reg_key "HKCU\Software\Classes\%%ifile" "HKCU\Software\Classes\.%%ifile"
-    reg add "HKLM\SOFTWARE\Classes\.%%i" /ve /t REG_SZ /d "%%ifile" /f >nul || (
-        CALL :show_reg_write_error "HKLM\SOFTWARE\Classes\%%i"
+IF NOT "X!opt_shortcut_icon!"=="XDEFAULT" (
+    ECHO.
+    ECHO [shortcut-icon]
+    ECHO All shortcut files should have a small arrow icon on them, especially shortcuts
+    ECHO pointing to executable files. As the extensions of shortcut files are usually
+    ECHO hidden, users may only recognize shortcut files through its arrow icon.
+    ECHO We will restore arrow icons of common shortcut types, .lnk and .pif, which may
+    ECHO be pointing to executables. If you have customized the shortcut arrow icon, the
+    ECHO custom icon will be used here.
+    ECHO ^(This is a machine setting.^)
+    CALL :continue_prompt || GOTO main_all_drives
+)
+FOR %%e IN (lnk pif) DO (
+    CALL :delete_reg_key "HKCU\Software\Classes\.%%e" "HKCU\Software\Classes\.%%e"
+    CALL :delete_reg_key "HKCU\Software\Classes\%%efile" "HKCU\Software\Classes\%%efile"
+    reg add "HKLM\SOFTWARE\Classes\.%%e" /ve /t REG_SZ /d "%%efile" /f >nul || (
+        CALL :show_reg_write_error "HKLM\SOFTWARE\Classes\%%e"
     )
-    reg add "HKLM\SOFTWARE\Classes\%%ifile" /v "IsShortcut" /t REG_SZ /f >nul || (
-        CALL :show_reg_write_error "HKCR\%%ifile /v IsShortcut"
+    reg add "HKLM\SOFTWARE\Classes\%%efile" /v "IsShortcut" /t REG_SZ /f >nul || (
+        CALL :show_reg_write_error "HKCR\%%efile /v IsShortcut"
     )
 )
 IF "X!opt_shortcut_icon!"=="XDEFAULT" (
