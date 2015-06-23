@@ -278,7 +278,7 @@ CALL :continue_prompt || GOTO main_known_ext
 CALL :prepare_sids
 FOR %%i IN (!g_sids!) DO (
     ECHO SID %%i
-    CALL :clean_reg_key "HKU\!sid!\%MOUNT2_REG_SUBKEY%" "Explorer\MountPoints2"
+    CALL :clean_reg_key "HKU\%%i\%MOUNT2_REG_SUBKEY%" "Explorer\MountPoints2"
 )
 
 :main_known_ext
@@ -312,13 +312,13 @@ reg add "HKCU\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >nul 
     CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
 )
 REM "NeverShowExt"
-FOR %%i IN (exe com scr bat cmd pif) DO (
-    CALL :delete_reg_key "HKCU\Software\Classes\.%%i" "HKCU\Software\Classes\.%%i"
-    CALL :delete_reg_key "HKCU\Software\Classes\%%ifile" "HKCU\Software\Classes\.%%ifile"
-    reg add "HKLM\SOFTWARE\Classes\.%%i" /ve /t REG_SZ /d "%%ifile" /f >nul || (
-        CALL :show_reg_write_error "HKLM\SOFTWARE\Classes\%%i"
+FOR %%e IN (exe com scr bat cmd pif) DO (
+    CALL :delete_reg_key "HKCU\Software\Classes\.%%e" "HKCU\Software\Classes\.%%e"
+    CALL :delete_reg_key "HKCU\Software\Classes\%%efile" "HKCU\Software\Classes\%%efile"
+    reg add "HKLM\SOFTWARE\Classes\.%%e" /ve /t REG_SZ /d "%%efile" /f >nul || (
+        CALL :show_reg_write_error "HKLM\SOFTWARE\Classes\.%%e"
     )
-    CALL :delete_reg_value "HKLM\SOFTWARE\Classes\%%ifile" "NeverShowExt" "HKCR\%%ifile /v NeverShowExt"
+    CALL :delete_reg_value "HKLM\SOFTWARE\Classes\%%efile" "NeverShowExt" "HKCR\%%efile /v NeverShowExt"
 )
 IF "X!opt_known_ext!"=="XALL_USERS" (
     CALL :prepare_sids
@@ -327,8 +327,10 @@ IF "X!opt_known_ext!"=="XALL_USERS" (
         reg add "HKU\%%i\%ADVANCED_REG_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >nul || (
             CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
         )
-        CALL :delete_reg_key "HKU\%%i\Software\Classes\.%%i" "HKU\*\Software\Classes\.%%i"
-        CALL :delete_reg_key "HKU\%%i\Software\Classes\%%ifile" "HKU\*\Software\Classes\.%%ifile"
+        FOR %%e IN (exe com scr bat cmd pif) DO (
+            CALL :delete_reg_key "HKU\%%i\Software\Classes\.%%e" "HKU\*\Software\Classes\.%%e"
+            CALL :delete_reg_key "HKU\%%i\Software\Classes\%%efile" "HKU\*\Software\Classes\%%efile"
+        )
     )
 )
 
