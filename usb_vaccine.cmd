@@ -714,7 +714,8 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
         DEL /F "%~1"
         IF EXIST %1 EXIT /B 1
     )
-    IF NOT "X!opt_mkdir!"=="XSKIP" CALL :make_directory %1
+    IF "X!opt_mkdir!"=="XSKIP" EXIT /B 0
+    CALL :make_directory %1
 GOTO :EOF
 
 REM Creates a directory and writes a file named DONT_DEL.txt inside it.
