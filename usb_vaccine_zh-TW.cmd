@@ -552,8 +552,8 @@ REM @return 0 if key doesn't exist or is cleaned successfully, or 1 on error
     CALL :delete_reg_key %1 %2 || EXIT /B 1
     REM Create a dummy value so that "reg add" won't affect the default value
     REM of the key.
-    reg add "%~1" /v "dummyValue" /f >nul 2>nul || EXIT /B 1
-    reg delete "%~1" /v "dummyValue" /f >nul 2>nul
+    reg add "%~1" /v "dummy" /f >nul 2>nul || EXIT /B 1
+    reg delete "%~1" /v "dummy" /f >nul 2>nul
 GOTO :EOF
 
 REM Deletes a non-default registry value (if it exists).
@@ -592,7 +592,7 @@ REM Deletes a specified symlink.
 REM @param %1 Symlink name
 :delete_symlink
     REM 'attrib' without '/L' follows symlinks so can't be used here, but
-    REM "DEL /F /A:<attrib>" could do.
+    REM "DEL /F /A:<attrib>" can.
     REM The exit code of DEL command is unreliable.
     SET attr=
     ECHO.%~a1 | find "h" >nul 2>nul && SET attr=h
