@@ -164,12 +164,10 @@ IF NOT "X%~1"=="X" (
 )
 
 :main_sanity_test
-REM Humbly quit when we get a Unix 'find' utility. We won't bother with 'grep'.
-find . -prune >nul 2>nul && (
-    ECHO *** 嚴重錯誤：不是 DOS/Windows 的 'find' 命令。>&2
-    ENDLOCAL
-    EXIT /B 1
-)
+REM Humbly quit when we get a Unix 'find' utility. We won't bother with
+REM 'findstr' or (ported) 'grep'.
+find . -prune >nul 2>nul && GOTO main_find_error
+ECHO X | find "X" >nul 2>nul || GOTO main_find_error
 reg query "HKCU" >nul 2>nul || (
     ECHO.
     ECHO *** 錯誤：無法使用 reg.exe 來存取 Windows 登錄！>&2
@@ -487,6 +485,11 @@ GOTO :EOF
 :main_end
 ENDLOCAL
 EXIT /B 0
+
+:main_find_error
+ECHO *** 嚴重錯誤：不是 DOS/Windows 的 'find' 命令。>&2
+ENDLOCAL
+EXIT /B 1
 
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES
