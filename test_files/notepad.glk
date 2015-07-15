@@ -1,0 +1,9 @@
+<?xml version='1.0'?><?groove.net version='1.0'?>
+<ns1:ExplorerLink xmlns:ns1="urn:groove.net">
+    <ns1:NavigationInfo URL="file:///C:/Windows/notepad.exe"/>
+</ns1:ExplorerLink>
+<!-- Groove Shortcut (.glk) file designed to run a local program.
+Should launch Microsoft Office Groove / SharePoint Workspace first and then a
+Notepad when you click this.
+Originally the URL field was supposed be in "grooveTelespace://" URI scheme,
+but "file:///" URI scheme unfortunately works too. -->
