@@ -45,7 +45,7 @@ environment is okay. The code is copied below, with comments added:
     REM error; Win NT 3.* halts here; OS/2 is untested.
     IF CMDEXTVERSION 2 GOTO cmd_ext_ok
     ENDLOCAL
-    REM Error message. No ">&2" redirection because DOS COMMAND.COM don't
+    REM Error message. No ">&2" redirection because DOS COMMAND.COM doesn't
     REM recognize it and will instead write to a file named "&2".
     echo Requires Windows 2000 or later.
     REM The EXIT command doesn't always terminate batch execution - it does
@@ -53,7 +53,7 @@ environment is okay. The code is copied below, with comments added:
     REM it kills the current layer of the shell (command interpreter).
     REM It is more reliable to GOTO an end label, but we keep the EXIT command
     REM as a fallback. Cygwin and MSYS Bash expect a lowercase 'exit' while in
-    REM DOS command shells case doesn't matter.
+    REM DOS command shells the letter case doesn't matter.
     GOTO EOF
     exit
     :cmd_ext_ok
