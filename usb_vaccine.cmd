@@ -490,15 +490,6 @@ ECHO   --keep-files             don't delete autorun.inf or other malicious file
 ECHO   --no-mkdir               don't create directories after deleting files
 GOTO main_end
 
-:main_restart
-ECHO Restarting this program without cmd.exe AutoRun commands...
-cmd /d /c "%0 --no-restart !args!" && GOTO main_end
-ECHO Error occurred when restarting. Please rerun this script using the following>&2
-ECHO command ^(note the '/d' and '--no-restart' options^):>&2
-ECHO cmd /d /c ^"%0 --no-restart !args!^">&2
-PAUSE
-GOTO :EOF
-
 :main_end
 ENDLOCAL
 EXIT /B 0
@@ -507,6 +498,15 @@ EXIT /B 0
 ECHO *** FATAL ERROR: Not a DOS/Windows 'find' command.>&2
 ENDLOCAL
 EXIT /B 1
+
+:main_restart
+ECHO Restarting this program without cmd.exe AutoRun commands...
+cmd /d /c "%0 --no-restart !args!" && GOTO main_end
+ECHO Error occurred when restarting. Please rerun this script using the following>&2
+ECHO command ^(note the '/d' and '--no-restart' options^):>&2
+ECHO cmd /d /c ^"%0 --no-restart !args!^">&2
+PAUSE
+GOTO :EOF
 
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES
@@ -534,6 +534,18 @@ REM @param %1 Short name about the registry key or value.
         ECHO You may need to re-run this program with administrator privileges.>&2
         PAUSE
     )
+GOTO :EOF
+
+REM Deletes a non-default registry value (if it exists).
+REM @param %1 Key name, including root key
+REM @param %2 Value name
+REM @param %3 Short hint of the entry, displayed in error messages
+REM @return 0 if value doesn't exist or is deleted, or 1 on error
+:delete_reg_value
+    reg query "%~1" /v "%~2" >nul 2>nul || EXIT /B 0
+    reg delete "%~1" /v "%~2" /f >nul && EXIT /B 0
+    CALL :show_reg_write_error %3
+    EXIT /B 1
 GOTO :EOF
 
 REM Prepares g_sids global variable (list of all user SIDs on the computer).
@@ -574,18 +586,6 @@ REM @return 0 if key doesn't exist or is cleaned successfully, or 1 on error
     REM of the key.
     reg add "%~1" /v "dummy" /f >nul 2>nul || EXIT /B 1
     reg delete "%~1" /v "dummy" /f >nul 2>nul
-GOTO :EOF
-
-REM Deletes a non-default registry value (if it exists).
-REM @param %1 Key name, including root key
-REM @param %2 Value name
-REM @param %3 Short hint of the entry, displayed in error messages
-REM @return 0 if value doesn't exist or is deleted, or 1 on error
-:delete_reg_value
-    reg query "%~1" /v "%~2" >nul 2>nul || EXIT /B 0
-    reg delete "%~1" /v "%~2" /f >nul && EXIT /B 0
-    CALL :show_reg_write_error %3
-    EXIT /B 1
 GOTO :EOF
 
 REM Checks if the file is in one of the list of files to keep.
@@ -703,24 +703,6 @@ REM as a folder in current directory.
     )
 GOTO :EOF
 
-REM Force deletes a file and creates a directory with the same name.
-REM @param %1 File name to be converted into a directory
-REM @return 0 if directory exists or is created successfully, or 1 on error
-:file_to_directory
-    IF EXIST %1 (
-        ECHO.%~a1 | find "d" >nul 2>nul && (
-            REM File exists and is a directory. Keep it.
-            attrib +R +H +S "%~1"
-            EXIT /B 0
-        )
-        ECHO Delete "%~1"
-        DEL /F "%~1"
-        IF EXIST %1 EXIT /B 1
-    )
-    IF "X!opt_mkdir!"=="XSKIP" EXIT /B 0
-    CALL :make_directory %1
-GOTO :EOF
-
 REM Creates a directory and writes a file named DONT_DEL.txt inside it.
 REM @param %1 Directory name
 REM @return 0 if directory is created successfully (despite the file within)
@@ -745,6 +727,26 @@ REM @return 0 if directory is created successfully (despite the file within)
     attrib +R +H +S "%~1"
     EXIT /B 0
 GOTO :EOF
+
+REM Force deletes a file and creates a directory with the same name.
+REM @param %1 File name to be converted into a directory
+REM @return 0 if directory exists or is created successfully, or 1 on error
+:file_to_directory
+    IF EXIST %1 (
+        ECHO.%~a1 | find "d" >nul 2>nul && (
+            REM File exists and is a directory. Keep it.
+            attrib +R +H +S "%~1"
+            EXIT /B 0
+        )
+        ECHO Delete "%~1"
+        DEL /F "%~1"
+        IF EXIST %1 EXIT /B 1
+    )
+    IF "X!opt_mkdir!"=="XSKIP" EXIT /B 0
+    CALL :make_directory %1
+GOTO :EOF
+
+
 
 REM ---------------------------------------------------------------------------
 :EOF

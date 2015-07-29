@@ -473,15 +473,6 @@ ECHO   --keep-files             不刪除 autorun.inf 或其它可能惡意的檔案
 ECHO   --no-mkdir               不在刪除檔案後建立目錄
 GOTO main_end
 
-:main_restart
-ECHO 在停止 cmd.exe 的自動執行 ^(AutoRun^) 命令下，重新啟動本程式...
-cmd /d /c "%0 --no-restart !args!" && GOTO main_end
-ECHO 重新啟動時發生錯誤。請以下列命令來重新執行本腳本（注意 '/d' 與 '--no-restart'>&2
-ECHO 選項!BIG5_A15E!：>&2
-ECHO cmd /d /c ^"%0 --no-restart !args!^">&2
-PAUSE
-GOTO :EOF
-
 :main_end
 ENDLOCAL
 EXIT /B 0
@@ -490,6 +481,15 @@ EXIT /B 0
 ECHO *** 嚴重錯誤：不是 DOS/Windows 的 'find' 命令。>&2
 ENDLOCAL
 EXIT /B 1
+
+:main_restart
+ECHO 在停止 cmd.exe 的自動執行 ^(AutoRun^) 命令下，重新啟動本程式...
+cmd /d /c "%0 --no-restart !args!" && GOTO main_end
+ECHO 重新啟動時發生錯誤。請以下列命令來重新執行本腳本（注意 '/d' 與 '--no-restart'>&2
+ECHO 選項!BIG5_A15E!：>&2
+ECHO cmd /d /c ^"%0 --no-restart !args!^">&2
+PAUSE
+GOTO :EOF
 
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES
@@ -517,6 +517,18 @@ REM @param %1 Short name about the registry key or value.
         ECHO 您可能需要用系統管理員的權限重新執行此程式。>&2
         PAUSE
     )
+GOTO :EOF
+
+REM Deletes a non-default registry value (if it exists).
+REM @param %1 Key name, including root key
+REM @param %2 Value name
+REM @param %3 Short hint of the entry, displayed in error messages
+REM @return 0 if value doesn't exist or is deleted, or 1 on error
+:delete_reg_value
+    reg query "%~1" /v "%~2" >nul 2>nul || EXIT /B 0
+    reg delete "%~1" /v "%~2" /f >nul && EXIT /B 0
+    CALL :show_reg_write_error %3
+    EXIT /B 1
 GOTO :EOF
 
 REM Prepares g_sids global variable (list of all user SIDs on the computer).
@@ -557,18 +569,6 @@ REM @return 0 if key doesn't exist or is cleaned successfully, or 1 on error
     REM of the key.
     reg add "%~1" /v "dummy" /f >nul 2>nul || EXIT /B 1
     reg delete "%~1" /v "dummy" /f >nul 2>nul
-GOTO :EOF
-
-REM Deletes a non-default registry value (if it exists).
-REM @param %1 Key name, including root key
-REM @param %2 Value name
-REM @param %3 Short hint of the entry, displayed in error messages
-REM @return 0 if value doesn't exist or is deleted, or 1 on error
-:delete_reg_value
-    reg query "%~1" /v "%~2" >nul 2>nul || EXIT /B 0
-    reg delete "%~1" /v "%~2" /f >nul && EXIT /B 0
-    CALL :show_reg_write_error %3
-    EXIT /B 1
 GOTO :EOF
 
 REM Checks if the file is in one of the list of files to keep.
@@ -686,24 +686,6 @@ REM as a folder in current directory.
     )
 GOTO :EOF
 
-REM Force deletes a file and creates a directory with the same name.
-REM @param %1 File name to be converted into a directory
-REM @return 0 if directory exists or is created successfully, or 1 on error
-:file_to_directory
-    IF EXIST %1 (
-        ECHO.%~a1 | find "d" >nul 2>nul && (
-            REM File exists and is a directory. Keep it.
-            attrib +R +H +S "%~1"
-            EXIT /B 0
-        )
-        ECHO 刪除 "%~1"
-        DEL /F "%~1"
-        IF EXIST %1 EXIT /B 1
-    )
-    IF "X!opt_mkdir!"=="XSKIP" EXIT /B 0
-    CALL :make_directory %1
-GOTO :EOF
-
 REM Creates a directory and writes a file named DONT_DEL.txt inside it.
 REM @param %1 Directory name
 REM @return 0 if directory is created successfully (despite the file within)
@@ -727,6 +709,24 @@ REM @return 0 if directory is created successfully (despite the file within)
     ) >"%~1\DONT_DEL.txt"
     attrib +R +H +S "%~1"
     EXIT /B 0
+GOTO :EOF
+
+REM Force deletes a file and creates a directory with the same name.
+REM @param %1 File name to be converted into a directory
+REM @return 0 if directory exists or is created successfully, or 1 on error
+:file_to_directory
+    IF EXIST %1 (
+        ECHO.%~a1 | find "d" >nul 2>nul && (
+            REM File exists and is a directory. Keep it.
+            attrib +R +H +S "%~1"
+            EXIT /B 0
+        )
+        ECHO 刪除 "%~1"
+        DEL /F "%~1"
+        IF EXIST %1 EXIT /B 1
+    )
+    IF "X!opt_mkdir!"=="XSKIP" EXIT /B 0
+    CALL :make_directory %1
 GOTO :EOF
 
 REM ---------------------------------------------------------------------------
