@@ -43,7 +43,7 @@ environment is okay. The code is copied below, with comments added:
     REM Redirecting stderr ("2>") is impossible in DOS and Win9x.
     SETLOCAL EnableExtensions
     REM Expect a "syntax error" for those not supporting. Win9x continues after
-    REM error; Win NT 3.* halts here; OS/2 is untested.
+    REM error; Win NT 3.* and OS/2 will halt here.
     IF CMDEXTVERSION 2 GOTO cmd_ext_ok
     ENDLOCAL
     REM Error message. No ">&2" redirection because DOS COMMAND.COM doesn't
