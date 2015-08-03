@@ -634,7 +634,7 @@ REM in their filenames.
     REM attributes set. Must clear both simultaneously.
     REM The exit code of 'attrib' is unreliable.
     REM The "2^>nul" is to suppress the "File not found" output by DIR command.
-    FOR /F "usebackq delims=" %%f IN (`DIR /A:HS /B /O:N 2^>nul`) DO (
+    FOR /F "usebackq delims=" %%f IN (`DIR /A:HS-L /B /O:N 2^>nul`) DO (
         CALL :is_file_to_keep HS_ATTRIB "%%~f" && (
             ECHO 為了安全因素，跳過檔案 "%%~f"（隱藏+系統屬性!BIG5_A15E!
         ) || (
@@ -642,7 +642,7 @@ REM in their filenames.
             attrib -H -S "%%~f"
         )
     )
-    FOR /F "usebackq delims=" %%f IN (`DIR /A:H-S /B /O:N 2^>nul`) DO (
+    FOR /F "usebackq delims=" %%f IN (`DIR /A:H-SL /B /O:N 2^>nul`) DO (
         CALL :is_file_to_keep H_ATTRIB "%%~f" && (
             ECHO 為了安全因素，跳過檔案 "%%~f"（隱藏屬性!BIG5_A15E!
         ) || (
@@ -650,7 +650,7 @@ REM in their filenames.
             attrib -H "%%~f"
         )
     )
-    FOR /F "usebackq delims=" %%f IN (`DIR /A:S-H /B /O:N 2^>nul`) DO (
+    FOR /F "usebackq delims=" %%f IN (`DIR /A:S-HL /B /O:N 2^>nul`) DO (
         CALL :is_file_to_keep S_ATTRIB "%%~f" && (
             ECHO 為了安全因素，跳過檔案 "%%~f"（系統屬性!BIG5_A15E!
         ) || (
