@@ -242,7 +242,7 @@ REM Credit to Nick Brown for the solution to disable AutoRun. See:
 REM http://archive.today/CpwOH
 REM http://www.computerworld.com/article/2481506
 REM Works with Windows 7 too, and I believe it's safer to disable ALL AutoRuns
-REM in Windows 7, rather than let go some devices.
+REM in Windows 7 and above, rather than let go some devices.
 REM Other references:
 REM http://www.kb.cert.org/vuls/id/889747
 REM https://www.us-cert.gov/ncas/alerts/TA09-020A
@@ -458,7 +458,7 @@ ECHO   --no-restart             ¤£­«·s±Ò°Ê¸}¥»¡]¹w³]!BIG5_B77C!¦b°»´ú¨ì©R¥O³B¸Ìµ
 ECHO                            ®É­«·s±Ò°Ê!BIG5_A15E!
 ECHO   --skip-cmd-autorun       ¤£§R°£©R¥O³B¸Ìµ{¦¡ªº AutoRun µn¿ý­È
 ECHO   --all-users-cmd-autorun  §R°£*©Ò¦³¨Ï¥ÎªÌ*ªº cmd.exe AutoRun¡]¹w³]¤£¶i¦æ!BIG5_A15E!
-ECHO   --no-inf-mapping         ¤£°±¤î autorun.inf ªº­åªR
+ECHO   --no-inf-mapping         ¤£Ãö³¬ autorun.inf ªº­åªR
 ECHO   --skip-mountpoints2      ¤£²M²z MountPoints2 µn¿ý¾÷½X¡]§Ö¨ú!BIG5_A15E!
 ECHO   --skip-known-ext         ¤£Åã¥Ü¤wª¾ÀÉ®×Ãþ«¬ªº°ÆÀÉ¦W
 ECHO   --all-users-known-ext    *©Ò¦³¨Ï¥ÎªÌ*¬ÒÅã¥Ü¤wª¾ÀÉ®×Ãþ«¬ªº°ÆÀÉ¦W¡]¹w³]¤£¶i¦æ!BIG5_A15E!
@@ -694,10 +694,9 @@ REM @return 0 if directory is created successfully (despite the file within)
         ECHO «Ø¥ß¥Ø¿ý®Éµo¥Í¿ù»~¡G"%~1">&2
         EXIT /B 1
     )
-    REM Don't localize the text below. I want this file to be readable despite
-    REM the encoding the user's system is in, and it's difficult to convert
-    REM character encodings in shell.
     (
+        REM Should be in ASCII encoding. It is better to keep an English
+        REM version as well as localized one.
         ECHO This directory, "%~1", is to protect your disk from injecting a
         ECHO malicious %1 file.
         ECHO Your disk may still carry the USB or AutoRun malware, but it will NOT be

@@ -240,7 +240,7 @@ REM Credit to Nick Brown for the solution to disable AutoRun. See:
 REM http://archive.today/CpwOH
 REM http://www.computerworld.com/article/2481506
 REM Works with Windows 7 too, and I believe it's safer to disable ALL AutoRuns
-REM in Windows 7, rather than let go some devices.
+REM in Windows 7 and above, rather than let go some devices.
 REM Other references:
 REM http://www.kb.cert.org/vuls/id/889747
 REM https://www.us-cert.gov/ncas/alerts/TA09-020A
@@ -474,10 +474,10 @@ ECHO   --no-restart             don't restart script ^(default will restart when
 ECHO                            Command Processor AutoRun is detected^)
 ECHO   --skip-cmd-autorun       don't delete Command Processor AutoRun registry
 ECHO   --all-users-cmd-autorun  delete ALL USERS' cmd.exe AutoRun ^(default: no^)
-ECHO   --no-inf-mapping         don't stop parsing of autorun.inf
+ECHO   --no-inf-mapping         don't disable parsing of autorun.inf
 ECHO   --skip-mountpoints2      don't clean MountPoints2 registry keys ^(caches^)
-ECHO   --skip-known-ext         don't show extensions of known file types
-ECHO   --all-users-known-ext    ALL USERS show extensions of known file types
+ECHO   --skip-known-ext         don't show extensions for known file types
+ECHO   --all-users-known-ext    ALL USERS show extensions for known file types
 ECHO                            ^(default: no^)
 ECHO   --skip-shortcut-icon     don't restore arrow icons of shortcut files
 ECHO   --default-shortcut-icon  unset custom shortcut icon and use system default
@@ -711,10 +711,9 @@ REM @return 0 if directory is created successfully (despite the file within)
         ECHO Error occurred when creating directory: "%~1">&2
         EXIT /B 1
     )
-    REM Don't localize the text below. I want this file to be readable despite
-    REM the encoding the user's system is in, and it's difficult to convert
-    REM character encodings in shell.
     (
+        REM Should be in ASCII encoding. It is better to keep an English
+        REM version as well as localized one.
         ECHO This directory, "%~1", is to protect your disk from injecting a
         ECHO malicious %1 file.
         ECHO Your disk may still carry the USB or AutoRun malware, but it will NOT be
