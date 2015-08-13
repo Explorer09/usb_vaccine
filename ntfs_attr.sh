@@ -44,7 +44,7 @@
 # Entended attributes in ntfs-3g
 # http://www.tuxera.com/community/ntfs-3g-advanced/extended-attributes/
 # NTFS File Attribute Constants
-# https://msdn.microsoft.com/library/windows/desktop/gg258117.aspx
+# https://msdn.microsoft.com/en-us/library/windows/desktop/gg258117(v=vs.85).aspx
 
 # Attribute values: 0 (don't change), + (set), - (clear)
 attr_r=0
@@ -123,7 +123,7 @@ while [ "$#" -ge 1 ]; do
     shift
 done
 
-# Sliently ignore the "--" option.
+# Silently ignore the "--" option.
 [ "X$1" = "X--" ] && shift
 
 if [ "$#" -le 0 ]; then
@@ -155,7 +155,7 @@ for f in "$@"; do
     if [ "$attr_mode" = show ]; then
         attr_mask=0x1
         # Attributes that are reserved and never have an abbreviated letter:
-        # DEVICE (0x40), VIRTUAL (0x10000)
+        # FILE_ATTRIBUTE_DEVICE (0x40), FILE_ATTRIBUTE_VIRTUAL (0x10000)
         for i in r h s v d a + n t p l c o i e V + x; do
             if [ $(($attr_hex & $attr_mask)) -gt 0 ]; then
                 printf '%c' "$i"
