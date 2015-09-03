@@ -132,8 +132,12 @@ ECHO.!trimmed_list!
 REM EXECUTE
 TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*," > temp.txt
 SET list=
-FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
-    SET list=!list! %%i
+FOR /F "usebackq tokens=1,2 delims=," %%i IN ("temp.txt") DO (
+    ECHO.%%i | findstr /r "[\""\.\\]" >nul && (
+        SET list=!list! %%i
+    ) || (
+        SET list=!list! %%j
+    )
 )
 SET trimmed_list=
 SET prev=
