@@ -164,7 +164,9 @@ DEL temp.txt
 EXIT /B 0
 
 :is_executable
-    FOR %%e IN (bat cmd com exe scr pif) DO (
+    REM This list includes both executable file types and shortcut types.
+    REM No sense to split into two.
+    FOR %%e IN (bat cmd com exe scr pif lnk shb url appref-ms glk) DO (
         SET "filename=%~1"
         IF /I "!filename:~-4!"==".%%~e" EXIT /B 0
     )
