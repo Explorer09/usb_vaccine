@@ -7,7 +7,7 @@ However, several limitations of batch scripting in Windows NT 4 Command
 Processor makes it difficult to write scripts compatible with that platform
 while making the script secure as well.
 
-So, usb_vaccine.cmd is coded to only work with Windows 2000 or later.
+So, 'usb_vaccine.cmd' is coded to only work with Windows 2000 or later.
 (With Windows 2000 you need reg.exe from Support Tools. Unlike in XP it's not
 available pre-installed.)
 
@@ -21,6 +21,7 @@ Here are limitations known in Windows NT 4 Command Processor environment:
   "SET /P" (or "FOR /F") user input processing. %var% is vulnerable to command
   injection.
   (<http://www.robvanderwoude.com/local.php>)
+  (<http://www.robvanderwoude.com/battech_inputvalidation_setp.php>)
 - "SET /P" does not work, and choice.exe is available only in Resource Kit, and
   so there's no way to write interactive scripts.
   (<http://www.robvanderwoude.com/ntset.php>)
@@ -34,7 +35,7 @@ Here are limitations known in Windows NT 4 Command Processor environment:
 - No dynamic variable %CMDEXTVERSION%. (For checking Win NT 4 environment you
   should use "IF CMDEXTVERSION 1" and not "IF %CMDEXTVERSION% GEQ 1".)
 
-usb_vaccine.cmd contains code that checks whether the Command Processors
+'usb_vaccine.cmd' contains code that checks whether the Command Processors
 environment is okay. The code is copied below, with comments added:
 
     @ECHO OFF
