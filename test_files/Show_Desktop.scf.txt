@@ -1,0 +1,11 @@
+[Shell]
+Command=2
+IconFile=explorer.exe,3
+[Taskbar]
+Command=ToggleDesktop
+; This file should be named "Show Desktop.scf" (with capital D).
+; The Show Desktop icon is seen on the Quick Launch bar, which is introduced in
+; Windows Desktop Update (an IE4 feature for Windows 95 or NT 4.0). The file is
+; then available until Windows Vista. In Windows Vista or later there is still
+; a Show Desktop icon but is implemented as an .lnk file ("Shows Desktop.lnk").
+; In Windows 9x, there may be a backup of this file in "%WinDir%\SYSTEM".

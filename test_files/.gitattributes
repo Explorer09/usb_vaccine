@@ -1,0 +1,7 @@
+*.txt text eol=crlf
+
+*.url text eol=crlf
+*.scf text eol=crlf
+*.glk text eol=crlf
+
+*.lnk binary

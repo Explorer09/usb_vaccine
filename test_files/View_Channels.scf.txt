@@ -1,0 +1,12 @@
+[Shell]
+Command=3
+IconFile=shdocvw.dll,-118
+[IE]
+Command=Channels
+; This file should be named "View Channels.scf".
+; The View Channels icon is seen on the Quick Launch bar, which is introduced
+; in Windows Desktop Update (an IE4 feature for Windows 95 or NT 4.0). The icon
+; is also seen in Windows 98 (but not Windows 98 SE).
+; In Windows 2000 or XP, the file is not available in Quick Launch bar, but in
+; "%WinDir%\system32". In Windows 9x, there may be a copy of this file in
+; "%WinDir%\SYSTEM".

@@ -1,0 +1,9 @@
+[Shell]
+Command=2
+IconFile=explorer.exe,1
+[Taskbar]
+Command=Explorer
+; This file should be named "explorer.scf" (all lowercase).
+; This file is available in "%WinDir%", since Windows Desktop Update (an IE4
+; feature for Windows 95 or NT 4.0) and until Windows Vista. Windows XP is the
+; last version that includes this file.
