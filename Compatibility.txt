@@ -1,7 +1,7 @@
 Compatibility with Windows NT 4.0
 
 Windows NT 4 does support IniFileMapping registry key. So the AutoRun
-IniFileMapping hack can work there. 
+IniFileMapping hack can work there.
 
 However, several limitations of batch scripting in Windows NT 4 Command
 Processor makes it difficult to write scripts compatible with that platform
@@ -18,14 +18,14 @@ Here are limitations known in Windows NT 4 Command Processor environment:
   (which is possible in Win NT 4 registry).
   (<http://www.robvanderwoude.com/ntregquery.php>)
 - "SETLOCAL EnableDelayedExpansion" does not work, which is required for secure
-  "SET /P" (or "FOR /F") user input processing. %var% is vulnerable to command
-  injection.
+  "SET /P" (or "FOR /F") user input processing. Expansion syntax like "%VAR%"
+  is vulnerable to command injection.
   (<http://www.robvanderwoude.com/local.php>)
   (<http://www.robvanderwoude.com/battech_inputvalidation_setp.php>)
 - "SET /P" does not work, and choice.exe is available only in Resource Kit, and
   so there's no way to write interactive scripts.
   (<http://www.robvanderwoude.com/ntset.php>)
-- Negative number in substring expansion (%VAR:~0,-5%) does not work.
+- Negative number in substring expansion (like "%VAR:~0,-5%") does not work.
 - "%~1" does not work.
   (<http://www.robvanderwoude.com/ntcall.php>)
 - "EXIT /B" does not work, which is required for return codes in subroutines.
