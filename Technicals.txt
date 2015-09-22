@@ -8,25 +8,29 @@ file inside it.
 
 Unix/Linux already have execution mode bits, and the (optional) 'noexec' mount
 option. It's not perfect, but DOES prevent most of the tricks that USB malware
-could do on Windows. There's no execute bit on Windows, so we have to let user
+could do on Windows. There's no execute bit on Windows, so we have to let users
 aware by other means.
 
 There are several factors that a Windows user might mistakenly runs a program,
 thinking he is opening a (legitimate) file:
-- File extension displayed on Windows Explorer (_displayed_, so may be fake)
+- File extension displayed in Windows Explorer (_displayed_, which may be fake)
 - File icon, whether it is static or dynamic based on file content (malicious
   file can have a icon faking the user that it's something safe)
 - Shortcut arrows
 - Whether file itself is loaded and executed directly by the OS, executed only
   via an interpreter, or have no execution data at all
+(This list is not exhaustive.)
 
 Technically these correspond to the following things:
 
-1. "Hide extension for known file types" checkbox in Folder Settings, which in
-   registry is "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\
-   Advanced" value "HideFileExt"
-2. "NeverShowExt" registry value in class key of the file type
-3. "DefaultIcon" registry subkey of class key of the file type
+1. "Hide extension for known file types" checkbox in Folder Settings, which
+   corresponds to "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\
+   Advanced" value "HideFileExt" in registry
+2. "NeverShowExt" or "AlwaysShowExt" registry value in class key (technically
+   known as ProgID) of the file type ("NeverShowExt" takes precedence if both
+   values exist)
+3. The presence of "shellex\IconHandler" registry subkey of class key of the
+   file type, and, if not present, the "DefaultIcon" subkey
 4. "IsShortcut" registry value in class key of the file type
 5. "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Icons" value
    "29" (if present this overrides the shortcut overlay arrow icon provided by
@@ -37,89 +41,87 @@ Technically these correspond to the following things:
 Ideally on a secure system,
 
 1. "HideFileExt" should be 0 (false).
-2. No "NeverShowExt" value should be present for every file type.
-3. "DefaultIcon" should be dynamic only if there's no executable code in file
-   contents, and static otherwise.
-4. "IsShortcut" be present for all file types that represents a link to
-   another file, especially files that may be executable.
+2. No "NeverShowExt" value should be present for every file type, so that users
+   can see every extension of every file type. ("AlwaysShowExt" would be
+   optional if no extensions are hidden at all.)
+3. The file icon may be dynamic only if there's no executable code in the file
+   contents, and static otherwise. By "static" here I mean there's no Icon
+   Handler, and the "DefaultIcon" is not "%1". That is, all files of the same
+   type should display the same icon.
+4. "IsShortcut" be present for all file types that represent links to another
+   file, especially to file that may be executable.
 5. The "Shell Icons" registry value "29" should either not exist or refer to an
    icon that is not blank icon.
-6. Files that are not binary self-executable (PE, MZ, or old DOS COM format)
+6. Files that are not binary self-executable (PE, NE, MZ, or old COM format)
    shouldn't have "%1" in the beginning of their "shell\open\command", and
    files that are no executable code (script or binary) shouldn't have "%*" in
    end of "shell\open\command".
 
-One exception can be made for scripts that contain shebang indicating which
+One exception can be made for scripts that contain shebangs indicating which
 interpreter it is meant to be run in, and so will be necessary for OS kernel to
 load it and parses the shebang. This is true for perl/python/shell scripts, but
 not batch scripts. (And so having the default value of '"%1" %*' in "HKCR\
 batfile\shell\open\command" is a bad idea. Should be 'cmd /c "%1" %*'. It might
-be left as is for historical reasons, I don't know.)
+remain as is for historical reasons. I don't know.)
 
-Below I list some common file types and whether they fit the conditions listed
-above. To ensure safety, at least 2 of the 6 cells should be "safe" for every
-file type, otherwise the user might be tricked into running malicious code.
+Below is the list of some common file types and whether they fit the conditions
+listed above. To ensure safety, at least 2 of the 6 cells should be "safe" for
+every file type.
 
-file | HideFileExt | NeverShow- | icon    | shortcut  | %1        | %* ending
-ext. | (safe:0,    | Ext (safe: | (safe:  | arrow     | beginning | (safe:no)
-     | default:1)  | absent)    | static) |           | (safe:no) |
------+-------------+------------+---------+-----------+-----------+----------
-.bat   user          (safe)       (safe)    no[1]       yes         yes
-.cmd   user          (safe)       (safe)    no[1]       yes         yes
+file | HideFileExt | NeverShow- |   Icon   | Shortcut |    %1     | %* ending
+ext. | (safe:0,    | Ext (safe: | (safe:   |  arrow   | beginning | (safe:no)
+     |  default:1) | absent)    |  static) |          | (safe:no) |
+-----+-------------+------------+----------+----------+-----------+----------
+.bat   user          (safe)       (safe)     no[1]      yes         yes
+.cmd   user          (safe)       (safe)     no[1]      yes         yes
 
-.com   user          (safe)       dynamic   no[1]       yes         yes
-.exe   user          (safe)       dynamic   no[1]       yes         yes
-.scr   user          (safe)       dynamic   no[1]       yes         no[2]
+.com   user          (safe)       (safe)     no[1]      yes         yes
+.exe   user          (safe)       "%1"       no[1]      yes         yes
+.scr   user          (safe)       "%1"[2]    no[1]      yes         no[3]
 
-.pif   n/a           present      dynamic   yes(safe)   yes         yes
-.lnk   n/a           present      dynamic   yes(safe)   n/a[3]      n/a[3]
-.url   n/a           present      safe[4]   yes(safe)   no(safe)    no(safe)
-.WSH   user          (safe)       (safe)    yes(safe)   no(safe)    yes
+.pif   n/a           present[4]   handler    yes(safe)  yes[4]      yes[4]
+.lnk   n/a           present      handler    yes(safe)  n/a[5]      n/a[5]
+.url   n/a           present      handler    yes(safe)  n/a[5]      n/a[5]
+.WSH   user          (safe)       (safe)     yes(safe)  no(safe)    yes
 
-.js    user          (safe)       (safe)    no[1]       no(safe)    yes
-.JSE   user          (safe)       (safe)    no[1]       no(safe)    yes
-.vbs   user          (safe)       (safe)    no[1]       no(safe)    yes
-.VBE   user          (safe)       (safe)    no[1]       no(safe)    yes
-.WSF   user          (safe)       (safe)    no[1]       no(safe)    yes
+.js    user          (safe)       (safe)     no[1]      no(safe)    yes
+.JSE   user          (safe)       (safe)     no[1]      no(safe)    yes
+.vbs   user          (safe)       (safe)     no[1]      no(safe)    yes
+.VBE   user          (safe)       (safe)     no[1]      no(safe)    yes
+.WSF   user          (safe)       (safe)     no[1]      no(safe)    yes
 
-.msc   user          (safe)       dynamic   no[1]       no(safe)    yes
+.msc   user          (safe)       handler    no[1]      no(safe)    yes
 
 [1] Not a shortcut, however as it is executable code, it may contain code that
     executes other programs.
-[2] .scr is self-executable (PE format), so %* technically doesn't matter.
+[2] There is no DefaultIcon subkey in HKCR\scrfile, but "%1" is implied for
+    this file type.
+[3] .scr is self-executable (PE format), so %* technically doesn't matter.
     Therefore no "safe" is marked on this field.
-[3] "shell" registry subkey is not interpreted for '.lnk' file type. Windows
-    shells (cmd.exe or Explorer) handle it transparently and fetches shell
-    commands from target file type instead.
-[4] In Thumbnail View before Windows XP SP1 and Windows Vista, the content of
-    the target page will be shown as thumbnail of the shortcut. In that case
-    it can be considered a "dynamic" icon.
-    (<https://support.microsoft.com/kb/327833>)
-
-As the reader can see, there are only one "safe" mark for '.exe', '.com',
-'.scr', and '.pif'. Malicious programs disguised as files or folders may not be
-spotted by user with these file extensions. However, with "HideFileExt"
-disabled by user, we can get another "safe" mark for '.exe', '.com' and '.scr'.
-By removing "NeverShowExt" for '.pif', we can get another for '.pif' (without
-reducing functionality). So in usb_vaccine.cmd I decide to do both, to make
-users aware.
+[4] Although .pif is a shortcut format, it's "open" verb, as handled by Windows
+    Explorer, does not check for a valid PIF format. Thus it is possible to
+    have a PE executable in .pif extension and get executed when user "opens"
+    it in Explorer. (For this reason 'usb_vaccine.cmd' proposes to remove
+    NeverShowExt value for this file type.)
+[5] .lnk and .url have special Context Menu Handlers that change the default
+    (open) verb.
 
 -------------------------------------------------------------------------------
 
 File types with "%1" default value of their "DefaultIcon" subkey:
 
-Ext      Software       Class registry key (technically called ProgID)
-.ani                    HKCR\anifile
-.cdf     IE4-IE6        HKCR\ChannelFile
-(CLSID)  IE4-IE6        HKCR\ChannelShortcut
-.cur                    HKCR\curfile
-.exe                    HKCR\exefile
-.ht      WinXP-         HKCR\htfile ("HyperTerminal File")
-.ico                    HKCR\icofile
-.msc     Win2000+ (NT)  HKCR\MSCFile
-.otf     Win2000-Vista  HKCR\otffile
-.ttc     Win2000-Vista  HKCR\ttcfile
-.ttf     Win2000-Vista  HKCR\ttffile
+Extension  Software       Class registry key (technically known as ProgID)
+.ani                      HKCR\anifile
+.cdf       IE4-IE6        HKCR\ChannelFile
+(CLSID)    IE4-IE6        HKCR\ChannelShortcut
+.cur                      HKCR\curfile
+.exe                      HKCR\exefile
+.ht        WinXP-         HKCR\htfile ("HyperTerminal File")
+.ico                      HKCR\icofile
+.msc       Win2000+ (NT)  HKCR\MSCFile
+.otf       Win2000-Vista  HKCR\otffile
+.ttc       Win2000-Vista  HKCR\ttcfile
+.ttf       Win2000-Vista  HKCR\ttffile
 
 Win95 only  HKCR\CLSID\{00028B05-0000-0000-C000-000000000046}
                 ("Shortcut to The Microsoft Network")
@@ -133,36 +135,37 @@ provides the icon for those fonts (depending on format, e.g. TrueType or
 -------------------------------------------------------------------------------
 
 File types that contain "IsShortcut" and "NeverShowExt" registry values:
-Extension   Software     Class registry key (technically called ProgID)
-.appref-ms  .NET2.0+     HKCR\Application.Reference
-.cnf        WinXP-       HKCR\ConferenceLink (NetMeeting "SpeedDial")
-.shb        WinXP-       HKCR\DocShortcut ("Shortcut into a document")
-.url        IE           HKCR\InternetShortcut
-(unused)    WinVista+    HKCR\IE.AssocFile.URL
-(unused)    IE9+         HKCR\IE.AssocFile.WEBSITE
-.website    IE9+         HKCR\Microsoft.Website ("Pinned Site Shortcut")
-.lnk                     HKCR\lnkfile
-.pif                     HKCR\piffile
-.maw        MSOffice     HKCR\Access.Shortcut.DataAccessPage.1
-.mag        MSOffice     HKCR\Access.Shortcut.Diagram.1
-.maf        MSOffice     HKCR\Access.Shortcut.Form.1
-.mau        MSOffice     HKCR\Access.Shortcut.Function.1
-.mam        MSOffice     HKCR\Access.Shortcut.Macro.1
-.mad        MSOffice     HKCR\Access.Shortcut.Module.1
-.maq        MSOffice     HKCR\Access.Shortcut.Query.1
-.mar        MSOffice     HKCR\Access.Shortcut.Report.1
-.mas        MSOffice     HKCR\Access.Shortcut.StoredProcedure.1
-.mat        MSOffice     HKCR\Access.Shortcut.Table.1
-.mav        MSOffice     HKCR\Access.Shortcut.View.1
-.glk        Office2007+  HKCR\GrooveLinkFile
+Extension   Software      Class registry key (ProgID)
+.appref-ms  .NET2.0+      HKCR\Application.Reference
+.cnf        WinXP-        HKCR\ConferenceLink (NetMeeting "SpeedDial")
+.shb        WinXP-        HKCR\DocShortcut ("Shortcut into a document")
+.url        IE            HKCR\InternetShortcut
+(unused)    WinVista+     HKCR\IE.AssocFile.URL
+(unused)    IE9+          HKCR\IE.AssocFile.WEBSITE
+.website    IE9+          HKCR\Microsoft.Website ("Pinned Site Shortcut")
+.lnk                      HKCR\lnkfile
+.pif                      HKCR\piffile
+.maw        Office2000+   HKCR\Access.Shortcut.DataAccessPage.1
+.mag        Office2000+   HKCR\Access.Shortcut.Diagram.1
+.maf        MSOffice95+   HKCR\Access.Shortcut.Form.1
+.mau        OfficeXP+     HKCR\Access.Shortcut.Function.1
+.mam        MSOffice95+   HKCR\Access.Shortcut.Macro.1
+.mad        MSOffice95+   HKCR\Access.Shortcut.Module.1
+.maq        MSOffice95+   HKCR\Access.Shortcut.Query.1
+.mar        MSOffice95+   HKCR\Access.Shortcut.Report.1
+.mas        Office2000+   HKCR\Access.Shortcut.StoredProcedure.1
+.mat        MSOffice95+   HKCR\Access.Shortcut.Table.1
+.mav        Office2000+   HKCR\Access.Shortcut.View.1
+.glk        Office2007+   HKCR\GrooveLinkFile
+.xnk        Office2003-   HKCR\xnkfile ("Exchange Shortcut", used in Outlook)
 
 File types that contain "IsShortcut" registry value but not "NeverShowExt":
-Extension   Software     Class registry key (ProgID)
-.mcc        Win95 only   HKCR\Dialer10CallingCard
-                             ("Shortcut to The Microsoft Network")
-.ccr        MSChat       HKCR\ComicChatRoomShortcut
-.ccr        MSChat2.5    HKCR\MicrosoftChatRoomShortcut
-.WSH        IE5+         HKCR\WSHFile
+Extension   Software      Class registry key (ProgID)
+.mcc        Win95 only    HKCR\Dialer10CallingCard
+                              ("Shortcut to The Microsoft Network")
+.ccr        MSChat        HKCR\ComicChatRoomShortcut
+.ccr        MSChat2.5     HKCR\MicrosoftChatRoomShortcut
+.WSH        IE5+          HKCR\WSHFile
 
 (Note to developers: Do not add every shortcut introduced in third party
 applications. There may be countless number of them. Only note those that
@@ -199,7 +202,7 @@ value begins with "%1"):
 
 For these extensions, the "NeverShowExt" value in their class key should never
 be created. It is possible to have a PE executable in one of these extensions
-(even '.pif'!)
+(even .pif!)
 
 -------------------------------------------------------------------------------
 
@@ -254,3 +257,93 @@ As Microsoft does not document the details of these commands, neither of them
 are reliable across Windows versions. (Can't ensure they always read HKLM and
 never HKCU.) We will just use "reg query" or "reg add" for accurate reading and
 writing.
+
+-------------------------------------------------------------------------------
+
+Important notes about commands behaviors:
+- MOVE command exits with 1 when a move error occurs. There's no way to specify
+  "don't overwrite" option for MOVE command.
+- DEL command exits with 1 only when arguments syntax or path is invalid. It's
+  exit code does not distinguish between deletion success and failure.
+- Both MOVE and DEL refuse to process files with Hidden or System (or both)
+  attribute set. (They'll output the "could not find" error.) However since
+  Windows NT, DEL supports '/A' option that can workaround this.
+- 'attrib' utility without '/L' option follows symlinks when reading or
+  changing attributes. '/L' is not available before Windows Vista.
+- The %~a1 method will retrieve attributes of the link itself, if the file
+  referenced by %1 is a link (junction or symlink).
+- If "dirlink" is a directory link (attributes "DL"), "DEL dirlink" deletes all
+  files in the target directory (DANGEROUS), while "RMDIR dirlink" (with or
+  without '/S') removes the symlink without touching anything in the target
+  directory (SAFE). MOVE command on links always processes links themselves
+  rather than link targets.
+
+-------------------------------------------------------------------------------
+
+List of various shortcut types in Windows and their properties regarding
+security.
+
+The shortcut types that 'usb_vaccine.cmd' is currently concerned about are:
+.pif, .lnk, .shb, .url, .appref-ms, and .glk
+
+We don't try to fix every shortcut type, but only types that may bring
+vulnerabilities to the user's system.
+
+ Shortcut | Format |  May point to  | Custom | Show | Handles | Proper-
+   type   |        |   executable   |  icon  | ext. | default |  ties
+          |        |                |        |      |  verb   |  tab
+----------+--------+----------------+--------+------+---------+--------
+.pif        Binary   Yes              Yes[1]   Never  No[2]     Yes
+.lnk        Binary   Yes              Yes      Never  Yes       Yes
+.url        INI      Yes (file://)    Yes      Never  Yes       Yes
+.website    INI      Not executed     Yes      Never  No        No
+.glk        XML      Yes(file://)[3]  Yes      Never  No        No
+.appref-ms  CSV+URL  Indirect[4]      Yes      Never  No        No
+Folder      Direc-
+  Shortcut    tory   Not executed     Yes      N/A    No        No
+Symlink     Symlink  Yes              No[5]    N/A    N/A[5]    No
+.mcc        ?        ? (Unknown)      Yes      User   No        Yes
+.shb        Binary   Not executed[6]  No       Never  No        No
+.WSH        INI      Not executed     No       User   No        Yes
+.ma?        INI      Not executed     No       Never  No        No
+.cnf        INI      No               No       Never  No        No
+.xnk        Binary   ? (Unknown)      No       Never  No        No
+.ccr        Binary   No               No       User   No        No
+(This list is in no particular order.)
+
+Fields meanings:
+- May point to executable: Whether the shortcut format allows the target to be
+  an executable file and whether it will be executed when user opens the
+  shortcut. "Not executed" means the file format allows pointing to executable,
+  but the handler program will filter out the file type of the target and so
+  it's not executed.
+- Custom icon: Whether the file type is associated with a custom IconHandler.
+- Show ext.: Whether the file extension will be shown for the file type.
+  "Never" means a "NeverShowExt" value is present for the type. "User" means
+  the extension is shown according to user's "HideFileExt" setting. "N/A" means
+  technically the shortcut type can have any or no extension.
+- Handles default verb: "Yes" means the type is associated with a
+  ContextMenuHandler which may change the default (open) verb for the file. In
+  other words, the "shell\open\command" subkey is not reliable to determine the
+  default action for that type.
+  (<https://msdn.microsoft.com/en-us/library/windows/desktop/ee453696(v=vs.85).aspx>)
+- Properties tab: Whether the file type is assigned a custom tab in the
+  Properties window.
+
+Notes:
+[1] Custom icon for .pif is no longer shown in Windows Vista or later.
+    (Reported by some users on the Internet. I couldn't find an official
+    document noting this change. This is nothing to do with MS10-046 lnk file
+    vulnerability.)
+[2] The default "open" verb for .pif is handled by the Explorer shell.
+[3] Office Groove 2007 launches the URL directly when user opens the shortcut.
+    SharePoint Workspace 2010 instead pops up a warning before launching.
+    However it's a bad idea to allow pointing to .exe in the first place.
+[4] .appref-ms may point to remote application only (to a .manifest file).
+    However it may still trick users into opening and downloading the app.
+[5] Currently the Explorer shell displays generic file icons for symlinks
+    pointing to files, and pops up an "Open with" menu for symlink's default
+    "open" verb (ignoring symlinks' file extensions).
+[6] It's possible to have a .shs file renamed to .shb. (The Shell Scrap handler
+    doesn't check whether the file extension matches the format.) .shs files
+    allow embedding executable code (as OLE objects).
