@@ -1,0 +1,21 @@
+Notes for translators.
+
+- We care about letter casing of the file names, even though the file systems
+  in Windows are case-insensitive. We've been tried hard to find the proper
+  casing of the names they are officially referred to as. So avoid changing the
+  casing of them unless you know they're official.
+  In particular:
+  - %WinDir% (Some documentaion and INI files will refer it to as %windir% but
+    this is the official casing when referred in mixed case.)
+  - System32 (Before Windows Vista this was created as all-lowercase
+    "system32".)
+  - Sysnative (Not "SysNative")
+  - SysWOW64 (Not "SysWoW64")
+  - Wow6432Node (Not "WoW6432Node")
+  - explorer.exe (Some documentaion and registry settings will refer it to as
+    "Explorer.exe" but it's always named all-lowercase in the file system.)
+
+- In Windows 8 or later, Windows Explorer has been renamed to File Explorer. We
+  keep using the old name because (1) it is more widely known, and (2) we are
+  supporting old versions of Windows (2000, XP and 7), in which it is called
+  Windows Explorer.
