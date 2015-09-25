@@ -239,7 +239,7 @@ Windows 8 or later): .dwfx .jtx .xps .easmx .edrwx .eprtx (.oxps)
 
 The Microsoft.System.Update.1 is special that it doesn't use "%*" for passing
 multiple arguments. Instead in its "shell\open\command" default value it uses
-"\"%1\" %2 %3 %4" (Vista). Windows 7 and later extend the command line to %9.
+"\"%1\" %2 %3 %4" (Vista). Windows 7 or later extends the command line to %9.
 
 .cpl (HKCR\cplfile) contains "%*" in its "shell\cplopen\command" default value.
 
@@ -355,12 +355,12 @@ Technical details about folders' "Web View", Desktop.ini and Folder.htt.
 The "Web View" of the folders, Desktop.ini and Folder.htt things are all
 introduced in Windows Desktop Update, which was a feature of IE4. Windows
 Desktop Update was optional for Windows 95 and NT4, but is a mandatory feature
-in Windows 98 and later.
+in Windows 98 or later.
 
 The program of the "Customize This Folder Wizard" was "ieshwiz.exe" located in
 "%WinDir%\SYSTEM" (for 95, 98 or Me) or "%WinDir%\System32" (for NT4 or 2000).
 
-In 95, NT4 and 98, when user chooses to "Create or edit an HTML document",
+In 95, NT4 or 98, when user chooses to "Create or edit an HTML document",
 ieshwiz.exe copys the "%webdir%\folder.htt" file to the folder to be
 customized, and shows an edit screen (Notepad) of the new Folder.htt to user.
 
@@ -381,14 +381,14 @@ System attributes) inside the folder to be customized (hence, "Folder Settings\
 Folder.htt").
 
 Note that standard.htt in the choice above is not the same as folder.htt.
-"folder.htt" in Windows 2000 and Me was used only for uncustomized folders.
+"folder.htt" in Windows 2000 or Me was used only for uncustomized folders.
 
 Windows XP supported Web View before SP1, but no longer included ieshwiz.exe
 and .htt file was not used unless in special places (such as Desktop).
 The left "Tasks" pane (note: there's no official name for this) in Windows XP
 is not implemented as a .htt file. The pane is not used when a folder has a
 customized Web View (either done in previous Windows version or coded by hand).
-The "Customize This Folder" in Windows XP and later are a property tab instead.
+The "Customize This Folder" in Windows XP or later is a property tab instead.
 (Details are documented here: <https://support.microsoft.com/kb/812003>)
 
 Windows 2000 SP3 and later, and XP SP1 and later have Web View disabled by
@@ -401,8 +401,8 @@ present, the "DriveIcons" key in the local system's registry.)
 
 The "Web View" thing has many names in the "Folder Options" throughout Windows
 versions:
-95, NT4 and 98: "as Web Page" (in View menu) and "View Web content in folders";
-2000 and Me: "Web View" group box -> "Enable Web content in folders";
+95, NT4 or 98: "as Web Page" (in View menu) and "View Web content in folders";
+2000 or Me: "Web View" group box -> "Enable Web content in folders";
 XP: "Tasks" group box -> "Show common tasks in folders" (which also enables Web
     View).
 Microsoft documentation refers to this feature as "Web view".
@@ -430,10 +430,10 @@ The "Default" value in [ExtShellFolderViews] section specified the default view
 of the folder. It was usually omitted and specifying "Default={5984FFE0..." was
 redundant. However it may be specified as
 "Default={8BEBB290-52D0-11d0-B7F4-00C04FD706EC}", which forced Thumbnails view
-by default. (Example: "My Pictures" folder in Windows 2000 and Me)
+by default. (Example: "My Pictures" folder in Windows 2000 or Me)
 
 The "WebViewTemplate.NT5" value was meant only for "ImgView.htt" or a similar
-template, as Thumbnails view was only available in Windows 2000 and Me.
+template, as Thumbnails view was only available in Windows 2000 or Me.
 
 Below were some important registry entries of default folder templates.
 
@@ -447,7 +447,7 @@ Below were some important registry entries of default folder templates.
     74,61,25,5c,4d,69,63,72,6f,73,6f,66,74,5c,49,6e,74,65,72,6e,65,74,20,45,\
     78,70,6c,6f,72,65,72,5c,44,65,73,6b,74,6f,70,2e,68,74,74,00
 
-  ; This key existed in Windows 98, 2000 and Me. (IE4 upgrade for 95 and NT4
+  ; This key existed in Windows 98, 2000 or Me. (IE4 upgrade for 95 and NT4
   ; did not come with default.htt.)
   [HKEY_CLASSES_ROOT\Folder\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
   "PersistMoniker"="file://%webdir%\\default.htt"
@@ -456,7 +456,7 @@ Below were some important registry entries of default folder templates.
   [HKEY_CLASSES_ROOT\Directory\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
   "PersistMoniker"="file://%webdir%\\folder.htt"
 
-  ; This key existed only in Windows 2000 and Me. It enabled Thumbnails view
+  ; This key existed only in Windows 2000 or Me. It enabled Thumbnails view
   ; for the folder.
   [HKEY_CLASSES_ROOT\Directory\shellex\ExtShellFolderViews\{8BEBB290-52D0-11d0-B7F4-00C04FD706EC}]
   "Attributes"=dword:60000000

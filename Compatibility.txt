@@ -40,8 +40,8 @@ environment is okay. The code is copied below, with comments added:
 
     @ECHO OFF
     REM The CMDEXTVERSION check may be available only after cmd extensions are
-    REM enabled. Expect a "Bad command" error for COMMAND.COM in DOS and Win9x.
-    REM Redirecting stderr ("2>") is impossible in DOS and Win9x.
+    REM enabled. Expect a "Bad command" error for COMMAND.COM in DOS or Win9x.
+    REM Redirecting stderr ("2>") is impossible in DOS or Win9x.
     SETLOCAL EnableExtensions
     REM Expect a "syntax error" for those not supporting. Win9x continues after
     REM error; Win NT 3.* and OS/2 will halt here.
