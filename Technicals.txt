@@ -432,8 +432,13 @@ redundant. However it may be specified as
 "Default={8BEBB290-52D0-11d0-B7F4-00C04FD706EC}", which forced Thumbnails view
 by default. (Example: "My Pictures" folder in Windows 2000 or Me)
 
-The "WebViewTemplate.NT5" value was meant only for "ImgView.htt" or a similar
-template, as Thumbnails view was only available in Windows 2000 or Me.
+The "WebViewTemplate.NT5" value was meant for folder templates that worked only
+in Windows 2000 or Me. The value was used in Windows 2000 and Me system folders
+(specifically, "%ProgramFiles%", "%WinDir%", and "%WinDir%\System32" in 2000 or
+"%WinDir%\System" in Me), and is also used in folders with "ImgView.htt" or
+similar templates (including "My Pictures" folder). ieshwiz.exe will set the
+"WebViewTemplate.NT5" value instead of "PersistMoniker" if "ImgView.htt" is
+specified as the folder template.
 
 Below were some important registry entries of default folder templates.
 
