@@ -358,7 +358,7 @@ Desktop Update was optional for Windows 95 and NT4, but is a mandatory feature
 in Windows 98 or later.
 
 The program of the "Customize This Folder Wizard" was "ieshwiz.exe" located in
-"%WinDir%\SYSTEM" (for 95, 98 or Me) or "%WinDir%\System32" (for NT4 or 2000).
+"%WinDir%\System" (for 95, 98 or Me) or "%WinDir%\System32" (for NT4 or 2000).
 
 In 95, NT4 or 98, when user chooses to "Create or edit an HTML document",
 ieshwiz.exe copys the "%webdir%\folder.htt" file to the folder to be
