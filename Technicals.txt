@@ -23,7 +23,7 @@ thinking he is opening a (legitimate) file:
 
 Technically these correspond to the following things:
 
-1. "Hide extension for known file types" checkbox in Folder Settings, which
+1. "Hide extension for known file types" checkbox in "Folder Options", which
    corresponds to "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\
    Advanced" value "HideFileExt" in registry
 2. "NeverShowExt" or "AlwaysShowExt" registry value in class key (technically
