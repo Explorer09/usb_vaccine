@@ -68,7 +68,7 @@ Below is the list of some common file types and whether they fit the conditions
 listed above. To ensure safety, at least 2 of the 6 cells should be "safe" for
 every file type.
 
-file | HideFileExt | NeverShow- |   Icon   | Shortcut |    %1     | %* ending
+File | HideFileExt | NeverShow- |   Icon   | Shortcut |    %1     | %* ending
 ext. | (safe:0,    | Ext (safe: | (safe:   |  arrow   | beginning | (safe:no)
      |  default:1) | absent)    |  static) |          | (safe:no) |
 -----+-------------+------------+----------+----------+-----------+----------
