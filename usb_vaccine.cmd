@@ -10,7 +10,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2015-09-26)
+REM 'usb_vaccine.cmd' version 3 beta (2015-09-28)
 REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -251,7 +251,7 @@ IF "!opt_cmd_autorun!"=="ALL_USERS" (
 
 :main_inf_mapping
 SET has_inf_mapping=1
-reg query "%HKLM_SFT%\%INF_MAP_SUBKEY%" /ve 2>nul | find /I "@SYS:" >nul || (
+reg query "%HKLM_SFT%\%INF_MAP_SUBKEY%" /ve 2>nul | find /I "@" >nul || (
     SET has_inf_mapping=0
     ECHO.>&2
     ECHO *** DANGER: Your computer is vulnerable to the AutoRun malware^^!>&2
@@ -570,7 +570,7 @@ REM Symlinks have to be handled first because we can't guarantee that user's
 REM 'attrib' utility supports '/L' (don't follow symlinks).
 IF NOT "!opt_symlinks!"=="SKIP" (
     ECHO.
-    ECHO [symlinks]
+    ECHO [symlinks] ^(1 of 7^)
     ECHO In Windows Vista or later, the NTFS file system supports "symbolic links",
     ECHO which are a kind of special files that function like shortcuts, and also have a
     ECHO shortcut arrow icon. But symbolic links are a file system feature, and do not
@@ -591,7 +591,7 @@ REM [attrib] must be done before moving anything, or MOVE refuses to move
 REM Hidden or System files.
 IF NOT "!opt_attrib!"=="SKIP" (
     ECHO.
-    ECHO [attrib]
+    ECHO [attrib] ^(2 of 7^)
     ECHO With the "Hidden" or "System" attribute set on files, they will no longer be
     ECHO visible by default in Windows Explorer or 'DIR' command. Some malware will hide
     ECHO the files and generate executable files ^(or shortcuts to executables^) with the
@@ -605,7 +605,7 @@ IF NOT "!opt_attrib!"=="SKIP" (
 )
 IF NOT "!opt_shortcuts!"=="SKIP" (
     ECHO.
-    ECHO [shortcuts]
+    ECHO [shortcuts] ^(3 of 7^)
     IF /I "!opt_move_subdir!"=="NUL" (
         ECHO We will delete shortcut files of the following types in the root directories:
         ECHO .pif, .lnk, .shb, .url, .appref-ms and .glk.
@@ -619,7 +619,7 @@ IF NOT "!opt_folder_exe!"=="SKIP" (
     REM COM format does not allow icons and Explorer won't show custom icons
     REM for an NE or PE renamed to .com.
     ECHO.
-    ECHO [folder-exe]
+    ECHO [folder-exe] ^(4 of 7^)
     ECHO Some malware will hide the folders and generate executable files with the same
     ECHO names, usually with also the folder icon, tricking users into opening them.
     IF /I "!opt_move_subdir!"=="NUL" (
@@ -636,7 +636,7 @@ IF NOT "!opt_folder_exe!"=="SKIP" (
 )
 IF NOT "!opt_autorun_inf!"=="SKIP" (
     ECHO.
-    ECHO [autorun-inf]
+    ECHO [autorun-inf] ^(5 of 7^)
     ECHO Some malware will create the autorun.inf file, so that malware itself may be
     ECHO automatically run on computers that didn't have AutoRun disabled. Except for
     ECHO optical drives, no other drives should ever contain a file named "autorun.inf".
@@ -651,7 +651,7 @@ REM We won't deal with Folder.htt, because technically it could be any name in
 REM any location, as specified in Desktop.ini.
 IF NOT "!opt_desktop_ini!"=="SKIP" (
     ECHO.
-    ECHO [desktop-ini]
+    ECHO [desktop-ini] ^(6 of 7^)
     ECHO In Windows 98, 2000 or Me ^(or in 95 or NT 4.0 with IE4 installed^), there is a
     ECHO "Customize this folder" feature that allows customizing the root folder of a
     ECHO drive, creating or editing the folder's "Web View" template ^(usually named
@@ -661,8 +661,8 @@ IF NOT "!opt_desktop_ini!"=="SKIP" (
     ECHO latest service pack ^(at least 2000 SP3 or XP SP1^) to fix security risks caused
     ECHO by custom templates. Vista and later versions are safe.
     ECHO The "Desktop.ini" file specifies which template would be used for the folder.
-    ECHO However, it's not supposed to exist in the root directories. (Not every feature
-    ECHO of Desktop.ini works in root folders, and it is not part of design that custom
+    ECHO However, it's not supposed to exist in the root directories. ^(Not every feature
+    ECHO of Desktop.ini works in root folders, and it was not part of design that custom
     ECHO Web View template works there.^)
     IF /I "!opt_move_subdir!"=="NUL" (
         ECHO We will delete the "Desktop.ini" files in the root directories.
@@ -675,7 +675,7 @@ IF NOT "!opt_desktop_ini!"=="SKIP" (
 IF "!opt_autorun_inf!.!opt_desktop_ini!"=="SKIP.SKIP" SET opt_mkdir=SKIP
 IF NOT "!opt_mkdir!"=="SKIP" (
     ECHO.
-    ECHO [mkdir]
+    ECHO [mkdir] ^(7 of 7^)
     ECHO With autorun.inf or Desktop.ini or both files removed, in order to prevent
     ECHO malware from creating either of them again, we will create hidden directories
     ECHO with same names. Users won't see them, but they may interfere with malware.
@@ -684,6 +684,7 @@ IF NOT "!opt_mkdir!"=="SKIP" (
     CALL :continue_prompt || SET opt_mkdir=SKIP
 )
 
+SET g_files_moved=0
 REM The "Windows - No Disk" error dialog is right on USB drives that are not
 REM "safely removed", but is a bug to pop up on floppy drives. Guides on the
 REM web mostly refer this to malware, or suggest suppressing it. Both are
@@ -699,7 +700,7 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         ECHO.
         ECHO Drive %%d:
         REM Workaround name collisions caused by forced rename.
-        SET g_dont_move_files=_autorun.in0 _Desktop.in0
+        SET g_dont_move_files=_autorun.in0 _Desktop.in0 _README.txt
         IF NOT "!opt_symlinks!"=="SKIP" CALL :move_symlinks
         IF NOT "!opt_attrib!"=="SKIP" CALL :clear_files_attrib
         IF NOT "!opt_shortcuts!"=="SKIP" CALL :move_shortcuts
@@ -709,10 +710,14 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         REM Process the locked files last.
         SET g_dont_move_files=
         IF NOT "!opt_symlinks!"=="SKIP" CALL :move_symlinks
+        IF "!g_move_status!"=="OK_EMPTY" (
+            DEL "!opt_move_subdir!\README.txt" >nul
+            RMDIR "!opt_move_subdir!"
+        )
     )
 )
 ECHO.
-IF /I "!opt_move_subdir!"=="NUL" (
+IF "!g_files_moved!"=="0" (
     ECHO All done. Press any key to close this program.
 ) ELSE (
     ECHO All done. Please examine the "!opt_move_subdir!"
@@ -1036,7 +1041,7 @@ REM Creates and initializes directory specified by opt_move_subdir.
         ECHO Either a file of same name exists, or the drive is read-only.>&2
         GOTO :EOF
     )
-    SET g_move_status=OK
+    SET g_move_status=OK_EMPTY
     (
         ECHO All files that are considered suspicious by the script 'usb_vaccine.cmd' are
         ECHO moved to this directory. As 'usb_vaccine.cmd' is not anti-virus software, there
@@ -1094,7 +1099,7 @@ REM @param %2 Type of file, displayed in (localized) messages
         DEL /F /A:!attr_h!!attr_s!!attr_l!-d "%~1" >nul
         GOTO :EOF
     )
-    IF NOT "!g_move_status!"=="OK" (
+    IF NOT "!g_move_status:~0,2!"=="OK" (
         ECHO Detected but won't move %~2 "%~1"
         GOTO :EOF
     )
@@ -1108,6 +1113,7 @@ REM @param %2 Type of file, displayed in (localized) messages
     SET "dest=%~1"
     IF /I "%~1"=="autorun.inf" SET dest=_autorun.in0
     IF /I "%~1"=="Desktop.ini" SET dest=_Desktop.in0
+    IF /I "%~1"=="README.txt" SET dest=_%~1
     REM Should never exist name collisions except the forced rename above.
     IF EXIST "!opt_move_subdir!\!dest!" (
         ECHO Can't move %~2 "%~1" to "!opt_move_subdir!". ^(Destination file exists^)>&2
@@ -1117,6 +1123,8 @@ REM @param %2 Type of file, displayed in (localized) messages
         ECHO Can't move %~2 "%~1" to "!opt_move_subdir!".>&2
         GOTO :EOF
     )
+    SET g_move_status=OK_MOVED
+    SET g_files_moved=1
     ECHO Moved %~2 "%~1" to "!opt_move_subdir!".
 GOTO :EOF
 
@@ -1228,7 +1236,6 @@ GOTO :EOF
 
 REM Force removes a file and creates a directory with the same name.
 REM @param %1 File name to be converted into a directory
-REM @param %2 
 REM @return 0 if directory exists or is created successfully, or 1 on error
 :file_to_directory
     IF EXIST %1 (
