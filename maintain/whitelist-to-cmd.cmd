@@ -31,24 +31,17 @@ SET alphabet=ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
 REM SYMLINK
 TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*L" > temp.txt
-SET list=
+SET g_list=
 FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
-    SET list=!list! %%i
+    SET g_list=!g_list! %%i
 )
-SET trimmed_list=
-SET prev=
-FOR %%i IN (!list!) DO (
-    IF NOT !prev!=="%%~i" (
-        SET trimmed_list=!trimmed_list! "%%~i"
-    )
-    SET prev="%%~i"
-)
+CALL :trim_list
 ECHO KEEP_SYMLINK_FILES=
-ECHO.!trimmed_list!
+CALL :print_wrapped
 (
     ECHO SET KEEP_SYMLINK_FILES=
     ECHO FOR %%%%i IN ^(
-    ECHO.!trimmed_list!
+    CALL :print_wrapped
     ECHO ^) DO ^(
     ECHO     SET KEEP_SYMLINK_FILES=^^!KEEP_SYMLINK_FILES^^! %%%%i
     ECHO ^)
@@ -56,24 +49,17 @@ ECHO.!trimmed_list!
 
 REM HS_ATTRIB
 TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*HS" > temp.txt
-SET list=
+SET g_list=
 FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
-    SET list=!list! %%i
+    SET g_list=!g_list! %%i
 )
-SET trimmed_list=
-SET prev=
-FOR %%i IN (!list!) DO (
-    IF NOT !prev!=="%%~i" (
-        SET trimmed_list=!trimmed_list! "%%~i"
-    )
-    SET prev="%%~i"
-)
+CALL :trim_list
 ECHO KEEP_HS_ATTRIB_FILES=
-ECHO.!trimmed_list!
+CALL :print_wrapped
 (
     ECHO SET KEEP_HS_ATTRIB_FILES=
     ECHO FOR %%%%i IN ^(
-    ECHO.!trimmed_list!
+    CALL :print_wrapped
     ECHO ^) DO ^(
     ECHO     SET KEEP_HS_ATTRIB_FILES=^^!KEEP_HS_ATTRIB_FILES^^! %%%%i
     ECHO ^)
@@ -81,24 +67,17 @@ ECHO.!trimmed_list!
 
 REM H_ATTRIB
 TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet:S=!]*H[!alphabet:S=!]*," > temp.txt
-SET list=
+SET g_list=
 FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
-    SET list=!list! %%i
+    SET g_list=!g_list! %%i
 )
-SET trimmed_list=
-SET prev=
-FOR %%i IN (!list!) DO (
-    IF NOT !prev!=="%%~i" (
-        SET trimmed_list=!trimmed_list! "%%~i"
-    )
-    SET prev="%%~i"
-)
+CALL :trim_list
 ECHO KEEP_H_ATTRIB_FILES=
-ECHO.!trimmed_list!
+CALL :print_wrapped
 (
     ECHO SET KEEP_H_ATTRIB_FILES=
     ECHO FOR %%%%i IN ^(
-    ECHO.!trimmed_list!
+    CALL :print_wrapped
     ECHO ^) DO ^(
     ECHO     SET KEEP_H_ATTRIB_FILES=^^!KEEP_H_ATTRIB_FILES^^! %%%%i
     ECHO ^)
@@ -106,24 +85,17 @@ ECHO.!trimmed_list!
 
 REM S_ATTRIB
 TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet:H=!]*S[!alphabet:H=!]*," > temp.txt
-SET list=
+SET g_list=
 FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
-    SET list=!list! %%i
+    SET g_list=!g_list! %%i
 )
-SET trimmed_list=
-SET prev=
-FOR %%i IN (!list!) DO (
-    IF NOT !prev!=="%%~i" (
-        SET trimmed_list=!trimmed_list! "%%~i"
-    )
-    SET prev="%%~i"
-)
+CALL :trim_list
 ECHO KEEP_S_ATTRIB_FILES=
-ECHO.!trimmed_list!
+CALL :print_wrapped
 (
     ECHO SET KEEP_S_ATTRIB_FILES=
     ECHO FOR %%%%i IN ^(
-    ECHO.!trimmed_list!
+    CALL :print_wrapped
     ECHO ^) DO ^(
     ECHO     SET KEEP_S_ATTRIB_FILES=^^!KEEP_S_ATTRIB_FILES^^! %%%%i
     ECHO ^)
@@ -133,10 +105,11 @@ REM EXECUTE
 TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*," > temp.txt
 SET list=
 FOR /F "usebackq tokens=1,2 delims=," %%i IN ("temp.txt") DO (
-    ECHO.%%i | findstr /r "[\""\.\\]" >nul && (
-        SET list=!list! %%i
-    ) || (
+    ECHO.%%i | findstr /r "[\""\.\\]" >nul
+    IF ERRORLEVEL 1 (
         SET list=!list! %%j
+    ) ELSE (
+        SET list=!list! %%i
     )
 )
 SET trimmed_list=
@@ -149,12 +122,13 @@ FOR %%i IN (!list!) DO (
         SET prev="%%~i"
     )
 )
+SET g_list=!trimmed_list!
 ECHO KEEP_EXECUTE_FILES=
-ECHO.!trimmed_list!
+CALL :print_wrapped
 (
     ECHO SET KEEP_EXECUTE_FILES=
     ECHO FOR %%%%i IN ^(
-    ECHO.!trimmed_list!
+    CALL :print_wrapped
     ECHO ^) DO ^(
     ECHO     SET KEEP_EXECUTE_FILES=^^!KEEP_EXECUTE_FILES^^! %%%%i
     ECHO ^)
@@ -162,6 +136,50 @@ ECHO.!trimmed_list!
 
 DEL temp.txt
 EXIT /B 0
+
+:trim_list
+    SET trimmed_list=
+    SET prev=
+    FOR %%i IN (!g_list!) DO (
+        IF NOT !prev!=="%%~i" SET trimmed_list=!trimmed_list! "%%~i"
+        SET prev="%%~i"
+    )
+    SET g_list=!trimmed_list!
+GOTO :EOF
+
+:count_chars
+    IF "!g_str_to_count!"=="" GOTO :EOF
+    SET /A g_chars_count+=1
+    SET "g_str_to_count=!g_str_to_count:~1!"
+GOTO :count_chars
+
+:print_wrapped
+    SET line=
+    SET line_length=0
+    SET g_chars_count=0
+    IF "!g_list!"=="" GOTO :EOF
+    FOR %%i IN (!g_list!) DO (
+        SET "g_str_to_count=%%~i"
+        CALL :count_chars
+        IF "!line!"=="" (
+            SET line="%%~i"
+            REM Add two quotation marks
+            SET /A g_chars_count+=2
+        ) ELSE (
+            REM Add two quotation marks and a space
+            SET /A g_chars_count+=3
+            IF !g_chars_count! LSS 80 (
+                SET line=!line! "%%~i"
+            ) ELSE (
+                ECHO.!line!
+                SET line="%%~i"
+                SET /A g_chars_count=!g_chars_count!-!line_length!-1
+            )
+        )
+        SET /A line_length=!g_chars_count!
+    )
+    ECHO.!line!
+GOTO :EOF
 
 :is_executable
     REM This list includes both executable file types and shortcut types.
