@@ -251,8 +251,8 @@ IF "!has_cmd_autorun!"=="1" (
 IF "!opt_cmd_autorun!"=="ALL_USERS" (
     CALL :prepare_sids
     FOR %%i IN (!g_sids!) DO (
-        ECHO SID %%i
-        CALL :delete_reg_value "HKU\%%i\Software" "%CMD_SUBKEY%" "AutoRun" "Command Processor /v AutoRun"
+        ECHO SID %%~i
+        CALL :delete_reg_value "HKU\%%~i\Software" "%CMD_SUBKEY%" "AutoRun" "Command Processor /v AutoRun"
     )
 )
 
@@ -321,9 +321,9 @@ ECHO （影響所有使用者的設定。此無法被復原。!BIG5_A15E!
 CALL :continue_prompt || GOTO main_known_ext
 CALL :prepare_sids
 FOR %%i IN (!g_sids!) DO (
-    ECHO SID %%i
+    ECHO SID %%~i
     FOR %%k IN (MountPoints MountPoints2) DO (
-        CALL :clean_reg_key "HKU\%%i\Software" "%EXPLORER_SUBKEY%\%%k" "Explorer\%%k"
+        CALL :clean_reg_key "HKU\%%~i\Software" "%EXPLORER_SUBKEY%\%%k" "Explorer\%%k"
     )
 )
 
@@ -357,8 +357,8 @@ reg add "HKCU\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f 
 IF "!opt_known_ext!"=="ALL_USERS" (
     CALL :prepare_sids
     FOR %%i IN (!g_sids!) DO (
-        ECHO SID %%i
-        reg add "HKU\%%i\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >nul || (
+        ECHO SID %%~i
+        reg add "HKU\%%~i\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >nul || (
             CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
         )
     )
@@ -890,7 +890,7 @@ REM Prepares g_sids global variable (list of all user SIDs on the computer).
         SET "key=%%~k"
         IF /I "!key:~0,11!"=="HKEY_USERS\" (
             IF /I NOT "!key:~-8!"=="_Classes" (
-                SET g_sids=!g_sids! !key:~11!
+                SET g_sids=!g_sids! "!key:~11!"
             )
         )
     )
@@ -951,9 +951,9 @@ REM @param %* List of extensions in "ext=ProgID" (quoted) data pairs.
     IF NOT "!opt_reassoc!"=="ALL_USERS" GOTO :EOF
     CALL :prepare_sids
     FOR %%i IN (!g_sids!) DO (
-        ECHO SID %%i
+        ECHO SID %%~i
         FOR %%k IN (!keys!) DO (
-            CALL :delete_reg_key "HKU\%%i\Software\Classes" "%%~k" "HKU Classes\%%~k"
+            CALL :delete_reg_key "HKU\%%~i\Software\Classes" "%%~k" "HKU Classes\%%~k"
         )
     )
 GOTO :EOF
