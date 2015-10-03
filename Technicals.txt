@@ -96,13 +96,15 @@ ext. | (safe:0,    | Ext (safe: | (safe:   |  arrow   | beginning | (safe:no)
     executes other programs.
 [2] There is no DefaultIcon subkey in HKCR\scrfile, but "%1" is implied for
     this file type.
-[3] .scr is self-executable (PE format), so %* technically doesn't matter.
-    Therefore no "safe" is marked on this field.
+[3] .scr is self-executable (NE or PE format), so %* technically doesn't
+    matter. Therefore no "safe" is marked on this field.
 [4] Although .pif is a shortcut format, it's "open" verb, as handled by Windows
-    Explorer, does not check for a valid PIF format. Thus it is possible to
-    have a PE executable in .pif extension and get executed when user "opens"
-    it in Explorer. (For this reason 'usb_vaccine.cmd' proposes to remove
-    NeverShowExt value for this file type.)
+    Explorer, does not check the validity of PIF format properly. It silently
+    allows a PE executable in .pif extension to be executed when user "opens"
+    it in Explorer. For this reason 'usb_vaccine.cmd' proposes to remove the
+    NeverShowExt value for this file type. Strangely enough, executables of
+    COM, MZ or NE format and in .pif extension have the expected behavior of
+    not being executed.
 [5] .lnk and .url have special Context Menu Handlers that change the default
     (open) verb.
 
@@ -200,7 +202,7 @@ File types that are self-executable (i.e. their "shell\open\command" default
 value begins with "%1"):
     batfile, cmdfile, comfile, exefile, piffile, scrfile
 
-For these extensions, the "NeverShowExt" value in their class key should never
+For these extensions, the "NeverShowExt" value in their class keys should never
 be created. It is possible to have a PE executable in one of these extensions
 (even .pif!)
 
