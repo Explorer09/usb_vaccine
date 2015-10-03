@@ -10,7 +10,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2015-10-02)
+REM 'usb_vaccine.cmd' version 3 beta (2015-10-03)
 REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -840,8 +840,9 @@ REM Creates and initializes "Vacc_reg.bak"
     CALL :create_file "Vacc_reg.bak" || (
         SET g_reg_bak=FAIL
         ECHO.>&2
-        ECHO WARNING: Can't create registry backup file "Vacc_reg.bak".>&2
-        ECHO Either a file of same name exists, or the working directory is read-only.>&2
+        ECHO WARNING: Can't create registry backup file "Vacc_reg.bak" in the directory>&2
+        ECHO "!CD!">&2
+        ECHO Either a file of same name exists, or the directory is read-only.>&2
         ECHO This program will now continue without registry backup.>&2
         PAUSE
         GOTO :EOF
@@ -853,7 +854,11 @@ REM Creates and initializes "Vacc_reg.bak"
         ECHO ; ^<https://github.com/Explorer09/usb_vaccine^>
     ) >>"Vacc_reg.bak"
     ECHO.
-    ECHO Your registry will be backed up in the "Vacc_reg.bak" file.
+    ECHO Your registry will be backed up in the file named:
+    FOR %%i IN (Vacc_reg.bak) DO (
+        ECHO "%%~fi".
+    )
+    PAUSE
 GOTO :EOF
 
 REM Logs data of a registry key/value into "Vacc_reg.bak".

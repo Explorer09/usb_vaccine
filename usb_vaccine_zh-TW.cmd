@@ -10,7 +10,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2015-10-02)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2015-10-03)
 REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -812,8 +812,9 @@ REM Creates and initializes "Vacc_reg.bak"
     CALL :create_file "Vacc_reg.bak" || (
         SET g_reg_bak=FAIL
         ECHO.>&2
-        ECHO 警告：無法建立登錄的備份檔 "Vacc_reg.bak"。>&2
-        ECHO 工作目錄中可能已經存在相同名稱的檔案，或是此目錄是唯讀的。>&2
+        ECHO 警告：無法在此目錄裡建立登錄備份檔 "Vacc_reg.bak">&2
+        ECHO "!CD!"!BIG5_A15E!>&2
+        ECHO 可能已經存在相同名稱的檔案，或是此目錄是唯讀的。>&2
         ECHO 本程式將!BIG5_B77C!在沒有登錄備份的情況下繼續。>&2
         PAUSE
         GOTO :EOF
@@ -825,7 +826,11 @@ REM Creates and initializes "Vacc_reg.bak"
         ECHO ; ^<https://github.com/Explorer09/usb_vaccine^>
     ) >>"Vacc_reg.bak"
     ECHO.
-    ECHO 您的登錄將!BIG5_B77C!備份在 "Vacc_reg.bak" 檔案裡。
+    ECHO 您的登錄將!BIG5_B77C!備份在此檔案裡：
+    FOR %%i IN (Vacc_reg.bak) DO (
+        ECHO "%%~fi"
+    )
+    PAUSE
 GOTO :EOF
 
 REM Logs data of a registry key/value into "Vacc_reg.bak".
