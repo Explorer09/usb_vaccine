@@ -7,7 +7,7 @@ _unintentionally_ running an _arbitrary_ program, when he opens a drive or a
 file inside it.
 
 Unix/Linux already have execution mode bits, and the (optional) 'noexec' mount
-option. It's not perfect, but DOES prevent most of the tricks that USB malware
+option. They're not perfect, but DO prevent most of the tricks that USB malware
 could do on Windows. There's no execute bit on Windows, so we have to let users
 aware by other means.
 
@@ -15,7 +15,7 @@ There are several factors that a Windows user might mistakenly runs a program,
 thinking he is opening a (legitimate) file:
 - File extension displayed in Windows Explorer (_displayed_, which may be fake)
 - File icon, whether it is static or dynamic based on file content (malicious
-  file can have a icon faking the user that it's something safe)
+  file can have an icon faking the user that it's something safe)
 - Shortcut arrows
 - Whether file itself is loaded and executed directly by the OS, executed only
   via an interpreter, or have no execution data at all
@@ -53,9 +53,9 @@ Ideally on a secure system,
 5. The "Shell Icons" registry value "29" should either not exist or refer to an
    icon that is not blank icon.
 6. Files that are not binary self-executable (PE, NE, MZ, or old COM format)
-   shouldn't have "%1" in the beginning of their "shell\open\command", and
-   files that are no executable code (script or binary) shouldn't have "%*" in
-   end of "shell\open\command".
+   shouldn't have "%1" in the beginning data of their "shell\open\command"
+   default values, and files that are no executable code (script or binary)
+   shouldn't have "%*" in end of "shell\open\command" default values.
 
 One exception can be made for scripts that contain shebangs indicating which
 interpreter it is meant to be run in, and so will be necessary for OS kernel to
@@ -110,7 +110,7 @@ ext. | (safe:0,    | Ext (safe: | (safe:   |  arrow   | beginning | (safe:no)
 
 -------------------------------------------------------------------------------
 
-File types with "%1" default value of their "DefaultIcon" subkey:
+File types with data "%1" in default values of their "DefaultIcon" subkeys:
 
 Extension  Software       Class registry key (technically known as ProgID)
 .ani                      HKCR\anifile
@@ -129,8 +129,8 @@ Win95 only  HKCR\CLSID\{00028B05-0000-0000-C000-000000000046}
                 ("Shortcut to The Microsoft Network")
 
 In Windows 2000, XP or Vista, the font file types ('.otf', '.ttc', '.ttf',
-except '.fon') have "%1" in default value of their respective "DefaultIcon"
-subkey. Font files can never contain an icon, so it is fontext.dll that
+except '.fon') have "%1" in default values of their respective "DefaultIcon"
+subkeys. Font files can never contain an icon, so it is fontext.dll that
 provides the icon for those fonts (depending on format, e.g. TrueType or
 "OpenType with TrueType outlines", both having '.ttf' file extension).
 
@@ -161,7 +161,7 @@ Extension   Software      Class registry key (ProgID)
 .glk        Office2007+   HKCR\GrooveLinkFile
 .xnk        Office2003-   HKCR\xnkfile ("Exchange Shortcut", used in Outlook)
 
-File types that contain "IsShortcut" registry value but not "NeverShowExt":
+File types that contain "IsShortcut" registry values but not "NeverShowExt":
 Extension   Software      Class registry key (ProgID)
 .mcc        Win95 only    HKCR\Dialer10CallingCard
                               ("Shortcut to The Microsoft Network")
@@ -175,7 +175,7 @@ appear in Windows components or Microsoft Office.)
 
 -------------------------------------------------------------------------------
 
-File types and CLSIDs that contain "NeverShowExt" registry value but not
+File types and CLSIDs that contain "NeverShowExt" registry values but not
 "IsShortcut":
 Extension            Software   Class registry key (ProgID)
 .accountpicture-ms   Win8+      HKCR\accountpicturefile
@@ -198,8 +198,8 @@ Win2000+    HKCR\CLSID\{ECF03A32-103D-11d2-854D-006008059367}
 
 -------------------------------------------------------------------------------
 
-File types that are self-executable (i.e. their "shell\open\command" default
-value begins with "%1"):
+File types that are self-executable (i.e. their data of "shell\open\command"
+default values begin with "%1"):
     batfile, cmdfile, comfile, exefile, piffile, scrfile
 
 For these extensions, the "NeverShowExt" value in their class keys should never
@@ -208,7 +208,7 @@ be created. It is possible to have a PE executable in one of these extensions
 
 -------------------------------------------------------------------------------
 
-File types that contain "%*" in their "shell\open\command" default value:
+File types that contain "%*" in their "shell\open\command" default values:
 Extension  Software       Class registry key (ProgID)
 .bat                      HKCR\batfile
 .cmd       WinNT4+        HKCR\cmdfile
