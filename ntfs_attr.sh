@@ -51,14 +51,21 @@ attr_r=0
 attr_h=0
 attr_s=0
 attr_a=0
-attr_t=0 # Supported in ntfs-3g. Never worked with Windows's attrib.
-attr_c=0 # Supported only in recovery console and not in normal Windows.
-attr_o=0 # Supported in ntfs-3g. Never worked with Windows's attrib.
-attr_i=0 # Supported since Windows Vista.
+attr_t=0 # Changeable in ntfs-3g. Never worked with Windows's attrib.
+attr_c=0 # Changeable only in recovery console and not in normal Windows.
+attr_o=0 # Changeable in ntfs-3g. Never worked with Windows's attrib.
+attr_i=0 # Changeable in Windows Vista or later.
+# 'X' (No scrub) is changeable in attrib in Windows 8.
 
 # The 'Not content indexed' attribute is displayed as 'N' instead of 'I' in
 # Explorer in Windows Vista (bug, fixed in Windows 7):
 # http://superuser.com/questions/516709
+
+# FILE_ATTRIBUTE_DEVICE is shown as 'X' in Explorer (in Windows 7 or later),
+# even though the bit is never supposed to be set on files. Panda USB Vaccine
+# was known to exploit this bit for its "vaccinate" feature.
+# http://superuser.com/questions/180306
+# http://stackoverflow.com/questions/8617639
 
 # Mode 'show' or 'edit' attributes
 attr_mode=show
@@ -81,21 +88,25 @@ Attributes: ( ! = unchangeable with this utility )
   r - Read-only
   h - Hidden
   s - System
-  v ! Volume label (obsolete in NTFS)
+  v ! Volume label (obsolete in NTFS and must not be set)
   d ! Directory
   a - Archive
+  x ! Device (reserved by system and must not be set)
   n ! Normal (i.e. no other attributes set)
   t - Temporary
   p ! Sparse file
   l ! Symbolic link / Junction / Mount point / has a reparse point
   c - Compressed (flag changable with directories only)
   o - Offline
-  i - Not content indexed (displayed as N in Explorer in Windows Vista)
+  i - Not content indexed (displayed as 'N' in Explorer in Windows Vista)
   e ! Encrypted
-  V ! Integrity (Windows 8 ReFS only)
-  x ! No scrub (Windows 8 ReFS only)
+  V ! Integrity (Windows 8 ReFS only; attribute not displayed in Explorer)
+  X ! No scrub (Windows 8 ReFS only; attribute not displayed in Explorer)
 USAGE
 }
+# Order of attribute letters in "%~a1" output: "drahscotl-x"
+# Order of attribute letters in 'attrib' output: "A  SHR  I VX"
+# (The 'V', 'X' in both refer to Integrity and No scrub, respectively.)
 
 while [ "$#" -ge 1 ]; do
     case "$1" in
@@ -154,9 +165,9 @@ for f in "$@"; do
     [ "$attr_show_hex" ] && printf '%s ' "$attr_hex"
     if [ "$attr_mode" = show ]; then
         attr_mask=0x1
-        # Attributes that are reserved and never have an abbreviated letter:
-        # FILE_ATTRIBUTE_DEVICE (0x40), FILE_ATTRIBUTE_VIRTUAL (0x10000)
-        for i in r h s v d a + n t p l c o i e V + x; do
+        # Attribute that is reserved and never has an abbreviated letter:
+        # FILE_ATTRIBUTE_VIRTUAL (0x10000)
+        for i in r h s v d a x n t p l c o i e V + X; do
             if [ $(($attr_hex & $attr_mask)) -gt 0 ]; then
                 printf '%c' "$i"
             else
