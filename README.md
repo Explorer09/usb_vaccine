@@ -10,8 +10,8 @@ USB malware immunity script and hidden files revealer.
 
 ![Screenshot](./images/usb_vaccine_en-US.png "Screenshot")
 
-What does it do
----------------
+What it does (Features)
+-----------------------
 
 * Detects and removes AutoRun commands for your Command Processor (cmd.exe).
 * Disables AutoRun entirely, for both CD-ROM drives, and USB flash drives. The
@@ -36,8 +36,8 @@ SD/MMC cards), and:
 
 All actions may be skipped and not done by user request.
 
-What does it NOT do
--------------------
+What it does NOT do (Limitations)
+---------------------------------
 
 * It does NOT kill or remove the malware. This is anti-virus program's job.
 * It does NOT make an already-infected system clean. This scripts is useful on
@@ -64,6 +64,50 @@ Windows 10.
 You may try `usb_vaccine.cmd --help` on the command line for additional options
 you can use.
 
+Comparison to Panda USB Vaccine
+-------------------------------
+
+Panda Security has released a freeware utility named
+[Panda USB Vaccine](http://www.pandasecurity.com/usa/homeusers/downloads/usbvaccine/),
+which unfortunately collides with our 'usb_vaccine.cmd'. However our project is
+nothing related to theirs (the name collision is merely coincidence), even
+though both projects have similar functionality (vaccinating computers from USB
+malware). The author develops this 'usb_vaccine.cmd' script independently.
+
+Here is some feature comparison between 'usb_vaccine.cmd' and Panda USB
+Vaccine:
+* Same: Both seek to disable the AutoRun using the
+  [IniFileMapping method](http://www.computerworld.com/article/2481506).
+* Same: Both may "vaccinate" USB drives by removing the malicious autorun.inf
+  files and creating a placeholder of that file name. However implementations
+  (the way it's done) are different.
+* Panda USB Vaccine doesn't yet support 64-bit. Using Panda's on a 64-bit OS
+  will only "vaccinate" the WoW64 layer of the system. 'usb_vaccine.cmd' works
+  with 64-bit natively (because it's only a batch script), and since version 3,
+  will tell the user if the script is run on the WoW64 layer, preventing access
+  of the 64-bit registry.
+* Panda USB Vaccine "vaccinates" USB drives by tampering with the file systems.
+  For FAT volumes, it creates a 16-byte placeholder "autorun.inf" file with
+  attributes "HX" (while "X" = the reserved Device attribute bit). This
+  technically makes the file system invalid and unportable across OSes. (For
+  example, the Linux 'vfat' driver will try to "fix" the error, effecively
+  undoing the "vaccination".) 'usb_vaccine.cmd' does this by only creating
+  placeholder directories, which always keeps the file systems valid.
+* Panda USB Vaccine can be configured to stay in the background ("/resident"
+  mode) and "vaccinates" USB drives that are newly inserted. 'usb_vaccine.cmd'
+  doesn't have this feature and requires user to run the script every time a
+  USB drive is plugged in.
+* 'usb_vaccine.cmd' does more than what Panda USB Vaccine offers to do in
+  securing the computers and USB drives. For example, 'usb_vaccine.cmd' detects
+  and prompts to fix various configuration mistakes in file associations or
+  Folder Options. It also have the features to unhide files and folders and
+  delete shortcuts, which is similar to Unhide
+  [utilities](http://www.bleepingcomputer.com/download/unhide/) and
+  [guides](http://www.pchell.com/support/unhidefiles.shtml) around the
+  Internet.
+* Panda USB Vaccine is freeware while 'usb_vaccine.cmd' is free and open
+  source. :)
+
 Copyright and license
 ---------------------
 
@@ -88,10 +132,10 @@ USB 病毒免疫暨隱藏檔現形程式
 
 ![螢幕擷圖](./images/usb_vaccine_zh-TW.png "螢幕擷圖")
 
-這做什麼
---------
+這做什麼（功能）
+----------------
 
-* 偵測並移除命令處裡程式 (cmd.exe) 的 AutoRun 命令。
+* 偵測並移除命令處裡程式（cmd.exe）的 AutoRun 命令。
 * 關閉所有的 AutoRun，CD-ROM 與 USB 隨身碟都關閉。使用最安全的
   [IniFileMapping 方法](http://www.computerworld.com/article/2481506)。
 * 為所有使用者
@@ -103,7 +147,7 @@ USB 病毒免疫暨隱藏檔現形程式
 
 針對每一個磁碟機（包括 USB 碟與記憶卡）的根目錄做以下事情：
 
-* 刪除所有捷徑、檔案符號連結 (symbolic links) 以及偽裝成一般資料夾的（惡意）執行
+* 刪除所有捷徑、檔案符號連結（symbolic links）以及偽裝成一般資料夾的（惡意）執行
   檔；
 * 解除所有被病毒隱藏的檔案；
 * 刪除 autorun.inf 檔案，並建立相同名稱的資料夾，以防止再次被感染。這與網路上各
@@ -127,7 +171,7 @@ USB 病毒免疫暨隱藏檔現形程式
 需要 Windows 2000 以上。從 Windows 2000 到 Windows 10 都有測試過可以使用。
 
 1. [下載](https://github.com/Explorer09/usb_vaccine/archive/master.zip)並解壓縮
-   取出腳本檔 (usb_vaccine_zh-TW.cmd)
+   取出腳本檔（usb_vaccine_zh-TW.cmd）
 2. 拔除所有的 USB 隨身碟。這樣如果 USB 隨身碟受到感染，您的電腦就不會受隨身碟
    的影響。
 3. 在 usb_vaccine_zh-TW.cmd 檔案上按滑鼠右鍵，選取「以系統管理員身分執行」。
@@ -139,9 +183,9 @@ USB 病毒免疫暨隱藏檔現形程式
 版權
 ----
 
-作者：宋岡哲 (Kang-Che Sung)
+作者：宋岡哲（Kang-Che Sung）
 
-採用 GNU 較寬鬆公共授權條款 (LGPL) v2.1 版（或任何更新版）授權。這是自由且開放
+採用 GNU 較寬鬆公共授權條款（LGPL）v2.1 版（或任何更新版）授權。這是自由且開放
 原始碼軟體。
 
 本軟體不附任何擔保。
