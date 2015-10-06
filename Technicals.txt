@@ -415,19 +415,19 @@ An unofficial documentation of Desktop.ini can be found here:
 
 The minimum content in Desktop.ini to enable a custom Web View template was:
 
-  [ExtShellFolderViews]
-  ; (Optional:) Default={5984FFE0-28D4-11CF-AE66-08002B2E1262}
-  {5984FFE0-28D4-11CF-AE66-08002B2E1262}={5984FFE0-28D4-11CF-AE66-08002B2E1262}
-  ; (Optional:)
-  ; {8BEBB290-52D0-11d0-B7F4-00C04FD706EC}={8BEBB290-52D0-11d0-B7F4-00C04FD706EC}
-  [{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
-  PersistMoniker=file://Folder.htt
-  ; (Or:) PersistMoniker=file://Folder Settings\Folder.htt
-  ; (Or:) WebViewTemplate.NT5=<Path to .htt file ("file://" is optional)>
-  ; (Optional:) PersistMonikerPreview=<Path to .bmp file (without "file://")>
-  [.ShellClassInfo]
-  ; (Not technically necessary but ieshwiz.exe adds it anyway:)
-  ConfirmFileOp=0
+    [ExtShellFolderViews]
+    ; (Optional:) Default={5984FFE0-28D4-11CF-AE66-08002B2E1262}
+    {5984FFE0-28D4-11CF-AE66-08002B2E1262}={5984FFE0-28D4-11CF-AE66-08002B2E1262}
+    ; (Optional:)
+    ; {8BEBB290-52D0-11d0-B7F4-00C04FD706EC}={8BEBB290-52D0-11d0-B7F4-00C04FD706EC}
+    [{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
+    PersistMoniker=file://Folder.htt
+    ; (Or:) PersistMoniker=file://Folder Settings\Folder.htt
+    ; (Or:) WebViewTemplate.NT5=<Path to .htt file ("file://" is optional)>
+    ; (Optional:) PersistMonikerPreview=<Path to .bmp file (without "file://")>
+    [.ShellClassInfo]
+    ; (Not technically necessary but ieshwiz.exe adds it anyway:)
+    ConfirmFileOp=0
 
 The "Default" value in [ExtShellFolderViews] section specified the default view
 of the folder. It was usually omitted and specifying "Default={5984FFE0..." was
@@ -445,39 +445,39 @@ specified as the folder template.
 
 Below were some important registry entries of default folder templates.
 
-  ; This key existed before Windows Vista. (Active Desktop)
-  [HKEY_CLASSES_ROOT\CLSID\{00021400-0000-0000-C000-000000000046}\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
-  ; Data is REG_EXPAND_SZ of
-  ; "file://%userappdata%\\Microsoft\\Internet Explorer\\Desktop.htt"
-  ; (Shown in ASCII encoding here. Windows 2000 and XP required it to be
-  ; encoded in UTF-16LE.)
-  "PersistMoniker"=hex(2):66,69,6c,65,3a,2f,2f,25,75,73,65,72,61,70,70,64,61,\
-    74,61,25,5c,4d,69,63,72,6f,73,6f,66,74,5c,49,6e,74,65,72,6e,65,74,20,45,\
-    78,70,6c,6f,72,65,72,5c,44,65,73,6b,74,6f,70,2e,68,74,74,00
+    ; This key existed before Windows Vista. (Active Desktop)
+    [HKEY_CLASSES_ROOT\CLSID\{00021400-0000-0000-C000-000000000046}\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
+    ; Data is REG_EXPAND_SZ of
+    ; "file://%userappdata%\\Microsoft\\Internet Explorer\\Desktop.htt"
+    ; (Shown in ASCII encoding here. Windows 2000 and XP required it to be
+    ; encoded in UTF-16LE.)
+    "PersistMoniker"=hex(2):66,69,6c,65,3a,2f,2f,25,75,73,65,72,61,70,70,64,\
+      61,74,61,25,5c,4d,69,63,72,6f,73,6f,66,74,5c,49,6e,74,65,72,6e,65,74,20,\
+      45,78,70,6c,6f,72,65,72,5c,44,65,73,6b,74,6f,70,2e,68,74,74,00
 
-  ; This key existed in Windows 98, 2000 or Me. (IE4 upgrade for 95 and NT4
-  ; did not come with default.htt.)
-  [HKEY_CLASSES_ROOT\Folder\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
-  "PersistMoniker"="file://%webdir%\\default.htt"
+    ; This key existed in Windows 98, 2000 or Me. (IE4 upgrade for 95 and NT4
+    ; did not come with default.htt.)
+    [HKEY_CLASSES_ROOT\Folder\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
+    "PersistMoniker"="file://%webdir%\\default.htt"
 
-  ; This key existed before Windows XP.
-  [HKEY_CLASSES_ROOT\Directory\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
-  "PersistMoniker"="file://%webdir%\\folder.htt"
+    ; This key existed before Windows XP.
+    [HKEY_CLASSES_ROOT\Directory\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
+    "PersistMoniker"="file://%webdir%\\folder.htt"
 
-  ; This key existed only in Windows 2000 or Me. It enabled Thumbnails view
-  ; for the folder.
-  [HKEY_CLASSES_ROOT\Directory\shellex\ExtShellFolderViews\{8BEBB290-52D0-11d0-B7F4-00C04FD706EC}]
-  "Attributes"=dword:60000000
-  ; Data is REG_EXPAND_SZ of "{8BEBB290-52D0-11d0-B7F4-00C04FD706EC}"
-  ; (Shown in ASCII encoding here.)
-  "ISV"=hex(2):7b,38,42,45,42,42,32,39,30,2d,35,32,44,30,2d,31,31,64,30,2d,42,\
-    37,46,34,2d,30,30,43,30,34,46,44,37,30,36,45,43,7d,00
+    ; This key existed only in Windows 2000 or Me. It enabled Thumbnails view
+    ; for the folder.
+    [HKEY_CLASSES_ROOT\Directory\shellex\ExtShellFolderViews\{8BEBB290-52D0-11d0-B7F4-00C04FD706EC}]
+    "Attributes"=dword:60000000
+    ; Data is REG_EXPAND_SZ of "{8BEBB290-52D0-11d0-B7F4-00C04FD706EC}"
+    ; (Shown in ASCII encoding here.)
+    "ISV"=hex(2):7b,38,42,45,42,42,32,39,30,2d,35,32,44,30,2d,31,31,64,30,2d,\
+      42,37,46,34,2d,30,30,43,30,34,46,44,37,30,36,45,43,7d,00
 
-  ; This key existed only in Windows Me. It was for root folder of the system
-  ; drive. This template hides all files from view and displays a
-  ; "View the entire contents of this drive" link on the left pane.
-  [HKEY_CLASSES_ROOT\SysRootFolder\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
-  "PersistMoniker"="file://%webdir%\\sysroot.htt"
+    ; This key existed only in Windows Me. It was for root folder of the system
+    ; drive. This template hides all files from view and displays a
+    ; "View the entire contents of this drive" link on the left pane.
+    [HKEY_CLASSES_ROOT\SysRootFolder\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
+    "PersistMoniker"="file://%webdir%\\sysroot.htt"
 
 The "default.htt" and "folder.htt" in %webdir% were not identical templates.
 "folder.htt" was used for regular directories (note the confusing wording of
