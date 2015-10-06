@@ -96,7 +96,7 @@ Attributes: ( ! = unchangeable with this utility )
   t - Temporary
   p ! Sparse file
   l ! Symbolic link / Junction / Mount point / has a reparse point
-  c - Compressed (flag changable with directories only)
+  c - Compressed (flag changeable with directories only)
   o - Offline
   i - Not content indexed (displayed as 'N' in Explorer in Windows Vista)
   e ! Encrypted
