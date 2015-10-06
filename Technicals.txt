@@ -354,10 +354,11 @@ Notes:
 
 Technical details about folders' "Web View", Desktop.ini and Folder.htt.
 
-The "Web View" of the folders, Desktop.ini and Folder.htt things are all
-introduced in Windows Desktop Update, which was a feature of IE4. Windows
-Desktop Update was optional for Windows 95 and NT4, but is a mandatory feature
-in Windows 98 or later.
+The "Web View" of the folders, Folder.htt, and extensions for Desktop.ini were
+all introduced in Windows Desktop Update, which was a feature of IE4. (The
+Desktop.ini itself was in Windows 95 earlier than Windows Desktop Update.)
+Windows Desktop Update was optional for Windows 95 and NT4, but is a mandatory
+feature in Windows 98 or later.
 
 The program of the "Customize This Folder Wizard" was "ieshwiz.exe" located in
 "%WinDir%\System" (for 95, 98 or Me) or "%WinDir%\System32" (for NT4 or 2000).
