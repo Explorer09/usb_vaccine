@@ -1216,10 +1216,20 @@ REM folder in current directory.
     )
 GOTO :EOF
 
-REM Creates a directory and writes a file named DONT_DEL.txt inside it.
-REM @param %1 Directory name
-REM @return 0 if directory is created successfully (despite the file within)
-:make_directory
+REM Removes a file and optionally creates a directory with the same name.
+REM @param %1 File name to be removed or replaced with a directory
+REM @return 0 if directory exists or is created successfully, or 1 on error
+:file_to_directory
+    IF EXIST %1 (
+        ECHO.%~a1 | find "d" >nul && (
+            REM File exists and is a directory. Keep it.
+            attrib +R +H +S "%~1"
+            EXIT /B 0
+        )
+        CALL :move_or_delete %1 "file"
+        IF EXIST %1 EXIT /B 1
+    )
+    IF "!opt_mkdir!"=="SKIP" EXIT /B 0
     MKDIR "%~1" || (
         ECHO Error occurred when creating directory "%~1">&2
         EXIT /B 1
@@ -1240,23 +1250,6 @@ REM @return 0 if directory is created successfully (despite the file within)
     attrib +R +H +S "%~1\dummy"
     attrib +R +H +S "%~1"
     EXIT /B 0
-GOTO :EOF
-
-REM Force removes a file and creates a directory with the same name.
-REM @param %1 File name to be converted into a directory
-REM @return 0 if directory exists or is created successfully, or 1 on error
-:file_to_directory
-    IF EXIST %1 (
-        ECHO.%~a1 | find "d" >nul && (
-            REM File exists and is a directory. Keep it.
-            attrib +R +H +S "%~1"
-            EXIT /B 0
-        )
-        CALL :move_or_delete %1 "file"
-        IF EXIST %1 EXIT /B 1
-    )
-    IF "!opt_mkdir!"=="SKIP" EXIT /B 0
-    CALL :make_directory %1
 GOTO :EOF
 
 REM ---------------------------------------------------------------------------
