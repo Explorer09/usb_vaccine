@@ -10,7 +10,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2015-10-03)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2015-10-31)
 REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -415,7 +415,7 @@ ECHO 我們將為此檔案類型添加捷!BIG5_AE7C!箭頭圖示，以提高使用者的警覺。
 ECHO （這是全機設定。同時!user_msg!對於此檔案類型的關聯!BIG5_B77C!被重設，而此無法被復原。!BIG5_A15E!
 CALL :continue_prompt || GOTO main_scrap_ext
 reg add "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" /t REG_SZ /f >nul || (
-   CALL :show_reg_write_error "HKCR\SHCmdFile /v IsShortcut"
+    CALL :show_reg_write_error "HKCR\SHCmdFile /v IsShortcut"
 )
 CALL :reassoc_file_types "scf=SHCmdFile"
 
@@ -1165,7 +1165,7 @@ REM Moves or deletes shortcut files in current directory.
         CALL :is_file_to_keep EXECUTE "%%~f"
         IF ERRORLEVEL 1 (
             CALL :move_or_delete "%%~f" "捷AE7C檔案"
-        ) ElSE (
+        ) ELSE (
             ECHO 為了安全原因，跳過捷!BIG5_AE7C!檔案 "%%~f"
         )
     )
