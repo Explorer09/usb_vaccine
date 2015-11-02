@@ -10,7 +10,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2015-10-31)
+REM 'usb_vaccine.cmd' version 3 beta (2015-11-02)
 REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -702,15 +702,15 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         ECHO Drive %%d:
         REM Workaround name collisions caused by forced rename.
         SET g_dont_move_files=_autorun.in0 _Desktop.in0 _README.txt
-        IF NOT "!opt_symlinks!"=="SKIP" CALL :move_symlinks
+        IF NOT "!opt_symlinks!"=="SKIP" CALL :process_symlinks
         IF NOT "!opt_attrib!"=="SKIP" CALL :clear_files_attrib
-        IF NOT "!opt_shortcuts!"=="SKIP" CALL :move_shortcuts
-        IF NOT "!opt_folder_exe!"=="SKIP" CALL :move_folder_exes
+        IF NOT "!opt_shortcuts!"=="SKIP" CALL :process_shortcuts
+        IF NOT "!opt_folder_exe!"=="SKIP" CALL :process_folder_exes
         IF NOT "!opt_autorun_inf!"=="SKIP" CALL :file_to_directory autorun.inf
         IF NOT "!opt_desktop_ini!"=="SKIP" CALL :file_to_directory Desktop.ini
         REM Process the locked files last.
         SET g_dont_move_files=
-        IF NOT "!opt_symlinks!"=="SKIP" CALL :move_symlinks
+        IF NOT "!opt_symlinks!"=="SKIP" CALL :process_symlinks
         IF "!g_move_status!"=="OK_EMPTY" (
             DEL "!opt_move_subdir!\README.txt" >nul
             RMDIR "!opt_move_subdir!"
@@ -1004,7 +1004,7 @@ GOTO :EOF
 
 REM Checks if the file is in one of the list of files to keep.
 REM @param %1 Category
-REM @param %2 File to check
+REM @param %2 Name of file to check
 REM @return 0 (true) if the file is in the list
 :is_file_to_keep
     SET list=
@@ -1082,70 +1082,70 @@ REM   (with or without '/S') removes the symlink without touching anything in
 REM   the target directory (SAFE). MOVE command on links always processes links
 REM   themselves rather than link targets.
 
-REM Moves a file to opt_move_subdir or deletes it, according to g_move_status.
-REM @param %1 File name
+REM Decides the file and keeps, moves, or deletes it according to decision.
+REM @param %1 Category of list of files to keep
 REM @param %2 Type of file, displayed in (localized) messages
-:move_or_delete
+REM @param %3 Name of file to process
+:process_file
+    CALL :is_file_to_keep %1 %3 && (
+        ECHO Skip %~2 "%~3" for safety.
+        GOTO :EOF
+    )
     FOR %%A IN (h s d l) DO (
         SET "attr_%%A=-%%A"
-        ECHO.%~a1 | find "%%A" >nul && SET "attr_%%A=%%A"
+        ECHO.%~a3 | find "%%A" >nul && SET "attr_%%A=%%A"
     )
     REM Always Delete Hidden or System symlinks.
     IF NOT "!attr_h!!attr_s!"=="-h-s" (
         IF "!attr_l!!attr_d!"=="l-d" (
-            ECHO Delete symbolic link "%~1"
-            DEL /F /A:!attr_h!!attr_s!l-d "%~1" >nul
+            ECHO Delete symbolic link "%~3"
+            DEL /F /A:!attr_h!!attr_s!l-d "%~3" >nul
             GOTO :EOF
         )
     )
     IF "!g_move_status!"=="" CALL :init_move_subdir
     IF "!g_move_status!"=="DEL" (
         IF "!attr_d!"=="d" GOTO :EOF
-        ECHO Delete %~2 "%~1"
-        DEL /F /A:!attr_h!!attr_s!!attr_l!-d "%~1" >nul
+        ECHO Delete %~2 "%~3"
+        DEL /F /A:!attr_h!!attr_s!!attr_l!-d "%~3" >nul
         GOTO :EOF
     )
     IF NOT "!g_move_status:~0,2!"=="OK" (
-        ECHO Detected but won't move %~2 "%~1"
+        ECHO Detected but won't move %~2 "%~3"
         GOTO :EOF
     )
     FOR %%i IN (!g_dont_move_files!) DO (
-        IF /I "%~1"=="%%~i" GOTO :EOF
+        IF /I "%~3"=="%%~i" GOTO :EOF
     )
     IF NOT "!attr_h!!attr_s!"=="-h-s" (
-        ECHO Can't move %~2 "%~1". ^(Has Hidden or System attribute^)>&2
+        ECHO Can't move %~2 "%~3". ^(Has Hidden or System attribute^)>&2
         GOTO :EOF
     )
-    SET "dest=%~1"
-    IF /I "%~1"=="autorun.inf" SET dest=_autorun.in0
-    IF /I "%~1"=="Desktop.ini" SET dest=_Desktop.in0
-    IF /I "%~1"=="README.txt" SET dest=_%~1
+    SET "dest=%~3"
+    IF /I "%~3"=="autorun.inf" SET dest=_autorun.in0
+    IF /I "%~3"=="Desktop.ini" SET dest=_Desktop.in0
+    IF /I "%~3"=="README.txt" SET dest=_%~3
     REM Should never exist name collisions except the forced rename above.
     IF EXIST "!opt_move_subdir!\!dest!" (
-        ECHO Can't move %~2 "%~1" to "!opt_move_subdir!". ^(Destination file exists^)>&2
+        ECHO Can't move %~2 "%~3" to "!opt_move_subdir!". ^(Destination file exists^)>&2
         GOTO :EOF
     )
-    MOVE /Y "%~1" "!opt_move_subdir!\!dest!" >nul || (
-        ECHO Can't move %~2 "%~1" to "!opt_move_subdir!".>&2
+    MOVE /Y "%~3" "!opt_move_subdir!\!dest!" >nul || (
+        ECHO Can't move %~2 "%~3" to "!opt_move_subdir!".>&2
         GOTO :EOF
     )
     SET g_move_status=OK_MOVED
     SET g_files_moved=1
-    ECHO Moved %~2 "%~1" to "!opt_move_subdir!".
+    ECHO Moved %~2 "%~3" to "!opt_move_subdir!".
 GOTO :EOF
 
 REM Moves or deletes all file symlinks in current directory.
-:move_symlinks
+:process_symlinks
     REM Directory symlinks/junctions are harmless. Leave them alone.
     REM DIR command in Windows 2000 supports "/A:L", but displays symlinks
     REM (file or directory) as junctions. Undocumented feature.
     FOR /F "usebackq delims=" %%f IN (`DIR /A:L-D /B 2^>nul`) DO (
-        CALL :is_file_to_keep SYMLINK "%%~f"
-        IF ERRORLEVEL 1 (
-            CALL :move_or_delete "%%~f" "symbolic link"
-        ) ELSE (
-            ECHO Skip symbolic link "%%~f" for safety.
-        )
+        CALL :process_file SYMLINK "symbolic link" "%%~f"
     )
 GOTO :EOF
 
@@ -1184,40 +1184,30 @@ REM Clears hidden and system attributes of all files in current directory.
 GOTO :EOF
 
 REM Moves or deletes shortcut files in current directory.
-:move_shortcuts
+:process_shortcuts
     FOR /F "usebackq delims=" %%f IN (
         `DIR /A:-D /B *.pif *.lnk *.shb *.url *.appref-ms *.glk 2^>nul`
     ) DO (
-        CALL :is_file_to_keep EXECUTE "%%~f"
-        IF ERRORLEVEL 1 (
-            CALL :move_or_delete "%%~f" "shortcut file"
-        ) ELSE (
-            ECHO Skip shortcut file "%%~f" for safety.
-        )
+        CALL :process_file EXECUTE "shortcut file" "%%~f"
     )
 GOTO :EOF
 
 REM Moves or deletes all .exe and .scr files that carry the same name as a
 REM folder in current directory.
-:move_folder_exes
+:process_folder_exes
     REM .bat, .cmd and .com are self-executable, but their icons are static, so
     REM leave them alone.
     FOR /F "usebackq delims=" %%d IN (`DIR /A:D /B 2^>nul`) DO (
         FOR /F "usebackq delims=" %%f IN (
             `DIR /A:-D /B "%%~d.exe" "%%~d.scr" 2^>nul`
         ) DO (
-            CALL :is_file_to_keep EXECUTE "%%~f"
-            IF ERRORLEVEL 1 (
-                CALL :move_or_delete "%%~f" "file"
-            ) ELSE (
-                ECHO Skip file "%%~f" for safety.
-            )
+            CALL :process_file EXECUTE "file" "%%~f"
         )
     )
 GOTO :EOF
 
 REM Removes a file and optionally creates a directory with the same name.
-REM @param %1 File name to be removed or replaced with a directory
+REM @param %1 Name of file to remove or directory to create
 REM @return 0 if directory exists or is created successfully, or 1 on error
 :file_to_directory
     IF EXIST %1 (
@@ -1226,7 +1216,7 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
             attrib +R +H +S "%~1"
             EXIT /B 0
         )
-        CALL :move_or_delete %1 "file"
+        CALL :process_file 0 "file" %1
         IF EXIST %1 EXIT /B 1
     )
     IF "!opt_mkdir!"=="SKIP" EXIT /B 0
