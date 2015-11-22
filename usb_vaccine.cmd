@@ -10,7 +10,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2015-11-02)
+REM 'usb_vaccine.cmd' version 3 beta (2015-11-22)
 REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -912,7 +912,7 @@ GOTO :EOF
 REM Prepares g_sids global variable (list of all user SIDs on the computer).
 :prepare_sids
     IF NOT "!g_sids!"=="" GOTO :EOF
-    FOR /F "usebackq delims=" %%k IN (`reg query HKU 2^>nul`) DO (
+    FOR /F "usebackq eol=\ delims=" %%k IN (`reg query HKU 2^>nul`) DO (
         REM 'reg' outputs junk lines, make sure the line truly represents a
         REM user and not a Classes key.
         SET "key=%%~k"
@@ -1144,7 +1144,7 @@ REM Moves or deletes all file symlinks in current directory.
     REM Directory symlinks/junctions are harmless. Leave them alone.
     REM DIR command in Windows 2000 supports "/A:L", but displays symlinks
     REM (file or directory) as junctions. Undocumented feature.
-    FOR /F "usebackq delims=" %%f IN (`DIR /A:L-D /B 2^>nul`) DO (
+    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:L-D /B 2^>nul`) DO (
         CALL :process_file SYMLINK "symbolic link" "%%~f"
     )
 GOTO :EOF
@@ -1154,7 +1154,7 @@ REM Clears hidden and system attributes of all files in current directory.
     REM 'attrib' refuses to clear either H or S attribute for files with both
     REM attributes set. Must clear both simultaneously.
     REM The exit code of 'attrib' is unreliable.
-    FOR /F "usebackq delims=" %%f IN (`DIR /A:HS-L /B 2^>nul`) DO (
+    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:HS-L /B 2^>nul`) DO (
         CALL :is_file_to_keep HS_ATTRIB "%%~f"
         IF ERRORLEVEL 1 (
             ECHO Clear Hidden+System attributes of "%%~f"
@@ -1163,7 +1163,7 @@ REM Clears hidden and system attributes of all files in current directory.
             ECHO Skip file "%%~f" ^(Hidden+System attributes^) for safety.
         )
     )
-    FOR /F "usebackq delims=" %%f IN (`DIR /A:H-S-L /B 2^>nul`) DO (
+    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:H-S-L /B 2^>nul`) DO (
         CALL :is_file_to_keep H_ATTRIB "%%~f"
         IF ERRORLEVEL 1 (
             ECHO Clear Hidden attribute of "%%~f"
@@ -1172,7 +1172,7 @@ REM Clears hidden and system attributes of all files in current directory.
             ECHO Skip file "%%~f" ^(Hidden attribute^) for safety.
         )
     )
-    FOR /F "usebackq delims=" %%f IN (`DIR /A:S-H-L /B 2^>nul`) DO (
+    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:S-H-L /B 2^>nul`) DO (
         CALL :is_file_to_keep S_ATTRIB "%%~f"
         IF ERRORLEVEL 1 (
             ECHO Clear System attribute of "%%~f"
@@ -1185,7 +1185,7 @@ GOTO :EOF
 
 REM Moves or deletes shortcut files in current directory.
 :process_shortcuts
-    FOR /F "usebackq delims=" %%f IN (
+    FOR /F "usebackq eol=\ delims=" %%f IN (
         `DIR /A:-D /B *.pif *.lnk *.shb *.url *.appref-ms *.glk 2^>nul`
     ) DO (
         CALL :process_file EXECUTE "shortcut file" "%%~f"
@@ -1197,8 +1197,8 @@ REM folder in current directory.
 :process_folder_exes
     REM .bat, .cmd and .com are self-executable, but their icons are static, so
     REM leave them alone.
-    FOR /F "usebackq delims=" %%d IN (`DIR /A:D /B 2^>nul`) DO (
-        FOR /F "usebackq delims=" %%f IN (
+    FOR /F "usebackq eol=\ delims=" %%d IN (`DIR /A:D /B 2^>nul`) DO (
+        FOR /F "usebackq eol=\ delims=" %%f IN (
             `DIR /A:-D /B "%%~d.exe" "%%~d.scr" 2^>nul`
         ) DO (
             CALL :process_file EXECUTE "file" "%%~f"
