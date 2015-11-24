@@ -1,11 +1,11 @@
-Compatibility with Windows NT 4.0
+Compatibility with Windows NT 3.x and 4.0
 
-Windows NT 4 does support IniFileMapping registry key. So the AutoRun
+Windows NT 3.x and 4.0 do support IniFileMapping registry key. So the AutoRun
 IniFileMapping hack can work there.
 
 However, several limitations of batch scripting in Windows NT 4 Command
-Processor makes it difficult to write scripts compatible with that platform
-while making the script secure as well.
+Processor and below make it difficult to write scripts compatible with those
+platforms while making the script secure as well.
 
 So, 'usb_vaccine.cmd' is coded to only work with Windows 2000 or later.
 (With Windows 2000 you need reg.exe from Support Tools. Unlike in XP it's not
@@ -44,7 +44,7 @@ environment is okay. The code is copied below, with comments added:
     REM Redirecting stderr ("2>") is impossible in DOS or Win9x.
     SETLOCAL EnableExtensions
     REM Expect a "syntax error" for those not supporting. Win9x continues after
-    REM error; Win NT 3.* and OS/2 will halt here.
+    REM error; Win NT 3.x and OS/2 will halt here.
     IF CMDEXTVERSION 2 GOTO cmd_ext_ok
     ENDLOCAL
     REM Error message. No ">&2" redirection because DOS COMMAND.COM doesn't
