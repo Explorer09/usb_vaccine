@@ -113,13 +113,13 @@ ext. | (safe:0,    | Ext (safe: | (safe:   |  arrow   | beginning | (safe:no)
 File types with data "%1" in default values of their "DefaultIcon" subkeys:
 
 Extension  Software       Class registry key (technically known as ProgID)
-.ani                      HKCR\anifile
+.ani       (Win95+)       HKCR\anifile
 .cdf       IE4-IE6        HKCR\ChannelFile
 (CLSID)    IE4-IE6        HKCR\ChannelShortcut
-.cur                      HKCR\curfile
-.exe                      HKCR\exefile
+.cur       (Win95+)       HKCR\curfile
+.exe       (Win95+)       HKCR\exefile
 .ht        WinXP-         HKCR\htfile ("HyperTerminal File")
-.ico                      HKCR\icofile
+.ico       (Win95+)       HKCR\icofile
 .msc       Win2000+ (NT)  HKCR\MSCFile
 .otf       Win2000-Vista  HKCR\otffile
 .ttc       Win2000-Vista  HKCR\ttcfile
@@ -127,6 +127,10 @@ Extension  Software       Class registry key (technically known as ProgID)
 
 Win95 only  HKCR\CLSID\{00028B05-0000-0000-C000-000000000046}
                 ("Shortcut to The Microsoft Network")
+
+Note: The (Win95+) mark in Software field means that the file type exists in
+older Windows versions or DOS, but not until Windows 95 was there a file
+association entry for it.
 
 In Windows 2000, XP or Vista, the font file types ('.otf', '.ttc', '.ttf',
 except '.fon') have "%1" in default values of their respective "DefaultIcon"
@@ -145,8 +149,8 @@ Extension   Software      Class registry key (ProgID)
 (unused)    WinVista+     HKCR\IE.AssocFile.URL
 (unused)    IE9+          HKCR\IE.AssocFile.WEBSITE
 .website    IE9+          HKCR\Microsoft.Website ("Pinned Site Shortcut")
-.lnk                      HKCR\lnkfile
-.pif                      HKCR\piffile
+.lnk        Win95+        HKCR\lnkfile
+.pif        (Win95+)      HKCR\piffile
 .maw        Office2000+   HKCR\Access.Shortcut.DataAccessPage.1
 .mag        Office2000+   HKCR\Access.Shortcut.Diagram.1
 .maf        MSOffice95+   HKCR\Access.Shortcut.Form.1
@@ -210,10 +214,10 @@ be created. It is possible to have a PE executable in one of these extensions
 
 File types that contain "%*" in their "shell\open\command" default values:
 Extension  Software       Class registry key (ProgID)
-.bat                      HKCR\batfile
+.bat       (Win95+)       HKCR\batfile
 .cmd       WinNT4+        HKCR\cmdfile
-.com                      HKCR\comfile
-.exe                      HKCR\exefile
+.com       (Win95+)       HKCR\comfile
+.exe       (Win95+)       HKCR\exefile
 .hta       IE5+           HKCR\htafile
 (unused)   IE9+           HKCR\IE.AssocFile.WEBSITE
 (multi)    MSIME2010+     HKCR\IMEDictionaryCompiler
@@ -224,7 +228,7 @@ Extension  Software       Class registry key (ProgID)
 .msc       Win2000+ (NT)  HKCR\MSCFile
 .msi       Win2000+       HKCR\Msi.Package
 .msp       Win2000+       HKCR\Msi.Patch
-.pif                      HKCR\piffile
+.pif       (Win95+)       HKCR\piffile
 .VBE       IE5.01+        HKCR\VBEFile
 .vbs       IE5+           HKCR\VBSFile
 .xaml      .NET3.0+       HKCR\Windows.XamlDocument
