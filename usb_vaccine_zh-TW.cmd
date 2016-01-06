@@ -4,7 +4,7 @@ IF CMDEXTVERSION 2 GOTO cmd_ext_ok
 ENDLOCAL
 echo Requires Windows 2000 or later.
 GOTO EOF
-exit 0
+exit ;
 exit
 :cmd_ext_ok
 ENDLOCAL
