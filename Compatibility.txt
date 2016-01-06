@@ -55,8 +55,10 @@ environment is okay. The code is copied below, with comments added:
     REM it kills the current layer of the shell (command interpreter).
     REM It is more reliable to GOTO an end label, but we keep the EXIT command
     REM as a fallback. Cygwin and MSYS Bash expect a lowercase 'exit' while in
-    REM DOS command shells the letter case doesn't matter.
+    REM DOS command shells the letter case doesn't matter. We also add "exit 0"
+    REM for shells that don't exit and complain about '\r' character.
     GOTO EOF
+    exit 0
     exit
     :cmd_ext_ok
     ENDLOCAL
