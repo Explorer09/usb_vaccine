@@ -498,7 +498,7 @@ value's data be 0 before attempting to load and edit the user's hives.)
 User's "Home folder" still defaults to "C:\".
 
 Windows 2000 and later separate "local" data (files) from roaming data in a
-profile. Local data are not synchronized with what's in the central profile
+profile. Local files are not synchronized with what's in the central profile
 folder when the profile is logged off. Registry value "ExcludeProfileDirs" in
 key "HKCU\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" determines
 which sub-directories should not be synchronized upon logoff. The UsrClass.dat
