@@ -356,6 +356,244 @@ Notes:
 
 -------------------------------------------------------------------------------
 
+Technical notes about users, user profiles and user registry hives in NT-based
+Windows versions.
+
+Windows DOES NOT load the registry settings (hives) of all users to the main
+tree (specifically, under HKEY_USERS). Rather, only hives of the users that are
+currently logged on will be loaded, as well as registry of service users.
+(The "service user accounts" in Windows have similar functions as "system
+users" in Unix and other operating systems.) There are 3 service users
+available by default in Windows at this time:
+
+SID       Name                                Available since
+S-1-5-18  LocalSystem    ("SYSTEM")           WinNT3
+S-1-5-19  LocalService   ("LOCAL SERVICE")    WinXP
+S-1-5-20  NetworkService ("NETWORK SERVICE")  WinXP
+
+See this for general information about these 3 service users:
+<https://msdn.microsoft.com/en-us/library/windows/desktop/ms686005(v=vs.85).aspx>
+
+All NT-based Windows versions store the list of all user profiles in
+"HKLM\Software\Microsoft\Windows NT\CurrentVersion\ProfileList", with users'
+SIDs as subkey names. (Windows might create profile backups with key names like
+"<SID>.bak" inside "ProfileList", in case that some profiles fail to logon).
+For ease of documenting, we will refer to this key as the "ProfileList" key.
+
+The forbidden characters in usernames of all NT-based Windows versions are:
+" * + , / : ; < = > ? [ \ ] |
+(15 characters in total)
+
+For NT-based Windows versions, the list of currently loaded hives and the file
+locations of them may be seen in
+"HKLM\SYSTEM\CurrentControlSet\Control\hivelist".
+
+The locations where users' profiles and registry hives are stored differ among
+Windows versions. In Windows terminology, a "user profile" consists of user
+registry hives and, in Windows NT 4 or later, a set of profile folders.
+
+Below are differences in user profiles management per Windows version.
+
+In Windows 3.x:
+
+There is no multi-user support at all. No user profiles or user registry.
+
+In Windows 95, 98 and Me:
+
+If multi-user is not enabled (which is the default), the user registry will be
+"%WinDir%\USER.DAT" and loaded as "HKEY_USERS" registry key. If multi-user is
+enabled, each user will have a profile folder and registry hive
+"%WinDir%\Profiles\<username>\USER.DAT" (loaded as "HKU\<username>" key) as
+well as local system's USER.DAT.
+
+In addition, the list of all user profiles will be provided in
+"HKLM\Software\Microsoft\Windows\CurrentVersion\ProfileList", with <username>
+as subkeys. (Note: Multi-user in Windows 9x was not meant to be a security
+mechanism. There's no access control in the file system level. What it does is
+only separating user profiles, documents and folders.)
+
+In Windows NT 3.x:
+
+The "user profile" is only a registry hive. The user hives are all in
+"%SystemRoot%\system32\config", with file naming like this: "first 5 characters
+of username (including spaces)" + "3 lowercase hexadecimal digits" + "(no
+extension)" Example: "J. Ra000" for username "J. Random Hacker".
+
+The hive of local system user ("SYSTEM") is "%WinDir%\system32\config\default"
+and loaded as "HKU\.DEFAULT". The hive template for creating new users is
+"%WinDir%\system32\config\UserDef".
+
+Registry values "ProfileImagePath" in "ProfileList\<SID>" store paths to the
+hive files of the respective users (not the directories).
+
+User's "Home folder" (a.k.a. home directory, which is distinct from "profile")
+is optional and may be specified as any local path, or a network share folder
+with a drive letter to "map" at login time. If the path is not specified when
+creating a new user, it defaults to "C:\users\default", a common directory that
+is writable by everyone (assuming your system drive is C:).
+
+Roaming user profiles and mandatory user profiles are distinguished from local
+user profiles by file extensions (.usr for roaming and .man for mandatory).
+
+(We cannot test if Windows NT 3.x supports the "CentralProfile" registry value
+(see below) or how mandatory profiles are created or managed.)
+
+In Windows NT 4.0:
+
+The "user profile" consist of also profile directories in Windows NT 4 or
+later. The profiles directories are by default
+"%SystemRoot%\Profiles\<username>". (Also, %USERPROFILE% environment variable
+starts to exist and refers to the directory.) User's registry hive is
+"NTUSER.DAT" in %USERPROFILE%.
+
+The hive of local system user ("SYSTEM") is still
+"%WinDir%\system32\config\default". The template profile directory for new
+users is "%WinDir%\Profiles\Default User". The hive template for creating users
+is NTUSER.DAT in Default User directory. "%WinDir%\Profiles\All Users" exists
+and stores files shared for all users.
+
+Registry values "ProfileImagePath" in "ProfileList\<SID>" store paths to the
+profile directories, a.k.a. %USERPROFILE% for the respective users. (Local
+users with their "ProfileImagePath" pointing to a hive file will, upon login,
+have a profile directory created and the hive moved in there.)
+
+User's "Home folder" is still distinct from "profile folder" and the home
+folder defaults to "C:\" if not specified.
+
+For a roaming or mandatory profile, the "CentralProfile" registry value (with
+type REG_SZ) stores the path of the folder (usually a network share folder, but
+a local one also works) the roaming profile is copied from and also the folder
+that it will sync to when logging off. Mandatory profiles are distinguished
+from roaming ones by the existence of the hive file "NTUSER.MAN" (instead of
+NTUSER.DAT) in the profile directories. For local user profile, the
+"CentralProfile" value exists but its data is an empty string.
+
+In Windows 2000:
+
+Profiles directories are by default in "%SystemDrive%\Documents and Settings".
+
+For every user except the local system user, in addition to hive NTUSER.DAT,
+user will have its registry entries under "Software\Classes" subkey stored in a
+separate hive, named:
+"%USERPROFILE%\Local Settings\Application Data\Microsoft\Windows\UsrClass.dat"
+UsrClass.dat files are loaded as "HKU\<SID>_Classes" key upon logon, and
+"HKU\<SID>\Software\Classes" (and the respective Classes key in HKCU) will be
+a link to "HKU\<SID>_Classes".
+
+"Default User" (the template) and "All Users" (the shared files) still exist,
+but their profile directories are moved to "Documents and Settings".
+
+Registry values "AllUserProfile", "DefaultUserProfile" and "ProfileDirectory"
+exist in the "ProfileList" key.
+
+Value name            Type           Default data
+"AllUserProfile"      REG_SZ         "All Users"
+"DefaultUserProfile"  REG_SZ         "Default User"
+"ProfileDirectory"    REG_EXPAND_SZ  "%SystemDrive%\Documents and Settings"
+
+In "ProfileList\<SID>" key, "RefCount" value starts to exist and denotes the
+number of active sessions for that user. ('usb_vaccine.cmd' will ensure this
+value's data be 0 before attempting to load and edit the user's hives.)
+
+User's "Home folder" still defaults to "C:\".
+
+Windows 2000 and later separate "local" data (files) from roaming data in a
+profile. Local data are not synchronized with what's in the central profile
+folder when the profile is logged off. Registry value "ExcludeProfileDirs" in
+key "HKCU\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" determines
+which sub-directories should not be synchronized upon logoff. The UsrClass.dat
+mentioned above is local by default, but my be changed according to KB298960.
+
+In Windows XP:
+
+Two service accounts, "LocalService" and "NetworkService", are available in
+addition to local system user since Windows XP. Their profile directories are
+in "Documents and Settings" in Windows XP (by default; they may be changeable).
+Local system user also has a profile directory, as
+"%systemroot%\system32\config\systemprofile", except that registry hive is
+still "%WinDir%\system32\config\default" and so there is no NTUSER.DAT for the
+system profile.
+
+SIDs and profile information of all three service accounts are available as
+subkeys in the "ProfileList" key.
+"HKU\S-1-5-18" key exists and links to "HKU\.DEFAULT".
+
+User's "Home folder" defaults to %USERPROFILE%.
+
+Windows XP is the last version that supports roaming profiles of a Windows NT
+3.x format.
+
+In Windows Vista or later:
+
+Major changes are done in file system layout and user profiles management in
+Windows Vista. Old directory layout and names are created as NTFS junction
+points for backward compatibility. For brevity, directory names and junctions
+for backward compatibility are omitted in this document.
+
+Profiles directories are now by default in "%SystemDrive%\Users".
+
+UsrClass.dat for each user is now in
+"%USERPROFILE%\AppData\Local\Microsoft\Windows"
+
+"ProgramData" and "Public" directories replace "All Users" directory.
+("C:\Users\All Users" becomes a symlink to "C:\ProgramData". Sub-directories
+previously available in "All Users" are created as junctions in "ProgramData"
+for backward compatibility, some of which point to respective sub-directories
+in "Public".) Note that the layout of "Public" and "All Users" are different.
+Folder names like "Shared Documents" are renamed to "Public Documents" in
+abstract level.
+
+Profile directories of LocalService and NetworkService are in
+"%WinDir%\ServiceProfiles". Registry hive for local system user is
+"%WinDir%\System32\config\DEFAULT" (letter casing change only).
+
+("%WinDir%\System32\config\systemprofile\ntuser.dat" exists in Windows Vista,
+7, 8 and 8.1. We haven't figured out the purpose of this hive file yet. This
+file does not appear in Windows 10.)
+
+In the "ProfileList" key, values "AllUserProfile" and "DefaultUserProfile" are
+no longer available. They are replaced with "Default", "ProgramData" and
+"Public" values for managing directories of Default User (template profile),
+Program Data, and Public respectively. (NOTICE: This is a backward-incompatible
+registry change!)
+
+Value name            Type           Default data
+"Default"             REG_EXPAND_SZ  "%SystemDrive%\Users\Default"
+"ProfileDirectory"    REG_EXPAND_SZ  "%SystemDrive%\Users"
+"ProgramData"         REG_EXPAND_SZ  "%SystemDrive%\ProgramData"
+"Public"              REG_EXPAND_SZ  "%SystemDrive%\Users\Public"
+
+Windows Vista cannot roam a user profile of Windows XP format or vice versa.
+The profile formats are backward incompatible!
+Roaming user profile in Windows Vista and 7 is known as "version 2" profile -
+the central profile _folder_ (the one on a network share) requires a ".v2" name
+suffix to distinguish from Windows 2000 / XP profiles on the network. (The
+suffix isn't needed when all computers on the network use Vista or later.)
+
+Windows Vista and later also supports "super mandatory profile", a kind of
+mandatory profile with an addition that when the central profile folder cannot
+be loaded, the system denies the log on instead of creating a temporary profile
+for the user. Super mandatory profiles are distinguished from (normal)
+mandatory profiles by the ".man" or ".man.v2" suffix on the central profile
+_folder_ (the hive file should also be named "NTUSER.MAN" inside).
+
+BACKWARD INCOMPATIBLITY WARNING: Windows 8 and 8.1 both introduced some
+undocumented changes on the user profiles that makes them incompatible with
+older versions of Windows, and yet they continue to use the ".v2" folder name
+suffix. PROFILE CORRUPTION IS POSSIBLE if user uses a Windows 8 or 8.1 system
+to logon a roaming profile created in Windows Vista / 7, or vice versa.
+This error is addressed in KB2887239 (Windows 8) and KB2890783 (Windows 8.1).
+(NOTE: The version suffix change is disabled by default after the hotfix is
+installed. You need to manually set up a registry value to enable it. Blame
+Microsoft for not caring for compatibility problem earlier!)
+Windows 10 enables the ".v5" suffix by default and so no longer has the
+problem. (See KB3056198)
+
+See also: Managing Roaming User Data Deployment Guide
+<https://technet.microsoft.com/en-us/library/cc766489(v=ws.10).aspx>
+
+-------------------------------------------------------------------------------
+
 Technical details about folders' "Web View", Desktop.ini and Folder.htt.
 
 The "Web View" of the folders, Folder.htt, and extensions for Desktop.ini were
