@@ -11,7 +11,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2016-01-06)
+REM 'usb_vaccine.cmd' version 3 beta (2016-03-05)
 REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -450,8 +450,8 @@ ECHO shortcuts respectively. The format allows embedding executable code which c
 ECHO get executed when user opens a ^(specially crafted^) file of these types.
 ECHO ^(Windows Vista and later have removed support of scrap files.^)
 ECHO We will delete the "NeverShowExt" registry value for these file types. Users
-ECHO will see the extensions for these if they disable "Hide extensions for known
-ECHO file types". This increases awareness.
+ECHO will see the extensions for these if they disable ^"Hide extensions for known
+ECHO file types^". This increases awareness.
 ECHO ^(This is a machine setting. In addition, the associations for these file types
 ECHO for !user_msg! will be reset, which cannot be undone.^)
 CALL :continue_prompt || GOTO main_shortcut_icon

@@ -11,7 +11,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-01-06)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-03-05)
 REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
