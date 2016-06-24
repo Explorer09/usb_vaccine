@@ -11,7 +11,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-03-05)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-06-24)
 REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -159,7 +159,7 @@ IF "!arg1!"=="" GOTO main_sanity_test
             SET "opt_move_subdir=%~2"
             SHIFT /1
         )
-        SET opt_move_subdir=!opt_move_subdir:"=!
+        SET opt_move_subdir=!opt_move_subdir:^"=!
         SET opt_move_subdir=!opt_move_subdir:/=\!
     )
     REM %0 is needed by restart routine. Don't touch.
