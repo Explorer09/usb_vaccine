@@ -112,7 +112,7 @@ ext. | (safe:0,    | Ext (safe: | (safe:   |  arrow   | beginning | (safe:no)
 
 File types with data "%1" in default values of their "DefaultIcon" subkeys:
 
-Extension  Software       Class registry key (technically known as ProgID)
+Extension  Software       Class registry key, technically known as ProgID
 .ani       (Win95+)       HKCR\anifile
 .cdf       IE4-IE6        HKCR\ChannelFile
 (CLSID)    IE4-IE6        HKCR\ChannelShortcut
@@ -141,7 +141,7 @@ provides the icon for those fonts (depending on format, e.g. TrueType or
 -------------------------------------------------------------------------------
 
 File types that contain "IsShortcut" and "NeverShowExt" registry values:
-Extension   Software      Class registry key (ProgID)
+Extension   Software      Class registry key a.k.a. ProgID
 .appref-ms  .NET2.0+      HKCR\Application.Reference
 .cnf        WinXP-        HKCR\ConferenceLink (NetMeeting "SpeedDial")
 .shb        WinXP-        HKCR\DocShortcut ("Shortcut into a document")
@@ -166,7 +166,7 @@ Extension   Software      Class registry key (ProgID)
 .xnk        Office2003-   HKCR\xnkfile ("Exchange Shortcut", used in Outlook)
 
 File types that contain "IsShortcut" registry values but not "NeverShowExt":
-Extension   Software      Class registry key (ProgID)
+Extension   Software      Class registry key a.k.a. ProgID
 .mcc        Win95 only    HKCR\Dialer10CallingCard
                               ("Shortcut to The Microsoft Network")
 .ccr        MSChat        HKCR\ComicChatRoomShortcut
@@ -181,7 +181,7 @@ appear in Windows components or Microsoft Office.)
 
 File types and CLSIDs that contain "NeverShowExt" registry values but not
 "IsShortcut":
-Extension            Software   Class registry key (ProgID)
+Extension            Software   Class registry key a.k.a. ProgID
 .accountpicture-ms   Win8+      HKCR\accountpicturefile
 .appcontent-ms       Win8.1+    HKCR\ApplicationContent
 .library-ms          Win7+      HKCR\LibraryFolder
@@ -213,7 +213,7 @@ be created. It is possible to have a PE executable in one of these extensions
 -------------------------------------------------------------------------------
 
 File types that contain "%*" in their "shell\open\command" default values:
-Extension  Software       Class registry key (ProgID)
+Extension  Software       Class registry key a.k.a. ProgID
 .bat       (Win95+)       HKCR\batfile
 .cmd       WinNT4+        HKCR\cmdfile
 .com       (Win95+)       HKCR\comfile
@@ -691,13 +691,14 @@ Below were some important registry entries of default folder templates.
     [HKEY_CLASSES_ROOT\CLSID\{00021400-0000-0000-C000-000000000046}\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
     ; Data is REG_EXPAND_SZ of
     ; "file://%userappdata%\\Microsoft\\Internet Explorer\\Desktop.htt"
-    ; (Shown in ASCII encoding here. Windows 2000 and XP required it to be
-    ; encoded in UTF-16LE.)
+    ; Shown in ASCII encoding here (encoding used in 95, NT4, 98 and Me).
+    ; Windows 2000 and XP differ only in that registry strings are encoded in
+    ; UTF-16LE instead.
     "PersistMoniker"=hex(2):66,69,6c,65,3a,2f,2f,25,75,73,65,72,61,70,70,64,\
       61,74,61,25,5c,4d,69,63,72,6f,73,6f,66,74,5c,49,6e,74,65,72,6e,65,74,20,\
       45,78,70,6c,6f,72,65,72,5c,44,65,73,6b,74,6f,70,2e,68,74,74,00
 
-    ; This key existed in Windows 98, 2000 or Me. (IE4 upgrade for 95 and NT4
+    ; This key existed in Windows 98, 2000 and Me. (IE4 upgrade for 95 and NT4
     ; did not come with default.htt.)
     [HKEY_CLASSES_ROOT\Folder\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
     "PersistMoniker"="file://%webdir%\\default.htt"
@@ -706,12 +707,12 @@ Below were some important registry entries of default folder templates.
     [HKEY_CLASSES_ROOT\Directory\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
     "PersistMoniker"="file://%webdir%\\folder.htt"
 
-    ; This key existed only in Windows 2000 or Me. It enabled Thumbnails view
+    ; This key existed only in Windows 2000 and Me. It enabled Thumbnails view
     ; for the folder.
     [HKEY_CLASSES_ROOT\Directory\shellex\ExtShellFolderViews\{8BEBB290-52D0-11d0-B7F4-00C04FD706EC}]
     "Attributes"=dword:60000000
     ; Data is REG_EXPAND_SZ of "{8BEBB290-52D0-11d0-B7F4-00C04FD706EC}"
-    ; (Shown in ASCII encoding here.)
+    ; Shown in ASCII encoding here (encoding used in Me).
     "ISV"=hex(2):7b,38,42,45,42,42,32,39,30,2d,35,32,44,30,2d,31,31,64,30,2d,\
       42,37,46,34,2d,30,30,43,30,34,46,44,37,30,36,45,43,7d,00
 
