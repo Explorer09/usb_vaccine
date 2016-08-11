@@ -11,7 +11,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine_reg_undo.cmd' version 3 beta (2016-01-06)
+REM 'usb_vaccine_reg_undo.cmd' version 3 beta (2016-08-11)
 REM Copyright (C) 2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -122,11 +122,11 @@ REM @return 0 if user says YES, or 1 if says NO
 :confirm_prompt
     SET prompt=
     SET /P prompt="Confirm [Y/n]? "
-    IF "X!prompt!"=="X" EXIT /B 0
-    IF /I "X!prompt!"=="XY" EXIT /B 0
-    IF /I "X!prompt!"=="XYES" EXIT /B 0
-    IF /I "X!prompt!"=="XN" EXIT /B 1
-    IF /I "X!prompt!"=="XNO" EXIT /B 1
+    IF "!prompt!"=="" EXIT /B 0
+    IF /I "!prompt!"=="Y" EXIT /B 0
+    IF /I "!prompt!"=="YES" EXIT /B 0
+    IF /I "!prompt!"=="N" EXIT /B 1
+    IF /I "!prompt!"=="NO" EXIT /B 1
     GOTO confirm_prompt
 GOTO :EOF
 
