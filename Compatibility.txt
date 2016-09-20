@@ -35,9 +35,14 @@ Here are limitations known in Windows NT 4 Command Processor environment:
 - No dynamic variable %CMDEXTVERSION%. (For checking Win NT 4 environment you
   should use "IF CMDEXTVERSION 1" and not "IF %CMDEXTVERSION% GEQ 1".)
 
-'usb_vaccine.cmd' contains code that checks whether the Command Processors
-environment is okay. The code is copied below, with comments added:
+'usb_vaccine.cmd' contains code that checks whether the Command Processor
+environment is okay. The code is copied below, with annotations:
 
+    REM For some Unix shells, define "@ECHO" as a function that exits the
+    REM shell, saving many "command not found" errors. '@' in function name is
+    REM non-POSIX but allowed as an extension. For DOS command shells this is a
+    REM silent ECHO.
+    @ECHO () { exit 1; } # >nul
     @ECHO OFF
     REM The CMDEXTVERSION check may be available only after cmd extensions are
     REM enabled. Expect a "Bad command" error for COMMAND.COM in DOS or Win9x.
@@ -46,20 +51,22 @@ environment is okay. The code is copied below, with comments added:
     REM Expect a "syntax error" for those not supporting. Win9x continues after
     REM error; Win NT 3.x and OS/2 will halt here.
     IF CMDEXTVERSION 2 GOTO cmd_ext_ok
-    ENDLOCAL
+    REM Note a space inserted after ENDLOCAL word to prevent '\r' (CR) from
+    REM being interpreted as part of command name in Unix shells.
+    ENDLOCAL 
     REM Error message. No ">&2" redirection because DOS COMMAND.COM doesn't
     REM recognize it and will instead write to a file named "&2".
     echo Requires Windows 2000 or later.
     REM The EXIT command doesn't always terminate batch execution - it does
     REM nothing when the batch is run on the topmost shell (in real DOS), or
     REM it kills the current layer of the shell (command interpreter).
-    REM It is more reliable to GOTO an end label, but we keep the EXIT command
-    REM as a fallback. Cygwin and MSYS Bash expect a lowercase 'exit' while in
-    REM DOS command shells the letter case doesn't matter. We also add "exit ;"
-    REM for shells that don't exit and complain about '\r' character.
+    REM It's more reliable to GOTO an end label, but we keep the EXIT command
+    REM as a fallback. Unix sh and ports expect a lowercase 'exit' while letter
+    REM case doesn't matter in DOS command shells. We also add "exit 1;" for
+    REM shells that would complain about '\r' in argument and don't exit.
     GOTO EOF
-    exit ;
-    exit
+    exit 1;
+    exit 
     :cmd_ext_ok
     ENDLOCAL
     ... main code here ...

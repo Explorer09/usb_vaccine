@@ -1,17 +1,18 @@
+@ECHO () { exit 1; } # >nul
 @ECHO OFF
 SETLOCAL EnableExtensions
 IF CMDEXTVERSION 2 GOTO cmd_ext_ok
-ENDLOCAL
+ENDLOCAL 
 echo Requires Windows 2000 or later.
 GOTO EOF
-exit ;
-exit
+exit 1;
+exit 
 :cmd_ext_ok
 ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-06-24)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-09-21)
 REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
