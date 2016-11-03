@@ -1,4 +1,3 @@
-@ECHO () { exit 1; } # >NUL
 @ECHO OFF
 SETLOCAL EnableExtensions
 IF CMDEXTVERSION 2 GOTO cmd_ext_ok

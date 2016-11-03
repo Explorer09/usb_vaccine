@@ -38,11 +38,6 @@ Here are limitations known in Windows NT 4 Command Processor environment:
 'usb_vaccine.cmd' contains code that checks whether the Command Processor
 environment is okay. The code is copied below, with annotations:
 
-    REM For some Unix shells, define "@ECHO" as a function that exits the
-    REM shell, saving many "command not found" errors. '@' in function name is
-    REM non-POSIX but allowed as an extension. For DOS command shells this is a
-    REM silent ECHO.
-    @ECHO () { exit 1; } # >nul
     @ECHO OFF
     REM The CMDEXTVERSION check may be available only after cmd extensions are
     REM enabled. Expect a "Bad command" error for COMMAND.COM in DOS or Win9x.
