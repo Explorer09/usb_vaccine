@@ -105,7 +105,7 @@ REM EXECUTE
 TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*," > temp.txt
 SET list=
 FOR /F "usebackq tokens=1,2 delims=," %%i IN ("temp.txt") DO (
-    ECHO.%%i | findstr /r "[\""\.\\]" >nul
+    ECHO.%%i | findstr /r "[\""\.\\]" >NUL
     IF ERRORLEVEL 1 (
         SET list=!list! %%j
     ) ELSE (
