@@ -33,7 +33,8 @@ Here are limitations known in Windows NT 4 Command Processor environment:
 - 'FOR /F "usebackq"' does not work.
   (<http://www.robvanderwoude.com/ntfor.php>)
 - No dynamic variable %CMDEXTVERSION%. (For checking Win NT 4 environment you
-  should use "IF CMDEXTVERSION 1" and not "IF %CMDEXTVERSION% GEQ 1".)
+  should use "IF CMDEXTVERSION 1", not "IF %CMDEXTVERSION% GEQ 1". Note that
+  "GEQ" compare operator already requires command extensions.)
 
 'usb_vaccine.cmd' contains code that checks whether the Command Processor
 environment is okay. The code is copied below, with annotations:
@@ -43,9 +44,12 @@ environment is okay. The code is copied below, with annotations:
     REM enabled. Expect a "Bad command" error for COMMAND.COM in DOS or Win9x.
     REM Redirecting stderr ("2>") is impossible in DOS or Win9x.
     SETLOCAL EnableExtensions
-    REM Expect a "syntax error" for those not supporting. Win9x continues after
-    REM error; Win NT 3.x and OS/2 will halt here.
-    IF CMDEXTVERSION 2 GOTO cmd_ext_ok
+    REM OS/2 and Win NT 3.x will halt upon syntax "IF CMDEXTVERSION 2 ...".
+    REM Using "==" as delimiter makes syntax backward compatible to those not
+    REM supporting cmd extensions (treating that like string comparison which
+    REM always evaluates to false). ("=" is a documented, legit parameter
+    REM delimiter since PC DOS 1; not accepting this syntax is a bug.)
+    IF CMDEXTVERSION==2 GOTO cmd_ext_ok
     REM Note a space inserted after ENDLOCAL word to prevent '\r' (CR) from
     REM being interpreted as part of command name in Unix shells.
     ENDLOCAL 
@@ -62,11 +66,12 @@ environment is okay. The code is copied below, with annotations:
     GOTO EOF
     exit 1;
     exit 
-    REM DOS 1.x doesn't even support ECHO, EXIT, GOTO or SET. Fallback using a
-    REM (user-visible) REM and a non-loop hanger ("COPY CON NUL"). It won't
-    REM protect against Ctrl-C　and then N (effectively skipping the command),
-    REM so (re-)exec COMMAND.COM if user does it. (COMMAND.COM may prompt user
-    REM for DATE and TIME again so let this be the very last fallback.)
+    REM IBM PC DOS / MS-DOS 1.x doesn't support ECHO, EXIT, GOTO or SET.
+    REM Fallback using a (user-visible) REM and a non-loop hanger ("COPY CON
+    REM NUL"). It won't protect against Ctrl-C and then N (effectively skipping
+    REM the command), or a Ctrl-Z (EOF), so (re-)exec COMMAND.COM if user does
+    REM it. (COMMAND.COM may prompt user for DATE and TIME again so let this be
+    REM the very last fallback.)
     REM Press Ctrl-C and answer Y to terminate.
     COPY CON NUL
     command.com
