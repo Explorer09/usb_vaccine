@@ -40,38 +40,38 @@ Here are limitations known in Windows NT 4 Command Processor environment:
 environment is okay. The code is copied below, with annotations:
 
     @ECHO OFF
-    REM The CMDEXTVERSION check may be available only after cmd extensions are
-    REM enabled. Expect a "Bad command" error for COMMAND.COM in DOS or Win9x.
-    REM Redirecting stderr ("2>") is impossible in DOS or Win9x.
+    @REM The CMDEXTVERSION check may be available only after cmd extensions are
+    @REM enabled. Expect a "Bad command" error for COMMAND.COM in DOS or Win9x.
+    @REM Redirecting stderr ("2>") is impossible in DOS or Win9x.
     SETLOCAL EnableExtensions
-    REM OS/2 and Win NT 3.x will halt upon syntax "IF CMDEXTVERSION 2 ...".
-    REM Using "==" as delimiter makes syntax backward compatible to those not
-    REM supporting cmd extensions (treating that like string comparison which
-    REM always evaluates to false). ("=" is a documented, legit parameter
-    REM delimiter since PC DOS 1; not accepting this syntax is a bug.)
+    @REM OS/2 and Win NT 3.x will halt upon syntax "IF CMDEXTVERSION 2 ...".
+    @REM Using "==" as delimiter makes syntax backward compatible to those not
+    @REM supporting cmd extensions (treating that like string comparison which
+    @REM always evaluates to false). ("=" is a documented, legit parameter
+    @REM delimiter since PC DOS 1; not accepting this syntax is a bug.)
     IF CMDEXTVERSION==2 GOTO cmd_ext_ok
-    REM Note a space inserted after ENDLOCAL word to prevent '\r' (CR) from
-    REM being interpreted as part of command name in Unix shells.
+    @REM Note a space inserted after ENDLOCAL word to prevent '\r' (CR) from
+    @REM being interpreted as part of command name in Unix shells.
     ENDLOCAL 
-    REM Error message. No ">&2" redirection because DOS COMMAND.COM doesn't
-    REM recognize it and will instead write to a file named "&2".
+    @REM Error message. No ">&2" redirection because DOS COMMAND.COM doesn't
+    @REM recognize it and will instead write to a file named "&2".
     echo Requires Windows 2000 or later.
-    REM The EXIT command doesn't always terminate batch execution - it does
-    REM nothing when the batch is run on the topmost shell (in real DOS), or it
-    REM kills the current layer of the shell (command interpreter).
-    REM It's more reliable to GOTO an end label, but we keep EXIT command as a
-    REM fallback. Unix sh and ports expect a lowercase 'exit' while letter case
-    REM doesn't matter in DOS command shells. We also add "exit 1;" for shells
-    REM that would complain about '\r' in argument and don't exit.
+    @REM The EXIT command doesn't always terminate batch execution - it does
+    @REM nothing when the batch is run on the topmost shell (in real DOS), or
+    @REM it kills the current layer of the shell (command interpreter).
+    @REM It's more reliable to GOTO an end label, but we keep EXIT command as a
+    @REM fallback. Unix sh and ports expect a lowercase 'exit' while letter
+    @REM case doesn't matter in DOS command shells. We also add "exit 1;" for
+    @REM shells that would complain about '\r' in argument and don't exit.
     GOTO EOF
     exit 1;
     exit 
-    REM IBM PC DOS / MS-DOS 1.x doesn't support ECHO, EXIT, GOTO or SET.
-    REM Fallback using a (user-visible) REM and a non-loop hanger ("COPY CON
-    REM NUL"). It won't protect against Ctrl-C and then N (effectively skipping
-    REM the command), or a Ctrl-Z (EOF), so (re-)exec COMMAND.COM if user does
-    REM it. (COMMAND.COM may prompt user for DATE and TIME again so let this be
-    REM the very last fallback.)
+    @REM IBM PC DOS / MS-DOS 1.x doesn't support ECHO, EXIT, GOTO or SET.
+    @REM Fallback using a (user-visible) REM and a non-loop hanger ("COPY CON
+    @REM NUL"). It won't protect against Ctrl-C and then N (effectively
+    @REM skipping the command), or a Ctrl-Z (EOF), so (re-)exec COMMAND.COM if
+    @REM user does it. (COMMAND.COM may prompt user for DATE and TIME again so
+    @REM let this be the very last fallback.)
     REM Press Ctrl-C and answer Y to terminate.
     COPY CON NUL
     command.com
