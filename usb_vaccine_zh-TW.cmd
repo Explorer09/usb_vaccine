@@ -962,7 +962,7 @@ REM @param %* List of extensions in "ext=ProgID" (quoted) data pairs.
     )
 GOTO :EOF
 
-REM Checks if the name matches (regex) "WINLFN[1-9a-f][0-9a-f]*.INI"
+REM Checks if the name matches regex "(?i)WINLFN([1-9A-F][0-9A-F]*)?\.INI"
 REM @param %1 File name
 REM @return 0 (true) if it matches
 :is_winlfn_name
