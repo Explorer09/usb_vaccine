@@ -14,8 +14,8 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine_reg_undo.cmd' version 3 beta (2016-11-05)
-REM Copyright (C) 2015 Kang-Che Sung <explorer09 @ gmail.com>
+REM 'usb_vaccine_reg_undo.cmd' version 3 beta (2016-11-06)
+REM Copyright (C) 2015-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
 REM modify it under the terms of the GNU Lesser General Public
@@ -130,8 +130,7 @@ REM @return 0 if user says YES, or 1 if says NO
     IF /I "!prompt!"=="YES" EXIT /B 0
     IF /I "!prompt!"=="N" EXIT /B 1
     IF /I "!prompt!"=="NO" EXIT /B 1
-    GOTO confirm_prompt
-GOTO :EOF
+GOTO confirm_prompt
 
 REM ---------------------------------------------------------------------------
 :EOF

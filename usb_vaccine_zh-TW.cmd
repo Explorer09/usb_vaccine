@@ -14,8 +14,8 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-11-05)
-REM Copyright (C) 2013-2015 Kang-Che Sung <explorer09 @ gmail.com>
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-11-06)
+REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
 REM modify it under the terms of the GNU Lesser General Public
@@ -796,8 +796,7 @@ REM @return 0 if user says to continue, or 1 if says to skip
     IF "!prompt!"=="" EXIT /B 0
     IF /I "!prompt!"=="Y" EXIT /B 0
     IF /I "!prompt!"=="SKIP" EXIT /B 1
-    GOTO continue_prompt
-GOTO :EOF
+GOTO continue_prompt
 
 REM Checks if file exists and creates one if not.
 REM @param %1 File name
@@ -807,8 +806,7 @@ REM @return 0 if file is created
     IF EXIST %1 EXIT /B 1
     TYPE NUL >>%1
     IF EXIST %1 EXIT /B 0
-    EXIT /B 1
-GOTO :EOF
+EXIT /B 1
 
 REM Creates and initializes "Vacc_reg.bak"
 :init_reg_bak
@@ -882,8 +880,7 @@ REM @return 0 on successful deletion, 1 if key doesn't exist, or 2 on error
     IF "!ERRORLEVEL!"=="1" EXIT /B 1
     reg delete "%~1\%~2" /v "%~3" /f >NUL && EXIT /B 0
     CALL :show_reg_write_error %4
-    EXIT /B 2
-GOTO :EOF
+EXIT /B 2
 
 REM Prepares g_sids global variable (list of all user SIDs on the computer).
 :prepare_sids
@@ -910,8 +907,7 @@ REM @return 0 on successful deletion, 1 if key doesn't exist, or 2 on error
     IF "!ERRORLEVEL!"=="1" EXIT /B 1
     reg delete "%~1\%~2" /f >NUL && EXIT /B 0
     CALL :show_reg_write_error %3
-    EXIT /B 2
-GOTO :EOF
+EXIT /B 2
 
 REM Cleans a registry key (if it exists).
 REM @param %1 Part of key name up to and including the "Wow6432Node" delimiter
@@ -936,8 +932,7 @@ REM @return 0 on success, 1 if not both .%1 and %2 keys exist, or 2 on error
     IF "!ERRORLEVEL!"=="1" EXIT /B 1
     reg add "%HKLM_CLS%\.%~1" /ve /t REG_SZ /d "%~2" /f >NUL && EXIT /B 0
     CALL :show_reg_write_error "%HKLM_CLS%\.%~1"
-    EXIT /B 2
-GOTO :EOF
+EXIT /B 2
 
 REM Resets file associations for given file types.
 REM @param %* List of extensions in "ext=ProgID" (quoted) data pairs.
@@ -975,8 +970,7 @@ REM @return 0 (true) if it matches
         SET "name=!name:%%c=!"
         IF "!name!"=="" EXIT /B 0
     )
-    EXIT /B 1
-GOTO :EOF
+EXIT /B 1
 
 REM Checks if the file is in one of the list of files to keep.
 REM @param %1 Category
@@ -1006,8 +1000,7 @@ REM @return 0 (true) if the file is in the list
     IF "%~1!attr_d!"=="HS_ATTRIB0" (
         CALL :is_winlfn_name %2 && EXIT /B 0
     )
-    EXIT /B 1
-GOTO :EOF
+EXIT /B 1
 
 REM Creates and initializes directory specified by opt_move_subdir.
 :init_move_subdir
@@ -1217,8 +1210,7 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
     ECHO.>"%~1\dummy"
     attrib +R +H +S "%~1\dummy"
     attrib +R +H +S "%~1"
-    EXIT /B 0
-GOTO :EOF
+EXIT /B 0
 
 REM ---------------------------------------------------------------------------
 :EOF
