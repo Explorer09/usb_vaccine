@@ -7,7 +7,7 @@ GOTO EOF
 exit 1;
 exit 
 REM Press Ctrl-C and answer Y to terminate.
-COPY CON NUL
+COPY CON: NUL:
 %0
 :cmd_ext_ok
 ENDLOCAL
@@ -44,7 +44,7 @@ REM ---------------------------------------------------------------------------
 REM MAIN
 
 :main_sanity_test
-reg query "HKCU" >NUL 2>NUL || (
+reg query "HKCU" >NUL: 2>NUL: || (
     ECHO.
     ECHO *** ERROR: Can't access Windows registry with reg.exe^^!>&2
     GOTO main_undone
@@ -61,7 +61,7 @@ ECHO We will remove the "autorun.inf" entry from the IniFileMapping list. This r
 ECHO enables AutoRun.
 CALL :confirm_prompt || GOTO main_undo_known_ext
 FOR %%k IN (%HKLM_SFT% %HKLM_SFT_WOW%) DO (
-    reg delete "%%k\%INF_MAP_SUBKEY%" /f >NUL
+    reg delete "%%k\%INF_MAP_SUBKEY%" /f >NUL:
 )
 
 :main_undo_known_ext
@@ -70,7 +70,7 @@ ECHO Undo [known-ext]
 ECHO We will re-enable "Hide extensions for known file types" option for current
 ECHO user.
 CALL :confirm_prompt || GOTO main_undo_exe_ext
-reg delete "HKCU\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /f >NUL
+reg delete "HKCU\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /f >NUL:
 
 :main_undo_exe_ext
 ECHO.
@@ -78,7 +78,7 @@ ECHO Undo [exe-ext]
 ECHO We will delete the "AlwaysShowExt" values for .exe and .scr file types.
 CALL :confirm_prompt || GOTO main_undo_pif_ext
 FOR %%e IN (exe scr) DO (
-    reg delete "%HKLM_CLS%\%%efile" /v "AlwaysShowExt" /f >NUL
+    reg delete "%HKLM_CLS%\%%efile" /v "AlwaysShowExt" /f >NUL:
 )
 
 :main_undo_pif_ext
@@ -87,8 +87,8 @@ ECHO Undo [pif-ext]
 ECHO We will restore the "NeverShowExt" value for .pif files. This hides the .pif
 ECHO extension.
 CALL :confirm_prompt || GOTO main_undo_scf_icon
-reg query "%HKLM_CLS%\piffile" >NUL 2>NUL && (
-    reg add "%HKLM_CLS%\piffile" /v "NeverShowExt" /t REG_SZ /f >NUL
+reg query "%HKLM_CLS%\piffile" >NUL: 2>NUL: && (
+    reg add "%HKLM_CLS%\piffile" /v "NeverShowExt" /t REG_SZ /f >NUL:
 )
 
 :main_undo_scf_icon
@@ -96,7 +96,7 @@ ECHO.
 ECHO Undo [scf-icon]
 ECHO We will remove the shortcut arrow icon for .scf files.
 CALL :confirm_prompt || GOTO main_undo_scrap_ext
-reg delete "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" /f >NUL
+reg delete "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" /f >NUL:
 
 :main_undo_scrap_ext
 ECHO.
@@ -105,15 +105,15 @@ ECHO We will restore the "NeverShowExt" value for .shs and .shb file types. This
 ECHO hides the extensions for them.
 CALL :confirm_prompt || GOTO main_undone
 FOR %%k IN (ShellScrap DocShortcut) DO (
-    reg query "%HKLM_CLS%\%%k" >NUL 2>NUL && (
-        reg add "%HKLM_CLS%\%%k" /v "NeverShowExt" /t REG_SZ /f >NUL
+    reg query "%HKLM_CLS%\%%k" >NUL: 2>NUL: && (
+        reg add "%HKLM_CLS%\%%k" /v "NeverShowExt" /t REG_SZ /f >NUL:
     )
 )
 
 :main_undone
 ECHO.
 ECHO Press any key to close this program.
-PAUSE >NUL
+PAUSE >NUL:
 ENDLOCAL
 EXIT /B 0
 

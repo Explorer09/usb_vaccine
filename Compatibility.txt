@@ -70,11 +70,11 @@ environment is okay. The code is copied below, with annotations:
     exit 1;
     exit 
     @REM IBM PC DOS / MS-DOS 1.x doesn't support ECHO, EXIT, GOTO or SET.
-    @REM Fallback using a (user-visible) REM and a non-loop hanger ("COPY CON
-    @REM NUL"). It won't protect against Ctrl-C and then N (which effectively
+    @REM Fallback using a (user-visible) REM and a non-loop hanger ("COPY CON:
+    @REM NUL:"). It won't protect against Ctrl-C and then N (which effectively
     @REM skips the command), or a Ctrl-Z (simulating an EOF), though.
     REM Press Ctrl-C and answer Y to terminate.
-    COPY CON NUL
+    COPY CON: NUL:
     @REM Re-exec this to force a loop. Note that we cannot detect if user swaps
     @REM the diskettes (physically, in a drive) so that %0 points to something
     @REM else with same file name. (Such would be an intentional attack and is

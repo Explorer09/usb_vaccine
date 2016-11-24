@@ -7,7 +7,7 @@ GOTO EOF
 exit 1;
 exit 
 REM Press Ctrl-C and answer Y to terminate.
-COPY CON NUL
+COPY CON: NUL:
 %0
 :cmd_ext_ok
 ENDLOCAL
@@ -117,7 +117,7 @@ REM EXECUTE
 TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*," > temp.txt
 SET list=
 FOR /F "usebackq tokens=1,2 delims=," %%i IN ("temp.txt") DO (
-    ECHO.%%i | findstr /r "[\""\.\\]" >NUL
+    ECHO.%%i | findstr /r "[\""\.\\]" >NUL:
     IF ERRORLEVEL 1 (
         SET list=!list! %%j
     ) ELSE (

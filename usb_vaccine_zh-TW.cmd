@@ -7,7 +7,7 @@ GOTO EOF
 exit 1;
 exit 
 REM Press Ctrl-C and answer Y to terminate.
-COPY CON NUL
+COPY CON: NUL:
 %0
 :cmd_ext_ok
 ENDLOCAL
@@ -175,10 +175,11 @@ IF "!opt_reg_bak!"=="SKIP" SET g_reg_bak=FAIL
 
 REM Humbly quit when we get a Unix 'find' utility. We won't bother with
 REM 'findstr' or (ported) 'grep'.
-find . -prune >NUL 2>NUL && GOTO main_find_error
-ECHO X | find "X" >NUL 2>NUL || GOTO main_find_error
+find . -prune >NUL: 2>NUL: && GOTO main_find_error
+ECHO X | find "X" >NUL: 2>NUL: || GOTO main_find_error
 
 IF "!opt_move_subdir!"=="" SET opt_move_subdir=\MALWARE
+IF /I "!opt_move_subdir!"=="NUL:" SET opt_move_subdir=NUL
 REM Technically we can't check for every possibility of valid path without
 REM actually 'mkdir' with it, but we may filter out common path attacks.
 REM Note: There may be false positives with a multi-byte encoded path.
@@ -186,14 +187,14 @@ REM (Code point 0xXX5C. GBK, Big5, Shift_JIS, EUC-KR all vulnerable.)
 IF "!opt_move_subdir:~0,2!"=="\\" GOTO main_invalid_path
 REM Windows 9x allows "\...\", "\....\" and so on for grandparent or any
 REM ancestor directory. Thankfully it doesn't work anymore in NT.
-ECHO "\!opt_move_subdir!\" | find "\..\" >NUL && GOTO main_invalid_path
-ECHO "!opt_move_subdir!" | find "*" >NUL && GOTO main_invalid_path
-ECHO "!opt_move_subdir!" | find "?" >NUL && GOTO main_invalid_path
+ECHO "\!opt_move_subdir!\" | find "\..\" >NUL: && GOTO main_invalid_path
+ECHO "!opt_move_subdir!" | find "*" >NUL: && GOTO main_invalid_path
+ECHO "!opt_move_subdir!" | find "?" >NUL: && GOTO main_invalid_path
 FOR %%c IN (":" "<" ">" "|") DO (
-    ECHO "!opt_move_subdir!" | find %%c >NUL && GOTO main_invalid_path
+    ECHO "!opt_move_subdir!" | find %%c >NUL: && GOTO main_invalid_path
 )
 
-reg query "HKCU" >NUL 2>NUL || (
+reg query "HKCU" >NUL: 2>NUL: || (
     ECHO.>&2
     ECHO *** 錯誤：無法使用 reg.exe 來存取 Windows 登錄！>&2
     ECHO.>&2
@@ -214,13 +215,13 @@ IF DEFINED PROCESSOR_ARCHITEW6432 (
     ECHO （cmd.exe!BIG5_A15E!下執行。>&2
 )
 SET has_wow64=0
-reg query "%HKLM_SFT_WOW%" >NUL 2>NUL && SET has_wow64=1
+reg query "%HKLM_SFT_WOW%" >NUL: 2>NUL: && SET has_wow64=1
 
 :main_cmd_autorun
 SET has_cmd_autorun=0
 FOR %%k IN (%HKLM_SFT_WOW% %HKLM_SFT% HKCU\Software) DO (
     REM "reg query" outputs header lines even if key or value doesn't exist.
-    reg query "%%k\%CMD_SUBKEY%" /v "AutoRun" >NUL 2>NUL && (
+    reg query "%%k\%CMD_SUBKEY%" /v "AutoRun" >NUL: 2>NUL: && (
         IF NOT "!opt_restart!"=="SKIP" GOTO main_restart
         SET has_cmd_autorun=1
         REM Show user the AutoRun values along with error message below.
@@ -262,7 +263,7 @@ IF "!opt_cmd_autorun!"=="ALL_USERS" (
 
 :main_inf_mapping
 SET has_inf_mapping=1
-reg query "%HKLM_SFT%\%INF_MAP_SUBKEY%" /ve 2>NUL | find /I "@" >NUL || (
+reg query "%HKLM_SFT%\%INF_MAP_SUBKEY%" /ve 2>NUL: | find /I "@" >NUL: || (
     SET has_inf_mapping=0
     ECHO.>&2
     ECHO *** 危險：您的電腦易受 AutoRun 惡意軟體的攻擊！>&2
@@ -298,7 +299,7 @@ ECHO Setup.exe。這並不影響音樂，電影光碟，或 USB 裝置的自動播放（AutoPlay!BIG5_A
 ECHO （這是全機設定。!BIG5_A15E!
 CALL :continue_prompt || GOTO main_mountpoints
 CALL :backup_reg "%HKLM_SFT%" "%INF_MAP_SUBKEY%" /ve
-reg add "%HKLM_SFT%\%INF_MAP_SUBKEY%" /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >NUL
+reg add "%HKLM_SFT%\%INF_MAP_SUBKEY%" /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >NUL:
 IF ERRORLEVEL 1 (
     CALL :show_reg_write_error "IniFileMapping\autorun.inf"
 ) ELSE (
@@ -306,7 +307,7 @@ IF ERRORLEVEL 1 (
 )
 IF "!has_wow64!"=="1" (
     CALL :backup_reg "%HKLM_SFT_WOW%" "%INF_MAP_SUBKEY%" /ve
-    reg add "%HKLM_SFT_WOW%\%INF_MAP_SUBKEY%" /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >NUL
+    reg add "%HKLM_SFT_WOW%\%INF_MAP_SUBKEY%" /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >NUL:
     IF ERRORLEVEL 1 (
         CALL :show_reg_write_error "(WoW64) IniFileMapping\autorun.inf"
     ) ELSE (
@@ -335,7 +336,7 @@ FOR %%i IN (!g_sids!) DO (
 IF "!opt_known_ext!"=="SKIP" GOTO main_exe_ext
 REM The value shouldn't exist in HKLM and doesn't work there. Silently delete.
 FOR %%k IN (%HKLM_SFT% %HKLM_SFT_WOW%) DO (
-    reg delete "%%k\%ADVANCED_SUBKEY%" /v "HideFileExt" /f >NUL 2>NUL
+    reg delete "%%k\%ADVANCED_SUBKEY%" /v "HideFileExt" /f >NUL: 2>NUL:
 )
 IF NOT "!opt_known_ext!"=="ALL_USERS" (
     ECHO.
@@ -355,14 +356,14 @@ IF NOT "!opt_known_ext!"=="ALL_USERS" (
     CALL :continue_prompt || GOTO main_exe_ext
 )
 REM "HideFileExt" is enabled (0x1) if value does not exist.
-reg add "HKCU\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >NUL || (
+reg add "HKCU\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >NUL: || (
     CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
 )
 IF "!opt_known_ext!"=="ALL_USERS" (
     CALL :prepare_sids
     FOR %%i IN (!g_sids!) DO (
         ECHO SID %%~i
-        reg add "HKU\%%~i\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >NUL || (
+        reg add "HKU\%%~i\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >NUL: || (
             CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
         )
     )
@@ -371,7 +372,7 @@ IF "!opt_known_ext!"=="ALL_USERS" (
 :main_exe_ext
 IF "!opt_exe_ext!"=="ALWAYS" (
     FOR %%k IN (exefile scrfile) DO (
-        reg add "%HKLM_CLS%\%%k" /v "AlwaysShowExt" /t REG_SZ /f >NUL || (
+        reg add "%HKLM_CLS%\%%k" /v "AlwaysShowExt" /t REG_SZ /f >NUL: || (
             CALL :show_reg_write_error "HKCR\%%k /v AlwaysShowExt"
         )
     )
@@ -389,7 +390,7 @@ SET "user_msg=目前使用者"
 IF "!opt_reassoc!"=="ALL_USERS" SET "user_msg=所有使用者"
 
 IF "!opt_pif_ext!"=="SKIP" GOTO main_scf_icon
-reg query "%HKLM_CLS%\piffile" /v "NeverShowExt" >NUL 2>NUL || GOTO main_scf_icon
+reg query "%HKLM_CLS%\piffile" /v "NeverShowExt" >NUL: 2>NUL: || GOTO main_scf_icon
 REM Thankfully cmd.exe handles .pif right. Only Explorer has this flaw.
 ECHO.
 ECHO [pif-ext]
@@ -407,8 +408,8 @@ CALL :reassoc_file_types "pif=piffile"
 
 :main_scf_icon
 IF "!opt_scf_icon!"=="SKIP" GOTO main_scrap_ext
-reg query "%HKLM_CLS%\SHCmdFile" >NUL 2>NUL || GOTO main_scrap_ext
-reg query "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" >NUL 2>NUL && GOTO main_scrap_ext
+reg query "%HKLM_CLS%\SHCmdFile" >NUL: 2>NUL: || GOTO main_scrap_ext
+reg query "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" >NUL: 2>NUL: && GOTO main_scrap_ext
 ECHO.
 ECHO [scf-icon]
 ECHO .scf 檔案為 Windows 檔案總管殼層（shell!BIG5_A15E!的指令檔。它們!BIG5_B77C!在使用者開啟的時候執行
@@ -418,7 +419,7 @@ ECHO 碼，當殼層的命令被無意間執行時，仍然有可能嚇到使用者。
 ECHO 我們將為此檔案類型添加捷!BIG5_AE7C!箭頭圖示，以提高使用者的警覺。
 ECHO （這是全機設定。同時!user_msg!對於此檔案類型的關聯!BIG5_B77C!被重設，而此無法被復原。!BIG5_A15E!
 CALL :continue_prompt || GOTO main_scrap_ext
-reg add "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" /t REG_SZ /f >NUL || (
+reg add "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" /t REG_SZ /f >NUL: || (
     CALL :show_reg_write_error "HKCR\SHCmdFile /v IsShortcut"
 )
 CALL :reassoc_file_types "scf=SHCmdFile"
@@ -433,7 +434,7 @@ REM WordPad, Office Word and Excel are all known to support scrap files.
 IF "!opt_scrap_ext!"=="SKIP" GOTO main_shortcut_icon
 SET scrap_ext_keys=
 FOR %%k IN (ShellScrap DocShortcut) DO (
-    reg query "%HKLM_CLS%\%%k" /v "NeverShowExt" >NUL 2>NUL && (
+    reg query "%HKLM_CLS%\%%k" /v "NeverShowExt" >NUL: 2>NUL: && (
         SET scrap_ext_keys=!scrap_ext_keys! %%k
     )
 )
@@ -456,21 +457,21 @@ CALL :reassoc_file_types "shs=ShellScrap" "shb=DocShortcut"
 :main_shortcut_icon
 IF NOT "!opt_shortcut_icon!"=="FIX" GOTO main_file_icon
 FOR %%k IN (piffile lnkfile DocShortcut InternetShortcut) DO (
-    reg query "%HKLM_CLS%\%%k" >NUL 2>NUL && (
-        reg add "%HKLM_CLS%\%%k" /v "IsShortcut" /t REG_SZ /f >NUL || (
+    reg query "%HKLM_CLS%\%%k" >NUL: 2>NUL: && (
+        reg add "%HKLM_CLS%\%%k" /v "IsShortcut" /t REG_SZ /f >NUL: || (
             CALL :show_reg_write_error "HKCR\%%k /v IsShortcut"
         )
     )
 )
-reg query "%HKLM_CLS%\Application.Reference" >NUL 2>NUL && (
-    reg add "%HKLM_CLS%\Application.Reference" /v "IsShortcut" /t REG_SZ /f >NUL || (
+reg query "%HKLM_CLS%\Application.Reference" >NUL: 2>NUL: && (
+    reg add "%HKLM_CLS%\Application.Reference" /v "IsShortcut" /t REG_SZ /f >NUL: || (
         CALL :show_reg_write_error "Application.Reference /v IsShortcut"
     )
 )
 REM The data string "NULL" is in the original entry, in both Groove 2007 and
 REM SharePoint Workspace 2010.
-reg query "%HKLM_CLS%\GrooveLinkFile" >NUL 2>NUL && (
-    reg add "%HKLM_CLS%\GrooveLinkFile" /v "IsShortcut" /t REG_SZ /d "NULL" /f >NUL || (
+reg query "%HKLM_CLS%\GrooveLinkFile" >NUL: 2>NUL: && (
+    reg add "%HKLM_CLS%\GrooveLinkFile" /v "IsShortcut" /t REG_SZ /d "NULL" /f >NUL: || (
         CALL :show_reg_write_error "HKCR\GrooveLinkFile /v IsShortcut"
     )
 )
@@ -484,13 +485,13 @@ IF NOT "!opt_file_icon!"=="FIX" (
 :main_file_icon
 IF NOT "!opt_file_icon!"=="FIX" GOTO main_all_drives
 REM "DefaultIcon" for "Unknown" is configurable since Windows Vista.
-reg query "%HKLM_CLS%\Unknown\DefaultIcon" >NUL 2>NUL && (
-    reg add "%HKLM_CLS%\Unknown\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,0" /f >NUL || (
+reg query "%HKLM_CLS%\Unknown\DefaultIcon" >NUL: 2>NUL: && (
+    reg add "%HKLM_CLS%\Unknown\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,0" /f >NUL: || (
         CALL :show_reg_write_error "HKCR\Unknown\DefaultIcon"
     )
 )
 CALL :delete_reg_key "%HKLM_CLS%" "comfile\shellex\IconHandler" "HKCR\comfile\shellex\IconHandler"
-reg add "%HKLM_CLS%\comfile\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,2" /f >NUL || (
+reg add "%HKLM_CLS%\comfile\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,2" /f >NUL: || (
     CALL :delete_reg_key "%HKLM_CLS%" "%%k\DefaultIcon" "HKCR\comfile\DefaultIcon"
 )
 REM Two vulnerabilities exist in the .lnk and .pif IconHandler:
@@ -498,15 +499,15 @@ REM MS10-046 (CVE-2010-2568), MS15-020 (CVE-2015-0096)
 REM Windows 2000 has no patch for either. XP has only patch for MS10-046.
 REM Expect that user disables the IconHandler as the workaround.
 FOR %%k IN (piffile lnkfile) DO (
-    reg add "%HKLM_CLS%\%%k\shellex\IconHandler" /ve /t REG_SZ /d "{00021401-0000-0000-C000-000000000046}" /f >NUL || (
+    reg add "%HKLM_CLS%\%%k\shellex\IconHandler" /ve /t REG_SZ /d "{00021401-0000-0000-C000-000000000046}" /f >NUL: || (
         CALL :show_reg_write_error "HKCR\%%k\shellex\IconHandler"
     )
     CALL :delete_reg_key "%HKLM_CLS%" "%%k\DefaultIcon" "HKCR\%%k\DefaultIcon"
 )
 REM Scrap file types. Guaranteed to work (and only) in Windows 2000 and XP.
 FOR %%k IN (ShellScrap DocShortcut) DO (
-    reg query "%HKLM_CLS%\%%k" >NUL 2>NUL && (
-        reg add "%HKLM_CLS%\%%k\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shscrap.dll,-100" /f >NUL || (
+    reg query "%HKLM_CLS%\%%k" >NUL: 2>NUL: && (
+        reg add "%HKLM_CLS%\%%k\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shscrap.dll,-100" /f >NUL: || (
             CALL :show_reg_write_error "HKCR\%%k\DefaultIcon"
         )
         CALL :delete_reg_key "%HKLM_CLS%" "%%k\shellex\IconHandler" "%%k\shellex\IconHandler"
@@ -514,27 +515,27 @@ FOR %%k IN (ShellScrap DocShortcut) DO (
 )
 REM The "InternetShortcut" key has "DefaultIcon" subkey whose Default value
 REM differs among IE versions.
-reg query "%HKLM_CLS%\InternetShortcut" >NUL 2>NUL && (
-    reg add "%HKLM_CLS%\InternetShortcut\shellex\IconHandler" /ve /t REG_SZ /d "{FBF23B40-E3F0-101B-8488-00AA003E56F8}" /f >NUL || (
+reg query "%HKLM_CLS%\InternetShortcut" >NUL: 2>NUL: && (
+    reg add "%HKLM_CLS%\InternetShortcut\shellex\IconHandler" /ve /t REG_SZ /d "{FBF23B40-E3F0-101B-8488-00AA003E56F8}" /f >NUL: || (
         CALL :show_reg_write_error "InternetShortcut IconHandler"
     )
 )
-reg query "%HKLM_CLS%\SHCmdFile" >NUL 2>NUL && (
+reg query "%HKLM_CLS%\SHCmdFile" >NUL: 2>NUL: && (
     CALL :delete_reg_key "%HKLM_CLS%" "SHCmdFile\DefaultIcon" "HKCR\SHCmdFile\DefaultIcon"
-    reg add "%HKLM_CLS%\SHCmdFile\shellex\IconHandler" /ve /t REG_SZ /d "{57651662-CE3E-11D0-8D77-00C04FC99D61}" /f >NUL || (
+    reg add "%HKLM_CLS%\SHCmdFile\shellex\IconHandler" /ve /t REG_SZ /d "{57651662-CE3E-11D0-8D77-00C04FC99D61}" /f >NUL: || (
         CALL :show_reg_write_error "HKCR\SHCmdFile\shellex\IconHandler"
     )
 )
-reg query "%HKLM_CLS%\Application.Reference" >NUL 2>NUL && (
+reg query "%HKLM_CLS%\Application.Reference" >NUL: 2>NUL: && (
     CALL :delete_reg_key "%HKLM_CLS%" "Application.Reference\DefaultIcon" "Application.Reference\DefaultIcon"
-    reg add "%HKLM_CLS%\Application.Reference\shellex\IconHandler" /ve /t REG_SZ /d "{E37E2028-CE1A-4f42-AF05-6CEABC4E5D75}" /f >NUL || (
+    reg add "%HKLM_CLS%\Application.Reference\shellex\IconHandler" /ve /t REG_SZ /d "{E37E2028-CE1A-4f42-AF05-6CEABC4E5D75}" /f >NUL: || (
         CALL :show_reg_write_error "Application.Reference IconHandler"
     )
 )
 REM The "GrooveLinkFile" key has "DefaultIcon" value (data: "%1") and no
 REM "DefaultIcon" subkey.
-reg query "%HKLM_CLS%\GrooveLinkFile" >NUL 2>NUL && (
-    reg add "%HKLM_CLS%\GrooveLinkFile\ShellEx\IconHandler" /ve /t REG_SZ /d "{387E725D-DC16-4D76-B310-2C93ED4752A0}" /f >NUL || (
+reg query "%HKLM_CLS%\GrooveLinkFile" >NUL: 2>NUL: && (
+    reg add "%HKLM_CLS%\GrooveLinkFile\ShellEx\IconHandler" /ve /t REG_SZ /d "{387E725D-DC16-4D76-B310-2C93ED4752A0}" /f >NUL: || (
         CALL :show_reg_write_error "GrooveLinkFile\ShellEx\IconHandler"
     )
 )
@@ -689,7 +690,7 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         SET g_dont_move_files=
         IF NOT "!opt_symlinks!"=="SKIP" CALL :process_symlinks
         IF "!g_move_status!"=="OK_EMPTY" (
-            DEL "!opt_move_subdir!\README.txt" >NUL
+            DEL "!opt_move_subdir!\README.txt" >NUL:
             RMDIR "!opt_move_subdir!"
         )
     )
@@ -701,7 +702,7 @@ IF "!g_files_moved!"=="0" (
     ECHO 全部完成。請檢查各個 "!opt_move_subdir!"
     ECHO 子目錄，所有可疑檔案皆被移動到那裡了。按任意鍵關閉本程式。
 )
-PAUSE >NUL
+PAUSE >NUL:
 GOTO main_end
 
 :main_help
@@ -804,7 +805,7 @@ REM @return 0 if file is created
 :create_file
     REM Non-atomic! A race or a TOCTTOU attack may occur.
     IF EXIST %1 EXIT /B 1
-    TYPE NUL >>%1
+    TYPE NUL: >>%1
     IF EXIST %1 EXIT /B 0
 EXIT /B 1
 
@@ -846,7 +847,7 @@ REM @return 0 on success, 1 if key/value doesn't exist, 2 if backup file fails
     REM not set" default, while in Vista it exits with 0. We ensures Vista's
     REM behavior by querying the whole key.
     SET "v_opt=%3"
-    reg query "%~1\%~2" !v_opt:/ve=! %4 >NUL 2>NUL || EXIT /B 1
+    reg query "%~1\%~2" !v_opt:/ve=! %4 >NUL: 2>NUL: || EXIT /B 1
     IF "!g_reg_bak!"=="" CALL :init_reg_bak
     IF "!g_reg_bak!"=="FAIL" EXIT /B 2
     IF "!g_is_wow64!%~1"=="1%HKLM_SFT%" (
@@ -856,7 +857,7 @@ REM @return 0 on success, 1 if key/value doesn't exist, 2 if backup file fails
     ) >>"Vacc_reg.bak"
     SET s=
     IF "%~3%~4"=="" SET s=/s
-    reg query "%~1\%~2" %3 %4 !s! >>"Vacc_reg.bak" 2>NUL
+    reg query "%~1\%~2" %3 %4 !s! >>"Vacc_reg.bak" 2>NUL:
 GOTO :EOF
 
 REM Displays a (generic) error message for any write error in registry.
@@ -878,14 +879,14 @@ REM @return 0 on successful deletion, 1 if key doesn't exist, or 2 on error
 :delete_reg_value
     CALL :backup_reg %1 %2 /v %3
     IF "!ERRORLEVEL!"=="1" EXIT /B 1
-    reg delete "%~1\%~2" /v "%~3" /f >NUL && EXIT /B 0
+    reg delete "%~1\%~2" /v "%~3" /f >NUL: && EXIT /B 0
     CALL :show_reg_write_error %4
 EXIT /B 2
 
 REM Prepares g_sids global variable (list of all user SIDs on the computer).
 :prepare_sids
     IF NOT "!g_sids!"=="" GOTO :EOF
-    FOR /F "usebackq eol=\ delims=" %%k IN (`reg query HKU 2^>NUL`) DO (
+    FOR /F "usebackq eol=\ delims=" %%k IN (`reg query HKU 2^>NUL:`) DO (
         REM 'reg' outputs junk lines, make sure the line truly represents a
         REM user and not a Classes key.
         SET "key=%%~k"
@@ -905,7 +906,7 @@ REM @return 0 on successful deletion, 1 if key doesn't exist, or 2 on error
 :delete_reg_key
     CALL :backup_reg %1 %2
     IF "!ERRORLEVEL!"=="1" EXIT /B 1
-    reg delete "%~1\%~2" /f >NUL && EXIT /B 0
+    reg delete "%~1\%~2" /f >NUL: && EXIT /B 0
     CALL :show_reg_write_error %3
 EXIT /B 2
 
@@ -918,8 +919,8 @@ REM @return 0 on successful deletion, 1 if key doesn't exist, or 2 on error
     CALL :delete_reg_key %1 %2 %3 || GOTO :EOF
     REM Create a dummy value so that "reg add" won't affect the default value
     REM of the key.
-    reg add "%~1\%~2" /v "X" /f >NUL 2>NUL || EXIT /B 2
-    reg delete "%~1\%~2" /v "X" /f >NUL 2>NUL || EXIT /B 2
+    reg add "%~1\%~2" /v "X" /f >NUL: 2>NUL: || EXIT /B 2
+    reg delete "%~1\%~2" /v "X" /f >NUL: 2>NUL: || EXIT /B 2
 GOTO :EOF
 
 REM Changes file association for a file type.
@@ -927,10 +928,10 @@ REM @param %1 File extension
 REM @param %2 ProgID
 REM @return 0 on success, 1 if not both .%1 and %2 keys exist, or 2 on error
 :safe_assoc
-    reg query "%HKLM_CLS%\%~2" >NUL 2>NUL || EXIT /B 1
+    reg query "%HKLM_CLS%\%~2" >NUL: 2>NUL: || EXIT /B 1
     CALL :backup_reg "%HKLM_CLS%" ".%~1" /ve
     IF "!ERRORLEVEL!"=="1" EXIT /B 1
-    reg add "%HKLM_CLS%\.%~1" /ve /t REG_SZ /d "%~2" /f >NUL && EXIT /B 0
+    reg add "%HKLM_CLS%\.%~1" /ve /t REG_SZ /d "%~2" /f >NUL: && EXIT /B 0
     CALL :show_reg_write_error "%HKLM_CLS%\.%~1"
 EXIT /B 2
 
@@ -991,7 +992,7 @@ REM @return 0 (true) if the file is in the list
         )
     )
     SET attr_d=0
-    ECHO.%~a2 | find "d" >NUL && SET attr_d=1
+    ECHO.%~a2 | find "d" >NUL: && SET attr_d=1
     FOR %%i IN (!list!) DO (
         IF /I "!attr_d!%~2"=="0%%~i" EXIT /B 0
         IF /I "!attr_d!%~2\"=="1%%~i" EXIT /B 0
@@ -1064,13 +1065,13 @@ REM @param %3 Name of file to process
     )
     FOR %%A IN (h s d l) DO (
         SET "attr_%%A=-%%A"
-        ECHO.%~a3 | find "%%A" >NUL && SET "attr_%%A=%%A"
+        ECHO.%~a3 | find "%%A" >NUL: && SET "attr_%%A=%%A"
     )
     REM Always Delete Hidden or System symlinks.
     IF NOT "!attr_h!!attr_s!"=="-h-s" (
         IF "!attr_l!!attr_d!"=="l-d" (
             ECHO 刪除符號連結 "%~3"
-            DEL /F /A:!attr_h!!attr_s!l-d "%~3" >NUL
+            DEL /F /A:!attr_h!!attr_s!l-d "%~3" >NUL:
             GOTO :EOF
         )
     )
@@ -1078,7 +1079,7 @@ REM @param %3 Name of file to process
     IF "!g_move_status!"=="DEL" (
         IF "!attr_d!"=="d" GOTO :EOF
         ECHO 刪除!type! "%~3"
-        DEL /F /A:!attr_h!!attr_s!!attr_l!-d "%~3" >NUL
+        DEL /F /A:!attr_h!!attr_s!!attr_l!-d "%~3" >NUL:
         GOTO :EOF
     )
     IF NOT "!g_move_status:~0,2!"=="OK" (
@@ -1101,7 +1102,7 @@ REM @param %3 Name of file to process
         ECHO 無法移動!type! "%~3" 到 "!opt_move_subdir!"。（目的地檔案已存在!BIG5_A15E!>&2
         GOTO :EOF
     )
-    MOVE /Y "%~3" "!opt_move_subdir!\!dest!" >NUL || (
+    MOVE /Y "%~3" "!opt_move_subdir!\!dest!" >NUL: || (
         ECHO 無法移動!type! "%~3" 到 "!opt_move_subdir!"。>&2
         GOTO :EOF
     )
@@ -1115,7 +1116,7 @@ REM Moves or deletes all file symlinks in current directory.
     REM Directory symlinks/junctions are harmless. Leave them alone.
     REM DIR command in Windows 2000 supports "/A:L", but displays symlinks
     REM (file or directory) as junctions. Undocumented feature.
-    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:L-D /B 2^>NUL`) DO (
+    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:L-D /B 2^>NUL:`) DO (
         CALL :process_file SYMLINK "符號連結" "%%~f"
     )
 GOTO :EOF
@@ -1125,7 +1126,7 @@ REM Clears hidden and system attributes of all files in current directory.
     REM 'attrib' refuses to clear either H or S attribute for files with both
     REM attributes set. Must clear both simultaneously.
     REM The exit code of 'attrib' is unreliable.
-    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:HS-L /B 2^>NUL`) DO (
+    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:HS-L /B 2^>NUL:`) DO (
         CALL :is_file_to_keep HS_ATTRIB "%%~f"
         IF ERRORLEVEL 1 (
             ECHO 解除隱藏+系統屬性 "%%~f"
@@ -1134,7 +1135,7 @@ REM Clears hidden and system attributes of all files in current directory.
             ECHO 為了安全原因，跳過檔案 "%%~f"（隱藏+系統屬性!BIG5_A15E!
         )
     )
-    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:H-S-L /B 2^>NUL`) DO (
+    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:H-S-L /B 2^>NUL:`) DO (
         CALL :is_file_to_keep H_ATTRIB "%%~f"
         IF ERRORLEVEL 1 (
             ECHO 解除隱藏屬性 "%%~f"
@@ -1143,7 +1144,7 @@ REM Clears hidden and system attributes of all files in current directory.
             ECHO 為了安全原因，跳過檔案 "%%~f"（隱藏屬性!BIG5_A15E!
         )
     )
-    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:S-H-L /B 2^>NUL`) DO (
+    FOR /F "usebackq eol=\ delims=" %%f IN (`DIR /A:S-H-L /B 2^>NUL:`) DO (
         CALL :is_file_to_keep S_ATTRIB "%%~f"
         IF ERRORLEVEL 1 (
             ECHO 解除系統屬性 "%%~f"
@@ -1157,7 +1158,7 @@ GOTO :EOF
 REM Moves or deletes shortcut files in current directory.
 :process_shortcuts
     FOR /F "usebackq eol=\ delims=" %%f IN (
-        `DIR /A:-D /B *.pif *.lnk *.shb *.url *.appref-ms *.glk 2^>NUL`
+        `DIR /A:-D /B *.pif *.lnk *.shb *.url *.appref-ms *.glk 2^>NUL:`
     ) DO (
         CALL :process_file EXECUTE "捷AE7C檔案" "%%~f"
     )
@@ -1168,9 +1169,9 @@ REM folder in current directory.
 :process_folder_exes
     REM .bat, .cmd and .com are self-executable, but their icons are static, so
     REM leave them alone.
-    FOR /F "usebackq eol=\ delims=" %%d IN (`DIR /A:D /B 2^>NUL`) DO (
+    FOR /F "usebackq eol=\ delims=" %%d IN (`DIR /A:D /B 2^>NUL:`) DO (
         FOR /F "usebackq eol=\ delims=" %%f IN (
-            `DIR /A:-D /B "%%~d.exe" "%%~d.scr" 2^>NUL`
+            `DIR /A:-D /B "%%~d.exe" "%%~d.scr" 2^>NUL:`
         ) DO (
             CALL :process_file EXECUTE "檔案" "%%~f"
         )
@@ -1182,7 +1183,7 @@ REM @param %1 Name of file to remove or directory to create
 REM @return 0 if directory exists or is created successfully, or 1 on error
 :file_to_directory
     IF EXIST %1 (
-        ECHO.%~a1 | find "d" >NUL && (
+        ECHO.%~a1 | find "d" >NUL: && (
             REM File exists and is a directory. Keep it.
             attrib +R +H +S "%~1"
             EXIT /B 0
