@@ -39,10 +39,13 @@ Here are limitations known in Windows NT 4 Command Processor environment:
 'usb_vaccine.cmd' contains code that checks whether the Command Processor
 environment is okay. The code is copied below, with annotations:
 
+    @REM Note: "@" prefix is supported only since IBM PC DOS / MS-DOS 3.3. In
+    @REM DOS 2 or 3 you may use "ECHO OFF" but it's a waste of one line for the
+    @REM stub code here.
     @ECHO OFF
     @REM The CMDEXTVERSION check may be available only after cmd extensions are
-    @REM enabled. Expect a "Bad command" error for COMMAND.COM in DOS or Win9x.
-    @REM Redirecting stderr ("2>") is impossible in DOS or Win9x.
+    @REM enabled. Expect a "Bad command" error for DOS or Win9x COMMAND.COM.
+    @REM Note: Redirecting stderr ("2>") is impossible in DOS or Win9x.
     SETLOCAL EnableExtensions
     @REM OS/2 and Win NT 3.x will halt upon syntax "IF CMDEXTVERSION 2 ...".
     @REM Using "==" as delimiter makes syntax backward compatible to those not
@@ -68,13 +71,20 @@ environment is okay. The code is copied below, with annotations:
     exit 
     @REM IBM PC DOS / MS-DOS 1.x doesn't support ECHO, EXIT, GOTO or SET.
     @REM Fallback using a (user-visible) REM and a non-loop hanger ("COPY CON
-    @REM NUL"). It won't protect against Ctrl-C and then N (effectively
-    @REM skipping the command), or a Ctrl-Z (EOF), so (re-)exec COMMAND.COM if
-    @REM user does it. (COMMAND.COM may prompt user for DATE and TIME again so
-    @REM let this be the very last fallback.)
+    @REM NUL"). It won't protect against Ctrl-C and then N (which effectively
+    @REM skips the command), or a Ctrl-Z (simulating an EOF), though.
     REM Press Ctrl-C and answer Y to terminate.
     COPY CON NUL
-    command.com
+    @REM Re-exec this to force a loop. Note that we cannot detect if user swaps
+    @REM the diskettes (physically, in a drive) so that %0 points to something
+    @REM else with same file name. (Such would be an intentional attack and is
+    @REM not what batch language can handle.)
+    @REM If user swaps to a disk in which $0 doesn't exist, then, at reading
+    @REM phase, COMMAND.COM will display "Insert disk with batch file" and
+    @REM pause, but if disk changing happen at execution phase it won't pause
+    @REM (displays "Bad command" and skips instead). The latter case is rare
+    @REM and harder than the swap-to-different-file attack, so we won't bother.
+    %0
     :cmd_ext_ok
     ENDLOCAL
     ... main code here ...

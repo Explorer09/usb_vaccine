@@ -8,7 +8,7 @@ exit 1;
 exit 
 REM Press Ctrl-C and answer Y to terminate.
 COPY CON NUL
-command.com
+%0
 :cmd_ext_ok
 ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
