@@ -497,19 +497,19 @@ reg query "%HKLM_CLS%\Unknown\DefaultIcon" >NUL: 2>NUL: && (
         CALL :show_reg_write_error "HKCR\Unknown\DefaultIcon"
     )
 )
-CALL :delete_reg_key "%HKLM_CLS%" "comfile\shellex\IconHandler" "HKCR\comfile\shellex\IconHandler"
 reg add "%HKLM_CLS%\comfile\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,2" /f >NUL: || (
-    CALL :delete_reg_key "%HKLM_CLS%" "%%k\DefaultIcon" "HKCR\comfile\DefaultIcon"
+    CALL :show_reg_write_error "HKCR\comfile\DefaultIcon"
 )
+CALL :delete_reg_key "%HKLM_CLS%" "comfile\shellex\IconHandler" "HKCR\comfile\shellex\IconHandler"
 REM Two vulnerabilities exist in the .lnk and .pif IconHandler:
 REM MS10-046 (CVE-2010-2568), MS15-020 (CVE-2015-0096)
 REM Windows 2000 has no patch for either. XP has only patch for MS10-046.
 REM Expect that user disables the IconHandler as the workaround.
 FOR %%k IN (piffile lnkfile) DO (
+    CALL :delete_reg_key "%HKLM_CLS%" "%%k\DefaultIcon" "HKCR\%%k\DefaultIcon"
     reg add "%HKLM_CLS%\%%k\shellex\IconHandler" /ve /t REG_SZ /d "{00021401-0000-0000-C000-000000000046}" /f >NUL: || (
         CALL :show_reg_write_error "HKCR\%%k\shellex\IconHandler"
     )
-    CALL :delete_reg_key "%HKLM_CLS%" "%%k\DefaultIcon" "HKCR\%%k\DefaultIcon"
 )
 REM Scrap file types. Guaranteed to work (and only) in Windows 2000 and XP.
 FOR %%k IN (ShellScrap DocShortcut) DO (
