@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2016-11-24)
+REM 'usb_vaccine.cmd' version 3 beta (2016-11-28)
 REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -181,11 +181,8 @@ REM (Code point 0xXX5C. GBK, Big5, Shift_JIS, EUC-KR all vulnerable.)
 IF "!opt_move_subdir:~0,2!"=="\\" GOTO main_invalid_path
 REM Windows 9x allows "\...\", "\....\" and so on for grandparent or any
 REM ancestor directory. Thankfully it doesn't work anymore in NT.
-ECHO "\!opt_move_subdir!\" | find "\..\" >NUL: && GOTO main_invalid_path
-ECHO "!opt_move_subdir!" | find "*" >NUL: && GOTO main_invalid_path
-ECHO "!opt_move_subdir!" | find "?" >NUL: && GOTO main_invalid_path
-FOR %%c IN (":" "<" ">" "|") DO (
-    ECHO "!opt_move_subdir!" | find %%c >NUL: && GOTO main_invalid_path
+CALL :has_ci_substr "\!opt_move_subdir!\" "\..\" "*" "?" ":" "<" ">" "|" && (
+    GOTO main_invalid_path
 )
 
 reg query "HKCU" >NUL: 2>NUL: || (
@@ -815,6 +812,25 @@ EXIT /B !status!
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES
 
+REM Checks if string contains any of the substrings, ignoring case.
+REM @param %1 string (must be quoted)
+REM @param %2... substrings, each must be quoted and not contain "!" or "="
+REM @return 0 (true) if any of substrings is found in string
+:has_ci_substr
+    SET "str=%~1"
+    SHIFT /1
+    REM Can't use FOR because it expands "*" and "?" that we don't want.
+GOTO has_ci_substr_loop_
+
+:has_ci_substr_loop_
+    IF "%~1"=="" EXIT /B 1
+    REM The first "*" in "!v:*s=r!" syntax is special (read "SET /?" page);
+    REM the rest is matched literally even if it contains "*".
+    REM Undocumented: string substitution is case insensitive.
+    IF NOT "!str!"=="!str:*%~1=!" EXIT /B 0
+    SHIFT /1
+GOTO has_ci_substr_loop_
+
 REM Prompts user to continue or skip.
 REM @return 0 if user says to continue, or 1 if says to skip
 :continue_prompt
@@ -1020,7 +1036,7 @@ REM @return 0 (true) if the file is in the list
         )
     )
     SET attr_d=0
-    ECHO.%~a2 | find "d" >NUL: && SET attr_d=1
+    CALL :has_ci_substr "%~a2" "d" && SET attr_d=1
     FOR %%i IN (!list!) DO (
         IF /I "!attr_d!%~2"=="0%%~i" EXIT /B 0
         IF /I "!attr_d!%~2\"=="1%%~i" EXIT /B 0
@@ -1091,7 +1107,7 @@ REM @param %3 Name of file to process
     )
     FOR %%A IN (h s d l) DO (
         SET "attr_%%A=-%%A"
-        ECHO.%~a3 | find "%%A" >NUL: && SET "attr_%%A=%%A"
+        CALL :has_ci_substr "%~a3" "%%A" && SET "attr_%%A=%%A"
     )
     REM Always Delete Hidden or System symlinks.
     IF NOT "!attr_h!!attr_s!"=="-h-s" (
@@ -1209,7 +1225,7 @@ REM @param %1 Name of file to remove or directory to create
 REM @return 0 if directory exists or is created successfully, or 1 on error
 :file_to_directory
     IF EXIST %1 (
-        ECHO.%~a1 | find "d" >NUL: && (
+        CALL :has_ci_substr "%~a1" "d" && (
             REM File exists and is a directory. Keep it.
             attrib +R +H +S "%~1"
             EXIT /B 0
