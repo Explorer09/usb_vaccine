@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-11-28)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-11-30)
 REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -482,28 +482,36 @@ IF NOT "!opt_file_icon!"=="FIX" (
 :main_file_icon
 IF NOT "!opt_file_icon!"=="FIX" GOTO main_all_drives
 REM "DefaultIcon" for "Unknown" is configurable since Windows Vista.
-reg query "%HKLM_CLS%\Unknown\DefaultIcon" >NUL: 2>NUL: && (
-    reg add "%HKLM_CLS%\Unknown\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,0" /f >NUL: || (
-        CALL :show_reg_write_error "HKCR\Unknown\DefaultIcon"
+SET key=Unknown\DefaultIcon
+CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
+IF NOT "!ERRORLEVEL!"=="1" (
+    reg add "%HKLM_CLS%\!key!" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,0" /f >NUL: || (
+        CALL :show_reg_write_error "HKCR\!key!"
     )
 )
-reg add "%HKLM_CLS%\comfile\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,2" /f >NUL: || (
-    CALL :show_reg_write_error "HKCR\comfile\DefaultIcon"
+SET key=comfile\DefaultIcon
+CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
+reg add "%HKLM_CLS%\!key!" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,2" /f >NUL: || (
+    CALL :show_reg_write_error "HKCR\!key!"
 )
-CALL :delete_reg_key "%HKLM_CLS%" "comfile\shellex\IconHandler" "HKCR\comfile\shellex\IconHandler"
+SET key=comfile\shellex\IconHandler
+CALL :delete_reg_key "%HKLM_CLS%" "!key!" "HKCR\!key!"
 REM Two vulnerabilities exist in the .lnk and .pif IconHandler:
 REM MS10-046 (CVE-2010-2568), MS15-020 (CVE-2015-0096)
 REM Windows 2000 has no patch for either. XP has only patch for MS10-046.
 REM Expect that user disables the IconHandler as the workaround.
 FOR %%k IN (piffile lnkfile) DO (
     CALL :delete_reg_key "%HKLM_CLS%" "%%k\DefaultIcon" "HKCR\%%k\DefaultIcon"
-    reg add "%HKLM_CLS%\%%k\shellex\IconHandler" /ve /t REG_SZ /d "{00021401-0000-0000-C000-000000000046}" /f >NUL: || (
-        CALL :show_reg_write_error "HKCR\%%k\shellex\IconHandler"
+    SET key=%%k\shellex\IconHandler
+    CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
+    reg add "%HKLM_CLS%\!key!" /ve /t REG_SZ /d "{00021401-0000-0000-C000-000000000046}" /f >NUL: || (
+        CALL :show_reg_write_error "HKCR\!key!"
     )
 )
 REM Scrap file types. Guaranteed to work (and only) in Windows 2000 and XP.
 FOR %%k IN (ShellScrap DocShortcut) DO (
     reg query "%HKLM_CLS%\%%k" >NUL: 2>NUL: && (
+        CALL :backup_reg "%HKLM_CLS%" "%%k\DefaultIcon" /ve
         reg add "%HKLM_CLS%\%%k\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shscrap.dll,-100" /f >NUL: || (
             CALL :show_reg_write_error "HKCR\%%k\DefaultIcon"
         )
@@ -513,27 +521,36 @@ FOR %%k IN (ShellScrap DocShortcut) DO (
 REM The "InternetShortcut" key has "DefaultIcon" subkey whose Default value
 REM differs among IE versions.
 reg query "%HKLM_CLS%\InternetShortcut" >NUL: 2>NUL: && (
-    reg add "%HKLM_CLS%\InternetShortcut\shellex\IconHandler" /ve /t REG_SZ /d "{FBF23B40-E3F0-101B-8488-00AA003E56F8}" /f >NUL: || (
+    SET key=InternetShortcut\shellex\IconHandler
+    CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
+    reg add "%HKLM_CLS%\!key!" /ve /t REG_SZ /d "{FBF23B40-E3F0-101B-8488-00AA003E56F8}" /f >NUL: || (
         CALL :show_reg_write_error "InternetShortcut IconHandler"
     )
 )
 reg query "%HKLM_CLS%\SHCmdFile" >NUL: 2>NUL: && (
     CALL :delete_reg_key "%HKLM_CLS%" "SHCmdFile\DefaultIcon" "HKCR\SHCmdFile\DefaultIcon"
-    reg add "%HKLM_CLS%\SHCmdFile\shellex\IconHandler" /ve /t REG_SZ /d "{57651662-CE3E-11D0-8D77-00C04FC99D61}" /f >NUL: || (
-        CALL :show_reg_write_error "HKCR\SHCmdFile\shellex\IconHandler"
+    SET key=SHCmdFile\shellex\IconHandler
+    CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
+    reg add "%HKLM_CLS%\!key!" /ve /t REG_SZ /d "{57651662-CE3E-11D0-8D77-00C04FC99D61}" /f >NUL: || (
+        CALL :show_reg_write_error "HKCR\!key!"
     )
 )
 reg query "%HKLM_CLS%\Application.Reference" >NUL: 2>NUL: && (
-    CALL :delete_reg_key "%HKLM_CLS%" "Application.Reference\DefaultIcon" "Application.Reference\DefaultIcon"
-    reg add "%HKLM_CLS%\Application.Reference\shellex\IconHandler" /ve /t REG_SZ /d "{E37E2028-CE1A-4f42-AF05-6CEABC4E5D75}" /f >NUL: || (
+    SET key=Application.Reference\DefaultIcon
+    CALL :delete_reg_key "%HKLM_CLS%" "!key!" "!key!"
+    SET key=Application.Reference\shellex\IconHandler
+    CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
+    reg add "%HKLM_CLS%\!key!" /ve /t REG_SZ /d "{E37E2028-CE1A-4f42-AF05-6CEABC4E5D75}" /f >NUL: || (
         CALL :show_reg_write_error "Application.Reference IconHandler"
     )
 )
 REM The "GrooveLinkFile" key has "DefaultIcon" value (data: "%1") and no
 REM "DefaultIcon" subkey.
 reg query "%HKLM_CLS%\GrooveLinkFile" >NUL: 2>NUL: && (
-    reg add "%HKLM_CLS%\GrooveLinkFile\ShellEx\IconHandler" /ve /t REG_SZ /d "{387E725D-DC16-4D76-B310-2C93ED4752A0}" /f >NUL: || (
-        CALL :show_reg_write_error "GrooveLinkFile\ShellEx\IconHandler"
+    SET key=GrooveLinkFile\ShellEx\IconHandler
+    CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
+    reg add "%HKLM_CLS%\!key!" /ve /t REG_SZ /d "{387E725D-DC16-4D76-B310-2C93ED4752A0}" /f >NUL: || (
+        CALL :show_reg_write_error "!key!"
     )
 )
 REM We don't reset associations for .url files because user's favorite browser
