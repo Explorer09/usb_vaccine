@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2016-11-30)
+REM 'usb_vaccine.cmd' version 3 beta (2016-12-03)
 REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -257,7 +257,7 @@ SET has_inf_mapping=1
 reg query "%HKLM_SFT%\%INF_MAP_SUBKEY%" /ve 2>NUL: | find /I "@" >NUL: || (
     SET has_inf_mapping=0
     ECHO.>&2
-    ECHO *** DANGER: Your computer is vulnerable to the AutoRun malware^^!>&2
+    ECHO *** NOTICE: Your computer is vulnerable to the AutoRun malware^^!>&2
 )
 ECHO.
 ECHO This program can help you disable AutoRun, clean the autorun.inf files on your

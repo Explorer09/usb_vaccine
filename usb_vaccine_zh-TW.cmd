@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-11-30)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-12-03)
 REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -263,7 +263,7 @@ SET has_inf_mapping=1
 reg query "%HKLM_SFT%\%INF_MAP_SUBKEY%" /ve 2>NUL: | find /I "@" >NUL: || (
     SET has_inf_mapping=0
     ECHO.>&2
-    ECHO *** 危險：您的電腦易受 AutoRun 惡意軟體的攻擊！>&2
+    ECHO *** 注意：您的電腦易受 AutoRun 惡意軟體的攻擊！>&2
 )
 ECHO.
 ECHO 本程式可以幫助您關閉自動執行（AutoRun!BIG5_A15E!、清理您磁碟裡的 autorun.inf 檔案、移除
