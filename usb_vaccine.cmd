@@ -176,8 +176,8 @@ IF "!opt_move_subdir!"=="" SET opt_move_subdir=\MALWARE
 IF /I "!opt_move_subdir!"=="NUL:" SET opt_move_subdir=NUL
 REM Technically we can't check for every possibility of valid path without
 REM actually 'mkdir' with it, but we may filter out common path attacks.
-REM Note: There may be false positives with a multi-byte encoded path.
-REM (Code point 0xXX5C. GBK, Big5, Shift_JIS, EUC-KR all vulnerable.)
+REM Note: False positive is possible with a multi-byte encoding (including GBK,
+REM Big5, Shift_JIS, CP949 or Mac OS Korean) and code point 0x??5C.
 IF "!opt_move_subdir:~0,2!"=="\\" GOTO main_invalid_path
 REM Windows 9x allows "\...\", "\....\" and so on for grandparent or any
 REM ancestor directory. Thankfully it doesn't work anymore in NT.
