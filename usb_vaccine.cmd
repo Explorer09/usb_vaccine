@@ -1120,8 +1120,11 @@ REM @param %1 Category of list of files to keep
 REM @param %2 Type of file, displayed in (localized) messages
 REM @param %3 Name of file to process
 :process_file
+    REM Wrap around and delay-expand to guard against embedded 0x5E "^" or
+    REM 0x7C "|" byte in localized strings.
+    SET "type=%~2"
     CALL :is_file_to_keep %1 %3 && (
-        ECHO Skip %~2 "%~3" for safety.
+        ECHO Skip !type! "%~3" for safety.
         GOTO :EOF
     )
     FOR %%A IN (h s d l) DO (
@@ -1139,19 +1142,19 @@ REM @param %3 Name of file to process
     IF "!g_move_status!"=="" CALL :init_move_subdir
     IF "!g_move_status!"=="DEL" (
         IF "!attr_d!"=="d" GOTO :EOF
-        ECHO Delete %~2 "%~3"
+        ECHO Delete !type! "%~3"
         DEL /F /A:!attr_h!!attr_s!!attr_l!-d "%~3" >NUL:
         GOTO :EOF
     )
     IF NOT "!g_move_status:~0,2!"=="OK" (
-        ECHO Detected but won't move %~2 "%~3"
+        ECHO Detected but won't move !type! "%~3"
         GOTO :EOF
     )
     FOR %%i IN (!g_dont_move_files!) DO (
         IF /I "%~3"=="%%~i" GOTO :EOF
     )
     IF NOT "!attr_h!!attr_s!"=="-h-s" (
-        ECHO Can't move %~2 "%~3". ^(Has Hidden or System attribute^)>&2
+        ECHO Can't move !type! "%~3". ^(Has Hidden or System attribute^)>&2
         GOTO :EOF
     )
     SET "dest=%~3"
@@ -1160,16 +1163,16 @@ REM @param %3 Name of file to process
     IF /I "%~3"=="README.txt" SET dest=_%~3
     REM Should never exist name collisions except the forced rename above.
     IF EXIST "!opt_move_subdir!\!dest!" (
-        ECHO Can't move %~2 "%~3" to "!opt_move_subdir!". ^(Destination file exists^)>&2
+        ECHO Can't move !type! "%~3" to "!opt_move_subdir!". ^(Destination file exists^)>&2
         GOTO :EOF
     )
     MOVE /Y "%~3" "!opt_move_subdir!\!dest!" >NUL: || (
-        ECHO Can't move %~2 "%~3" to "!opt_move_subdir!".>&2
+        ECHO Can't move !type! "%~3" to "!opt_move_subdir!".>&2
         GOTO :EOF
     )
     SET g_move_status=OK_MOVED
     SET g_files_moved=1
-    ECHO Moved %~2 "%~3" to "!opt_move_subdir!".
+    ECHO Moved !type! "%~3" to "!opt_move_subdir!".
 GOTO :EOF
 
 REM Moves or deletes all file symlinks in current directory.

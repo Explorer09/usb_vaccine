@@ -1092,8 +1092,9 @@ REM @param %1 Category of list of files to keep
 REM @param %2 Type of file, displayed in (localized) messages
 REM @param %3 Name of file to process
 :process_file
+    REM Wrap around and delay-expand to guard against embedded 0x5E "^" or
+    REM 0x7C "|" byte in localized strings.
     SET "type=%~2"
-    IF "%~2"=="捷AE7C檔案" SET "type=捷!BIG5_AE7C!檔案"
     CALL :is_file_to_keep %1 %3 && (
         ECHO 為了安全原因，跳過!type! "%~3"
         GOTO :EOF
@@ -1195,7 +1196,7 @@ REM Moves or deletes shortcut files in current directory.
     FOR /F "usebackq eol=\ delims=" %%f IN (
         `DIR /A:-D /B *.pif *.lnk *.shb *.url *.appref-ms *.glk 2^>NUL:`
     ) DO (
-        CALL :process_file EXECUTE "捷AE7C檔案" "%%~f"
+        CALL :process_file EXECUTE "捷!BIG5_AE7C!檔案" "%%~f"
     )
 GOTO :EOF
 
