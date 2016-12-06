@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-12-05)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-12-06)
 REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -216,8 +216,7 @@ reg query "%HKLM_SFT_WOW%" >NUL: 2>NUL: && SET has_wow64=1
 
 :main_cmd_autorun
 REM The Command Processor AutoRun will execute every time we do command
-REM substitution (via "FOR /F") and could be disastrous for us when we parse
-REM commands outputs (i.e. outputs may be polluted by AutoRun ECHO lines).
+REM substitution (via "FOR /F") and may pollute output of our every command.
 SET has_cmd_autorun=0
 FOR %%k IN (%HKLM_SFT_WOW% %HKLM_SFT% HKCU\Software) DO (
     REM "reg query" outputs header lines even if key or value doesn't exist.
