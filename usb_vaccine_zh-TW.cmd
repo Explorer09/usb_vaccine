@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-12-06)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-12-08)
 REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -695,7 +695,7 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         ECHO.
         ECHO 磁碟 %%d：
         REM Workaround name collisions caused by forced rename.
-        SET g_dont_move_files=_autorun.in0 _Desktop.in0 _README.txt
+        SET g_no_move_files=_autorun.in0 _Desktop.in0 _README.txt
         IF NOT "!opt_symlinks!"=="SKIP" CALL :process_symlinks
         IF NOT "!opt_attrib!"=="SKIP" CALL :clear_files_attrib
         IF NOT "!opt_shortcuts!"=="SKIP" CALL :process_shortcuts
@@ -703,7 +703,7 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         IF NOT "!opt_autorun_inf!"=="SKIP" CALL :file_to_directory autorun.inf
         IF NOT "!opt_desktop_ini!"=="SKIP" CALL :file_to_directory Desktop.ini
         REM Process the locked files last.
-        SET g_dont_move_files=
+        SET g_no_move_files=
         IF NOT "!opt_symlinks!"=="SKIP" CALL :process_symlinks
         IF "!g_move_status!"=="OK_EMPTY" (
             DEL "!opt_move_subdir!\README.txt" >NUL:
@@ -1122,7 +1122,7 @@ REM @param %3 Name of file to process
         ECHO 偵測到但不!BIG5_B77C!移動!type! "%~3"
         GOTO :EOF
     )
-    FOR %%i IN (!g_dont_move_files!) DO (
+    FOR %%i IN (!g_no_move_files!) DO (
         IF /I "%~3"=="%%~i" GOTO :EOF
     )
     IF NOT "!attr_h!!attr_s!"=="-h-s" (
