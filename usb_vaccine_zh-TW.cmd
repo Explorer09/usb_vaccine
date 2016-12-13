@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-12-08)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-12-13)
 REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -700,8 +700,8 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         IF NOT "!opt_attrib!"=="SKIP" CALL :clear_files_attrib
         IF NOT "!opt_shortcuts!"=="SKIP" CALL :process_shortcuts
         IF NOT "!opt_folder_exe!"=="SKIP" CALL :process_folder_exes
-        IF NOT "!opt_autorun_inf!"=="SKIP" CALL :file_to_directory autorun.inf
-        IF NOT "!opt_desktop_ini!"=="SKIP" CALL :file_to_directory Desktop.ini
+        IF NOT "!opt_autorun_inf!"=="SKIP" CALL :make_dummy_dir autorun.inf
+        IF NOT "!opt_desktop_ini!"=="SKIP" CALL :make_dummy_dir Desktop.ini
         REM Process the locked files last.
         SET g_no_move_files=
         IF NOT "!opt_symlinks!"=="SKIP" CALL :process_symlinks
@@ -1217,7 +1217,7 @@ GOTO :EOF
 REM Removes a file and optionally creates a directory with the same name.
 REM @param %1 Name of file to remove or directory to create
 REM @return 0 if directory exists or is created successfully, or 1 on error
-:file_to_directory
+:make_dummy_dir
     IF EXIST %1 (
         CALL :has_ci_substr "%~a1" "d" && (
             REM File exists and is a directory. Keep it.
