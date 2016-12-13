@@ -1013,12 +1013,6 @@ REM @param %1 Category
 REM @param %2 Name of file to check
 REM @return 0 (true) if the file is in the list
 :is_file_to_keep
-    SET list=
-    IF "%~1"=="SYMLINK"   SET list=!KEEP_SYMLINK_FILES!
-    IF "%~1"=="HS_ATTRIB" SET list=!KEEP_HS_ATTRIB_FILES!
-    IF "%~1"=="H_ATTRIB"  SET list=!KEEP_H_ATTRIB_FILES!
-    IF "%~1"=="S_ATTRIB"  SET list=!KEEP_S_ATTRIB_FILES!
-    IF "%~1"=="EXECUTE"   SET list=!KEEP_EXECUTE_FILES!
     REM Special case for OS/2 "EA DATA. SF" and "WP ROOT. SF", which MUST
     REM contain spaces in their short name form.
     FOR %%i IN ("EA DATA. SF" "WP ROOT. SF") DO (
@@ -1028,7 +1022,7 @@ REM @return 0 (true) if the file is in the list
     )
     SET attr_d=0
     CALL :has_ci_substr "%~a2" "d" && SET attr_d=1
-    FOR %%i IN (!list!) DO (
+    FOR %%i IN (!KEEP_%~1_FILES!) DO (
         IF /I "!attr_d!%~2"=="0%%~i" EXIT /B 0
         IF /I "!attr_d!%~2\"=="1%%~i" EXIT /B 0
     )
@@ -1224,7 +1218,7 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
             attrib +R +H +S "%~1"
             EXIT /B 0
         )
-        CALL :process_file 0 "ÀÉ®×" %1
+        CALL :process_file EXECUTE "ÀÉ®×" %1
         IF EXIST %1 EXIT /B 1
     )
     IF "!opt_mkdir!"=="SKIP" EXIT /B 0
