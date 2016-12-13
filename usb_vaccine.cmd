@@ -646,7 +646,7 @@ IF NOT "!opt_folder_exe!"=="SKIP" (
     ECHO names, usually with also the folder icon, tricking users into opening them.
     IF /I "!opt_move_subdir!"=="NUL" (
         ECHO We will delete executable files that reside in the root directories and carry
-        ECHO the same name as an existing folder. File types that will be moved are: .exe
+        ECHO the same name as an existing folder. File types that will be deleted are: .exe
         ECHO and .scr.
     ) ELSE (
         ECHO We will move away executable files that reside in the root directories and
