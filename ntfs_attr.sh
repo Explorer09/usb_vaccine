@@ -16,7 +16,7 @@
 # Use find(1) together with this script instead.
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2015 Kang-Che Sung <explorer09 @ gmail.com>
+# Copyright (C) 2015-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 # The MIT License (MIT)
 
@@ -105,8 +105,14 @@ Attributes: ( ! = unchangeable with this utility )
 USAGE
 }
 # Order of attribute letters in "%~a1" output: "drahscotl-x"
+# ('x' = No scrub. One slot is unknown; tell me if you discovered what it is.)
 # Order of attribute letters in 'attrib' output: "A  SHR  I VX"
-# (The 'V', 'X' in both refer to Integrity and No scrub, respectively.)
+# ('V' = Integrity, 'X' = No scrub. Five slots are unknown.)
+
+# If a file has a FILE_ATTRIBUTE_DEVICE set (for example an autorun.inf created
+# by Panda USB Vaccine), then the "%~a1" method will refuse to show the
+# attribute of the file while 'attrib' can show it, ignoring the DEVICE
+# attribute bit.
 
 while [ "$#" -ge 1 ]; do
     case "$1" in
