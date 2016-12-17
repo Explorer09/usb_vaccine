@@ -214,7 +214,9 @@ GOTO :EOF
 :is_executable
     REM This list includes both executable file types and shortcut types.
     REM No sense to split into two.
-    FOR %%e IN (bat cmd com exe scr pif lnk shb url appref-ms glk) DO (
+    REM Not including: .bat, .cmd and .com (See comments in 'usb_vaccine.cmd'
+    REM :process_folder_exes for why.)
+    FOR %%e IN (exe scr pif lnk shb url appref-ms glk) DO (
         SET "str=%~1\NUL\"
         IF "!str:*.%%e\NUL\=!"=="" EXIT /B 0
     )

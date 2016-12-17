@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-12-13)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-12-17)
 REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -102,8 +102,7 @@ FOR %%i IN (
 )
 SET KEEP_EXECUTE_FILES=
 FOR %%i IN (
-"ibmbio.com" "ibmdos.com" "COMMAND.COM" "autoexec.bat" "STARTUP.CMD"
-"STACKER.EXE" "NTDETECT.COM" "arcldr.exe" "arcsetup.exe"
+"STACKER.EXE" "arcldr.exe" "arcsetup.exe"
 ) DO (
     SET KEEP_EXECUTE_FILES=!KEEP_EXECUTE_FILES! %%i
 )
