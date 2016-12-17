@@ -41,8 +41,10 @@ REM <http://stackoverflow.com/questions/2635740>
 
 SET alphabet=ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
-REM SYMLINK
-TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*L" > temp.txt
+REM KEEP_SYMLINK_FILES
+REM File symlinks only; no directory symlinks or junctions.
+SET chars=!alphabet:D=!
+TYPE ..\Whitelist.txt | findstr /r "^^[!chars!]*L[!chars!]*,[^^,\]*," >temp.txt
 SET g_list=
 FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
     SET g_list=!g_list! %%i
@@ -59,8 +61,11 @@ CALL :print_wrapped
     ECHO ^)
 ) >> whitelist-cmd.txt
 
-REM HS_ATTRIB
-TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*HS" > temp.txt
+REM KEEP_HS_ATTRIB_FILES
+REM No symlinks (they can't be processed by 'attrib' without '/L', and '/L' is
+REM not available until Windows Vista).
+SET chars=!alphabet:L=!
+TYPE ..\Whitelist.txt | findstr /r "^^[!chars!]*HS[!chars!]*," >temp.txt
 SET g_list=
 FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
     SET g_list=!g_list! %%i
@@ -77,8 +82,11 @@ CALL :print_wrapped
     ECHO ^)
 ) >> whitelist-cmd.txt
 
-REM H_ATTRIB
-TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet:S=!]*H[!alphabet:S=!]*," > temp.txt
+REM KEEP_H_ATTRIB_FILES
+REM No System attribute and no symlinks.
+SET chars=!alphabet:S=!
+SET chars=!chars:L=!
+TYPE ..\Whitelist.txt | findstr /r "^^[!chars!]*H[!chars!]*," >temp.txt
 SET g_list=
 FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
     SET g_list=!g_list! %%i
@@ -95,8 +103,11 @@ CALL :print_wrapped
     ECHO ^)
 ) >> whitelist-cmd.txt
 
-REM S_ATTRIB
-TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet:H=!]*S[!alphabet:H=!]*," > temp.txt
+REM KEEP_S_ATTRIB_FILES
+REM No Hidden attribute and no symlinks.
+SET chars=!alphabet:H=!
+SET chars=!chars:L=!
+TYPE ..\Whitelist.txt | findstr /r "^^[!chars!]*S[!chars!]*," >temp.txt
 SET g_list=
 FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
     SET g_list=!g_list! %%i
@@ -113,20 +124,21 @@ CALL :print_wrapped
     ECHO ^)
 ) >> whitelist-cmd.txt
 
-REM EXECUTE
-TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*," > temp.txt
-SET list=
+REM KEEP_EXECUTE_FILES
+TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*," >temp.txt
+SET g_list=
 FOR /F "usebackq tokens=1,2 delims=," %%i IN ("temp.txt") DO (
     ECHO.%%i | findstr /r "[\""\.\\]" >NUL:
     IF ERRORLEVEL 1 (
-        SET list=!list! %%j
+        SET g_list=!g_list! %%j
     ) ELSE (
-        SET list=!list! %%i
+        REM First field empty and "FOR /F" treated second field as first one.
+        SET g_list=!g_list! %%i
     )
 )
 SET trimmed_list=
 SET prev=
-FOR %%i IN (!list!) DO (
+FOR %%i IN (!g_list!) DO (
     CALL :is_executable "%%~i" && (
         IF NOT !prev!=="%%~i" (
             SET trimmed_list=!trimmed_list! "%%~i"
