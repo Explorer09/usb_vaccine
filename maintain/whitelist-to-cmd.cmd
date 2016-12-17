@@ -59,7 +59,7 @@ CALL :print_wrapped
     ECHO ^) DO ^(
     ECHO     SET KEEP_SYMLINK_FILES=^^!KEEP_SYMLINK_FILES^^! %%%%i
     ECHO ^)
-) >> whitelist-cmd.txt
+) >>whitelist-cmd.txt
 
 REM KEEP_HS_ATTRIB_FILES
 REM No symlinks (they can't be processed by 'attrib' without '/L', and '/L' is
@@ -80,7 +80,7 @@ CALL :print_wrapped
     ECHO ^) DO ^(
     ECHO     SET KEEP_HS_ATTRIB_FILES=^^!KEEP_HS_ATTRIB_FILES^^! %%%%i
     ECHO ^)
-) >> whitelist-cmd.txt
+) >>whitelist-cmd.txt
 
 REM KEEP_H_ATTRIB_FILES
 REM No System attribute and no symlinks.
@@ -101,7 +101,7 @@ CALL :print_wrapped
     ECHO ^) DO ^(
     ECHO     SET KEEP_H_ATTRIB_FILES=^^!KEEP_H_ATTRIB_FILES^^! %%%%i
     ECHO ^)
-) >> whitelist-cmd.txt
+) >>whitelist-cmd.txt
 
 REM KEEP_S_ATTRIB_FILES
 REM No Hidden attribute and no symlinks.
@@ -122,10 +122,10 @@ CALL :print_wrapped
     ECHO ^) DO ^(
     ECHO     SET KEEP_S_ATTRIB_FILES=^^!KEEP_S_ATTRIB_FILES^^! %%%%i
     ECHO ^)
-) >> whitelist-cmd.txt
+) >>whitelist-cmd.txt
 
 REM KEEP_EXECUTE_FILES
-TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*," >temp.txt
+TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*,[^^,]*\." >temp.txt
 SET g_list=
 FOR /F "usebackq tokens=1,2 delims=," %%i IN ("temp.txt") DO (
     ECHO.%%i | findstr /r "[\""\.\\]" >NUL:
@@ -156,7 +156,7 @@ CALL :print_wrapped
     ECHO ^) DO ^(
     ECHO     SET KEEP_EXECUTE_FILES=^^!KEEP_EXECUTE_FILES^^! %%%%i
     ECHO ^)
-) >> whitelist-cmd.txt
+) >>whitelist-cmd.txt
 
 DEL temp.txt
 ENDLOCAL
@@ -176,35 +176,37 @@ REM SUBROUTINES
 GOTO :EOF
 
 :count_chars
-    IF "!g_str_to_count!"=="" GOTO :EOF
+    SET "str=%~1"
+    SET g_chars_count=0
+GOTO :count_chars_loop_
+
+:count_chars_loop_
+    IF "!str!"=="" GOTO :EOF
     SET /A g_chars_count+=1
-    SET "g_str_to_count=!g_str_to_count:~1!"
-GOTO :count_chars
+    SET "str=!str:~1!"
+GOTO :count_chars_loop_
 
 :print_wrapped
     SET line=
     SET line_length=0
-    SET g_chars_count=0
     IF "!g_list!"=="" GOTO :EOF
     FOR %%i IN (!g_list!) DO (
-        SET "g_str_to_count=%%~i"
-        CALL :count_chars
+        CALL :count_chars "%%~i"
         IF "!line!"=="" (
             SET line="%%~i"
             REM Add two quotation marks
-            SET /A g_chars_count+=2
+            SET /A line_length=!g_chars_count!+2
         ) ELSE (
             REM Add two quotation marks and a space
-            SET /A g_chars_count+=3
-            IF !g_chars_count! LSS 80 (
+            SET /A line_length=!line_length!+!g_chars_count!+3
+            IF !line_length! LSS 80 (
                 SET line=!line! "%%~i"
             ) ELSE (
                 ECHO.!line!
                 SET line="%%~i"
-                SET /A g_chars_count=!g_chars_count!-!line_length!-1
+                SET /A line_length=!g_chars_count!+2
             )
         )
-        SET /A line_length=!g_chars_count!
     )
     ECHO.!line!
 GOTO :EOF
@@ -213,8 +215,8 @@ GOTO :EOF
     REM This list includes both executable file types and shortcut types.
     REM No sense to split into two.
     FOR %%e IN (bat cmd com exe scr pif lnk shb url appref-ms glk) DO (
-        SET "filename=%~1"
-        IF /I "!filename:~-4!"==".%%~e" EXIT /B 0
+        SET "str=%~1\NUL\"
+        IF "!str:*.%%e\NUL\=!"=="" EXIT /B 0
     )
 EXIT /B 1
 
