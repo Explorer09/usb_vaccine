@@ -44,7 +44,7 @@ SET alphabet=ABCDEFGHIJKLMNOPQRSTUVWXYZ
 REM KEEP_SYMLINK_FILES
 REM File symlinks only; no directory symlinks or junctions.
 SET chars=!alphabet:D=!
-TYPE ..\Whitelist.txt | findstr /r "^^[!chars!]*L[!chars!]*,[^^,\]*," >temp.txt
+TYPE ..\Whitelist.txt | findstr /r "^^[!chars!]*L[!chars!]*,[^^,\\]*," >temp.txt
 SET g_list=
 FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
     SET g_list=!g_list! %%i
