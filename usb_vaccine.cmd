@@ -1020,7 +1020,7 @@ REM @param %* List of extensions in "ext=ProgID" (quoted) data pairs.
     )
 GOTO :EOF
 
-REM Checks if the name matches regex "(?i)WINLFN([1-9A-F][0-9A-F]*)?\.INI"
+REM Checks if the name matches regex "(?i)WINLFN([1-9a-f][0-9a-f]*)?\.INI"
 REM @param %1 File name
 REM @return 0 (true) if it matches
 :is_winlfn_name
@@ -1029,7 +1029,8 @@ REM @return 0 (true) if it matches
     IF "!name:~6,1!"=="0" EXIT /B 1
     SET "name=!name:~6,-4!"
     IF "!name!"=="" EXIT /B 0
-    FOR %%c IN (0 1 2 3 4 5 6 7 8 9 A B C D E F a b c d e f) DO (
+    FOR %%c IN (0 1 2 3 4 5 6 7 8 9 a b c d e f) DO (
+        REM Undocumented: string substitution is case insensitive.
         SET "name=!name:%%c=!"
         IF "!name!"=="" EXIT /B 0
     )
