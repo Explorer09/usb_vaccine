@@ -1246,15 +1246,12 @@ REM Removes a file and optionally creates a directory with the same name.
 REM @param %1 Name of file to remove or directory to create
 REM @return 0 if directory exists or is created successfully, or 1 on error
 :make_dummy_dir
-    IF EXIST %1 (
-        CALL :has_ci_substr "%~a1" "d" && (
-            REM File exists and is a directory. Keep it.
-            attrib +R +H +S "%~1"
-            EXIT /B 0
-        )
-        CALL :process_file EXECUTE "file" %1
-        IF EXIST %1 EXIT /B 1
+    CALL :has_ci_substr "%~a1" "d" && (
+        REM File exists and is a directory. Keep it.
+        attrib +R +H +S "%~1"
+        EXIT /B 0
     )
+    CALL :process_file EXECUTE "file" %1
     IF "!opt_mkdir!"=="SKIP" EXIT /B 0
     MKDIR "%~1" || (
         ECHO Error occurred when creating directory "%~1">&2
