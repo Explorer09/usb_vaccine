@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2016-12-17)
+REM 'usb_vaccine.cmd' version 3 beta (2016-12-23)
 REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -861,15 +861,21 @@ REM @return 0 if user says to continue, or 1 if says to skip
     IF /I "!prompt!"=="SKIP" EXIT /B 1
 GOTO continue_prompt
 
-REM Checks if file exists and creates one if not.
+REM Creates a file.
 REM @param %1 File name
 REM @return 0 if file is created
 :create_file
-    REM Non-atomic! A race or a TOCTTOU attack may occur.
-    IF EXIST %1 EXIT /B 1
-    TYPE NUL: >>%1
-    IF EXIST %1 EXIT /B 0
-EXIT /B 1
+    REM There's no atomic "create file if not exist" command in Batch, so we
+    REM can't avoid a TOCTTOU attack completely.
+    REM "IF EXIST" doesn't detect the existence of file with Hidden attribute.
+    REM "%~a1" outputs empty string for files with (hacked) Device attribute.
+    REM Neither of them are more reliable than MKDIR for checking file's
+    REM existence (or availability of the file name).
+    MKDIR %1 || EXIT /B 1
+    RMDIR %1 & TYPE NUL: >>%1
+    IF NOT EXIST %1 EXIT /B 1
+    CALL :has_ci_substr "%~a1" "d" && EXIT /B 1
+EXIT /B 0
 
 REM Creates and initializes "Vacc_reg.bak"
 :init_reg_bak
