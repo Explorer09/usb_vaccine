@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2016-12-23)
+REM 'usb_vaccine.cmd' version 3 beta (2016-12-25)
 REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -911,9 +911,9 @@ REM @param %3 (Without quotes:) "/v", "/ve" (default value) or "" (whole key)
 REM @param %4 Value name if "%3"=="/v", empty otherwise
 REM @return 0 on success, 1 if key/value doesn't exist, 2 if backup file fails
 :backup_reg
-    REM With '/ve' option, 'reg' in Windows 2000/XP exits with 1 on a "value
-    REM not set" default, while in Vista it exits with 0. We ensures Vista's
-    REM behavior by querying the whole key.
+    REM With '/ve' option, 'reg' in Windows 2000 or XP exits with 1 on a "value
+    REM not set" default, while in 2003 or later it exits with 0. We ensures
+    REM Windows 2003's behavior by querying the whole key.
     SET "v_opt=%3"
     reg query "%~1\%~2" !v_opt:/ve=! %4 >NUL: 2>NUL: || EXIT /B 1
     IF "!g_reg_bak!"=="" CALL :init_reg_bak

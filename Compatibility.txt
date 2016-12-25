@@ -12,11 +12,7 @@ So, 'usb_vaccine.cmd' is coded to only work with Windows 2000 or later.
 available pre-installed.)
 
 Here are limitations known in Windows NT 4 Command Processor environment:
-- reg.exe v1.0 (in Win NT 4) has a different syntax than later versions. It's
-  "reg query KeyName\ValueName" rather than "reg query KeyName /v ValueName".
-  The latter syntax can distinguish between a subkey and value of the same name
-  (which is possible in Win NT 4 registry).
-  (<http://www.robvanderwoude.com/ntregquery.php>)
+(Syntax features and built-in commands)
 - "SETLOCAL EnableDelayedExpansion" does not work, which is required for secure
   "SET /P" (or "FOR /F") user input processing. Expansion syntax like "%VAR%"
   is vulnerable to command injection.
@@ -35,6 +31,22 @@ Here are limitations known in Windows NT 4 Command Processor environment:
 - No dynamic variable %CMDEXTVERSION%. (For checking Win NT 4 environment you
   should use "IF CMDEXTVERSION 1", not "IF %CMDEXTVERSION% GEQ 1". Note that
   "GEQ" compare operator already requires command extensions.)
+(External tools)
+- reg.exe 1.00 (in Win NT 4) has a different syntax than later versions. It's
+  "reg query KeyName\ValueName" rather than "reg query KeyName /v ValueName".
+  The latter syntax can distinguish between a subkey and value of the same name
+  (which is possible in Win NT 4 registry).
+  (<http://www.robvanderwoude.com/ntregquery.php>)
+
+Note: A quick list of reg.exe versions:
+version 1.00 - available in Windows NT 4.0 Resource Kit
+version 2.0 - available in Windows 2000 Support Tools
+version 3.0 - available in Windows XP as a native tool; the "File version" of
+              the executable is 5.1.2600.0+ instead of 3.0.*.
+reg.exe in Windows 2003 and later (including Windows XP x64 Edition) are no
+longer designated with a version number in the program messages. Their "File
+versions" have major, minor and build numbers matching the version of the
+corresponding Windows releases (5.2.3790.0+).
 
 'usb_vaccine.cmd' contains code that checks whether the Command Processor
 environment is okay. The code is copied below, with annotations:
