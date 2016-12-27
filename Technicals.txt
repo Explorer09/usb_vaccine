@@ -243,9 +243,10 @@ XPSViewer.Document.1 is associated with 3 file extensions: .dwfx .jtx .xps
 Windows.XPSReachViewer is associated with 6 file extensions (7 extensions in
 Windows 8 or later): .dwfx .jtx .xps .easmx .edrwx .eprtx (.oxps)
 
-The Microsoft.System.Update.1 is special that it doesn't use "%*" for passing
-multiple arguments. Instead in its "shell\open\command" default value it uses
-"\"%1\" %2 %3 %4" (Vista). Windows 7 or later extends the command line to %9.
+It is in Windows 8 or later that "Microsoft.System.Update.1\shell\open\command"
+default value contains "%*". In Windows Vista, the value is
+'"%systemroot%\system32\wusa.exe" "%1" %2 %3 %4'; in Windows 7 the value is
+'"%systemroot%\system32\wusa.exe" "%1" %2 %3 %4 %5 %6 %7 %8 %9'.
 
 .cpl (HKCR\cplfile) contains "%*" in its "shell\cplopen\command" default value.
 
@@ -690,7 +691,7 @@ Below were some important registry entries of default folder templates.
     ; This key existed before Windows Vista. (Active Desktop)
     [HKEY_CLASSES_ROOT\CLSID\{00021400-0000-0000-C000-000000000046}\shellex\ExtShellFolderViews\{5984FFE0-28D4-11CF-AE66-08002B2E1262}]
     ; Data is REG_EXPAND_SZ of
-    ; "file://%userappdata%\\Microsoft\\Internet Explorer\\Desktop.htt"
+    ; "file://%userappdata%\Microsoft\Internet Explorer\Desktop.htt"
     ; Shown in ASCII encoding here (encoding used in 95, NT4, 98 and Me).
     ; Windows 2000 and XP differ only in that registry strings are encoded in
     ; UTF-16LE instead.
