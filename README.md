@@ -58,7 +58,9 @@ Windows 10.
 2. Unplug all of your USB flash drives, so that if your USB flash drives are
    infected they won't interfere with your computer.
 3. Right-click on "usb_vaccine.cmd" file and select "Run as administrator".
-![Context menu, with option "Run as administrator" highlighted](./images/runas_admin.png "Run as administrator")
+
+   ![Context menu, with option "Run as administrator" highlighted](./images/runas_admin.png "Run as administrator")
+
 4. Follow the instructions on screen.
 
 You may try `usb_vaccine.cmd --help` on the command line for additional options
@@ -175,7 +177,9 @@ USB 病毒免疫暨隱藏檔現形程式
 2. 拔除所有的 USB 隨身碟。這樣如果 USB 隨身碟受到感染，您的電腦就不會受隨身碟
    的影響。
 3. 在 usb_vaccine_zh-TW.cmd 檔案上按滑鼠右鍵，選取「以系統管理員身分執行」。
-![滑鼠右鍵選單，選取了「以系統管理員身分執行」選項](./images/runas_admin_zh-TW.png "以系統管理員身分執行")
+
+   ![滑鼠右鍵選單，選取了「以系統管理員身分執行」選項](./images/runas_admin_zh-TW.png "以系統管理員身分執行")
+
 4. 照著螢幕上的指示操作。
 
 您可以在命令列上輸入 `usb_vaccine.cmd --help` 來查看更多可用的選項。
