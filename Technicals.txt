@@ -23,12 +23,12 @@ thinking he is opening a (legitimate) file:
 
 Technically these correspond to the following things:
 
-1. "Hide extension for known file types" checkbox in "Folder Options", which
-   corresponds to "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\
-   Advanced" value "HideFileExt" in registry
-2. "NeverShowExt" or "AlwaysShowExt" registry value in class key (technically
+1. "NeverShowExt" or "AlwaysShowExt" registry value in class key (technically
    known as ProgID) of the file type ("NeverShowExt" takes precedence if both
    values exist)
+2. "Hide extension for known file types" checkbox in "Folder Options", which
+   corresponds to "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\
+   Advanced" value "HideFileExt" in registry
 3. The presence of "shellex\IconHandler" registry subkey of class key of the
    file type, and, if not present, the "DefaultIcon" subkey
 4. "IsShortcut" registry value in class key of the file type
@@ -40,10 +40,10 @@ Technically these correspond to the following things:
 
 Ideally on a secure system,
 
-1. "HideFileExt" should be 0 (false).
-2. No "NeverShowExt" value should be present for every file type, so that users
+1. No "NeverShowExt" value should be present for every file type, so that users
    can see every extension of every file type. ("AlwaysShowExt" would be
    optional if no extensions are hidden at all.)
+2. "HideFileExt" should be 0 (false).
 3. The file icon may be dynamic only if there's no executable code in the file
    contents, and static otherwise. By "static" here I mean there's no Icon
    Handler, and the "DefaultIcon" is not "%1". That is, all files of the same
@@ -65,36 +65,41 @@ batfile\shell\open\command" is a bad idea. Should be 'cmd /c "%1" %*'. It might
 remain as is for historical reasons. I don't know.)
 
 Below is the list of some common file types and whether they fit the conditions
-listed above. To ensure safety, at least 2 of the 6 cells should be "safe" for
-every file type.
+listed above. To ensure safety, at least 1 of the 6 cells should be marked
+"safe" for every file type. The "Extension display" column is considered safe
+only if there doesn't exist "NeverShowExt" value for the given file type, and
+user disables the "HideFileExt" option (value set to 0), which is NOT the
+default.
 
-File | HideFileExt | NeverShow- |   Icon   | Shortcut |    %1     | %* ending
-ext. | (safe:0,    | Ext (safe: | (safe:   |  arrow   | beginning | (safe:no)
-     |  default:1) | absent)    |  static) |          | (safe:no) |
------+-------------+------------+----------+----------+-----------+----------
-.bat   user          (safe)       (safe)     no[1]      yes         yes
-.cmd   user          (safe)       (safe)     no[1]      yes         yes
+ File  |   Extension    | Icon    |  Shortcut  |    %1     | %* ending
+ ext.  |    display     | (safe:  |   arrow    | beginning | (safe:no)
+       | determined by  | static) | (safe:yes) | (safe:no) |
+-------+----------------+---------+------------+-----------+----------
+.bat     HideFileExt      (safe)    no[1]        yes         yes
+.cmd     HideFileExt      (safe)    no[1]        yes         yes
 
-.com   user          (safe)       (safe)     no[1]      yes         yes
-.exe   user          (safe)       "%1"       no[1]      yes         yes
-.scr   user          (safe)       "%1"[2]    no[1]      yes         no[3]
+.com     HideFileExt      (safe)    no[1]        yes         yes
+.exe     HideFileExt      "%1"      no[1]        yes         yes
+.scr     HideFileExt      "%1"[2]   no[1]        yes         no[3]
 
-.pif   n/a           present[4]   handler    yes(safe)  yes[4]      yes[4]
-.lnk   n/a           present      handler    yes(safe)  n/a[5]      n/a[5]
-.url   n/a           present      handler    yes(safe)  n/a[5]      n/a[5]
-.WSH   user          (safe)       (safe)     yes(safe)  no(safe)    yes
+.pif     NeverShowExt[4]  handler   (safe)       yes[4]      yes[4]
+.lnk     NeverShowExt     handler   (safe)       n/a[5]      n/a[5]
+.url     NeverShowExt     handler   (safe)       n/a[5]      n/a[5]
+symlink  HideFileExt[6]   handler   (safe)[6]    n/a[5]      n/a[5]
+.WSH     HideFileExt      (safe)    (safe)       (safe)      yes
 
-.js    user          (safe)       (safe)     no[1]      no(safe)    yes
-.JSE   user          (safe)       (safe)     no[1]      no(safe)    yes
-.vbs   user          (safe)       (safe)     no[1]      no(safe)    yes
-.VBE   user          (safe)       (safe)     no[1]      no(safe)    yes
-.WSF   user          (safe)       (safe)     no[1]      no(safe)    yes
+.js      HideFileExt      (safe)    no[1]        (safe)      yes
+.JSE     HideFileExt      (safe)    no[1]        (safe)      yes
+.vbs     HideFileExt      (safe)    no[1]        (safe)      yes
+.VBE     HideFileExt      (safe)    no[1]        (safe)      yes
+.WSF     HideFileExt      (safe)    no[1]        (safe)      yes
 
-.msc   user          (safe)       handler    no[1]      no(safe)    yes
+.msc     HideFileExt      handler   no[1]        (safe)      yes
 
-[1] Not a shortcut, however as it is executable code, it may contain code that
-    executes other programs.
-[2] There is no DefaultIcon subkey in HKCR\scrfile, but "%1" is implied for
+Notes:
+[1] These types are not shortcuts, but executable code, hence the files may
+    contain code that executes other programs.
+[2] There is no DefaultIcon subkey in "HKCR\scrfile", but "%1" is implied for
     this file type.
 [3] .scr is self-executable (NE or PE format), so %* technically doesn't
     matter. Therefore no "safe" is marked on this field.
@@ -102,11 +107,35 @@ ext. | (safe:0,    | Ext (safe: | (safe:   |  arrow   | beginning | (safe:no)
     Explorer, does not check the validity of PIF format properly. It silently
     allows a PE executable in .pif extension to be executed when user "opens"
     it in Explorer. For this reason 'usb_vaccine.cmd' proposes to remove the
-    NeverShowExt value for this file type. Strangely enough, executables of
-    COM, MZ or NE format and in .pif extension have the expected behavior of
+    NeverShowExt value for this file type. Strangely enough, an executable of
+    COM, MZ or NE format and in .pif extension has the expected behavior of
     not being executed.
-[5] .lnk and .url have special Context Menu Handlers that change the default
-    (open) verb.
+[5] .lnk, .url and symbolic links have special Context Menu Handlers that
+    change the default (open) verb.
+[6] Symbolic links ("symlinks") are a kind of special files in NTFS whose file
+    name may be in any or no extension. Since Windows 8.1, Windows Explorer
+    associates file symbolic links with the "HKCR\.symlink" registry key.
+    Windows 7 SP1 systems will also support the "HKCR\.symlink" association if
+    KB3009980 hotfix is installed.
+    In Windows 8.1 or later, or in Windows 7 with the hotfix, the display
+    behavior of the symlink's name extension is determined by "NeverShowExt" or
+    "AlwayShowExt" values in "HKCR\.symlink" key, or, if neither of the values
+    exist (which is the default), user's "HideFileExt" option. Therefore
+    symlink's name extension is not displayed for a default user's setting.
+    (This is a bad thing, since a symlink's name extension becomes irrelevant
+    in the new behavior of opening symlink or showing symlink's icons.
+    Therefore the extension shall be visible. 'usb_vaccine.cmd' will propose
+    this change for you if possible on your system.)
+    In Windows Vista, 8 or 7 without the hotfix, the display of a symlink's
+    extension is determined by the file type to which the symlink's name
+    extension corresponds. For example, a "foo.dll" symlink to "bar.scf" will
+    have the ".dll" extension always displayed, because of the default
+    "AlwaysShowExt" behavior of the .dll file (the "NeverShowExt" behavior of
+    .scf file is ignored).
+    A symlink always shows a shortcut arrow overlay in Windows Explorer, even
+    though there isn't an "IsShortcut" value in the ".symlink" key. This arrow
+    overlay display behavior is the same (since Windows Vista) with or without
+    the hotfix.
 
 -------------------------------------------------------------------------------
 
@@ -296,26 +325,26 @@ The shortcut types that 'usb_vaccine.cmd' is currently concerned about are:
 We don't try to fix every shortcut type, but only types that may bring
 vulnerabilities to the user's system.
 
- Shortcut | Format |  May point to  | Custom | Show | Handles | Proper-
-   type   |        |   executable   |  icon  | ext. | default |  ties
-          |        |                |        |      |  verb   |  tab
-----------+--------+----------------+--------+------+---------+--------
-.pif        Binary   Yes              Yes[1]   Never  No[2]     Yes
-.lnk        Binary   Yes              Yes      Never  Yes       Yes
-.url        INI      Yes (file://)    Yes      Never  Yes       Yes
-.website    INI      Not executed     Yes      Never  No        No
-.glk        XML      Yes(file://)[3]  Yes      Never  No        No
-.appref-ms  CSV+URL  Indirect[4]      Yes      Never  No        No
+ Shortcut | Format |  May point to  | Custom | Show  | Handles | Proper-
+   type   |        |   executable   |  icon  | ext.  | default |  ties
+          |        |                |        |       |  verb   |  tab
+----------+--------+----------------+--------+-------+---------+--------
+.pif        Binary   Yes              Yes[1]   Never   No[2]     Yes
+.lnk        Binary   Yes              Yes      Never   Yes       Yes
+.url        INI      Yes (file://)    Yes      Never   Yes       Yes
+.website    INI      Not executed     Yes      Never   No        No
+.glk        XML      Yes(file://)[3]  Yes      Never   No        No
+.appref-ms  CSV+URL  Indirect[4]      Yes      Never   No        No
 Folder      Direc-
-  Shortcut    tory   Not executed     Yes      N/A    No        No
-Symlink     Symlink  Yes              No[5]    N/A    N/A[5]    No
-.mcc        ?        ? (Unknown)      Yes      User   No        Yes
-.shb        Binary   Not executed[6]  No       Never  No        No
-.WSH        INI      Not executed     No       User   No        Yes
-.ma?        INI      Not executed     No       Never  No        No
-.cnf        INI      No               No       Never  No        No
-.xnk        Binary   ? (Unknown)      No       Never  No        No
-.ccr        Binary   No               No       User   No        No
+  Shortcut    tory   Not executed     Yes[5]   N/A     No        No
+Symlink[6]  Symlink  Yes              Yes[6]   N/A[6]  Yes[6]    No
+.mcc        ?        ? (Unknown)      Yes      User    No        Yes
+.shb        Binary   Not executed[7]  No       Never   No        No
+.WSH        INI      Not executed     No       User    No        Yes
+.ma?        INI      Not executed     No       Never   No        No
+.cnf        INI      No               No       Never   No        No
+.xnk        Binary   ? (Unknown)      No       Never   No        No
+.ccr        Binary   No               No       User    No        No
 (This list is in no particular order.)
 
 Fields meanings:
@@ -327,7 +356,7 @@ Fields meanings:
 - Custom icon: Whether the file type is associated with a custom IconHandler.
 - Show ext.: Whether the file extension will be shown for the file type.
   "Never" means a "NeverShowExt" value is present for the type. "User" means
-  the extension is shown according to user's "HideFileExt" setting. "N/A" means
+  the extension is shown according to user's "HideFileExt" option. "N/A" means
   technically the shortcut type can have any or no extension.
 - Handles default verb: "Yes" means the type is associated with a
   ContextMenuHandler which may change the default (open) verb for the file. In
@@ -342,16 +371,40 @@ Notes:
     (Reported by some users on the Internet. I couldn't find an official
     document noting this change. This is nothing to do with MS10-046 lnk file
     vulnerability.)
-[2] The default "open" verb for .pif is handled by the Explorer shell.
+[2] The default "open" verb for .pif is handled by Windows Explorer.
 [3] Office Groove 2007 launches the URL directly when user opens the shortcut.
     SharePoint Workspace 2010 instead pops up a warning before launching.
     However it's a bad idea to allow pointing to .exe in the first place.
 [4] .appref-ms may point to remote application only (to a .manifest file).
     However it may still trick users into opening and downloading the app.
-[5] Currently the Explorer shell displays generic file icons for symlinks
-    pointing to files, and pops up an "Open with" menu for symlink's default
-    "open" verb (ignoring symlinks' file extensions).
-[6] It's possible to have a .shs file renamed to .shb. (The Shell Scrap handler
+[5] Windows Explorer associates Folder Shortcuts with the
+    "HKCR\CLSID\{0AFACED1-E828-11D1-9187-B532F1E9575D}" registry key, in which
+    there is "shellex\IconHandler" subkey and value.
+[6] Symbolic links ("symlinks") are a kind of special files in NTFS whose file
+    name may be in any or no extension. Since Windows 8.1, Windows Explorer
+    associates file symbolic links with the "HKCR\.symlink" registry key.
+    Windows 7 SP1 systems will also support the "HKCR\.symlink" association if
+    KB3009980 hotfix is installed.
+    In Windows 8.1 or later, or in Windows 7 with the hotfix (the "new
+    behavior"), the symlink type has IconHandler that will displays the icon of
+    the file the link points to.
+    In Windows Vista, 8 or 7 without the hotfix (the "old behavior"), the
+    symlink's icon is determined by the file type to which the symlink's name
+    extension corresponds. (I.e. it is treated like an ordinary file besides
+    always showing a shortcut arrow overlay.) Unlike .lnk file, symlink, as a
+    special file, does not allow specification of a custom icon.
+    In new behavior, the display behavior of the symlink's name extension is
+    determined by "NeverShowExt" or "AlwayShowExt" values in "HKCR\.symlink"
+    key, or, if neither of the values exist (which is the default), user's
+    "HideFileExt" option (which is to hide by default).
+    In old behavior, the display of the symlink's extension is determined by
+    the file type to which the symlink's name extension corresponds.
+    In new behavior, the symlink type has a ContextMenuHandler which sets the
+    default verb of the symlink, similar to .lnk file. However, for a symlink
+    pointing to a .lnk file, no verbs will be assigned for the symlink (and a
+    generic file icon will be shown for the symlink). The new behavior won't
+    resolve .lnk target from a symbolic link pointing to a .lnk file.
+[7] It's possible to have a .shs file renamed to .shb. (The Shell Scrap handler
     doesn't check whether the file extension matches the format.) .shs files
     allow embedding executable code (as OLE objects).
 

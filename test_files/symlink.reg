@@ -3,7 +3,7 @@ Windows Registry Editor Version 5.00
 ; This file list all registry entries of the association of file symbolic links
 ; (not directory links or junctions).
 ; Since Windows 8.1, Windows Explorer associates file symbolic links with the
-; "HKCR\.symlink" registry key. Windows 7 SP1 systems will also support
+; "HKCR\.symlink" registry key. Windows 7 SP1 systems will also support the
 ; "HKCR\.symlink" association if KB3009980 hotfix is installed. The KB3009980
 ; fix has been later incorporated into security updates starting with:
 ; KB3039066 (MS15-020; shell32.dll only),
