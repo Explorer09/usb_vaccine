@@ -1,0 +1,39 @@
+Windows Registry Editor Version 5.00
+
+; This file list all registry entries of the association of file symbolic links
+; (not directory links or junctions).
+; Since Windows 8.1, Windows Explorer associates file symbolic links with the
+; "HKCR\.symlink" registry key. Windows 7 SP1 systems will also support
+; "HKCR\.symlink" association if KB3009980 hotfix is installed. The KB3009980
+; fix has been later incorporated into security updates starting with:
+; KB3039066 (MS15-020; shell32.dll only),
+; KB3079757 (MS15-088; shell32.dll only), and
+; KB3080446 (MS15-109; shell32.dll, ExplorerFrame.dll and the following
+; registry entries).
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Classes\.symlink]
+@=".symlink"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Classes\.symlink\shellex\ContextMenuHandlers\OpenContainingFolderMenu]
+@="{37ea3a21-7493-4208-a011-7f9ea79ce9f5}"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Classes\.symlink\shellex\ContextMenuHandlers\{85cfccaf-2d14-42b6-80b6-f40f65d016e7}]
+@=""
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Classes\.symlink\shellex\IconHandler]
+@="{85cfccaf-2d14-42b6-80b6-f40f65d016e7}"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Classes\.symlink\shellex\{000214EE-0000-0000-C000-000000000046}]
+@="{85cfccaf-2d14-42b6-80b6-f40f65d016e7}"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Classes\.symlink\shellex\{000214F9-0000-0000-C000-000000000046}]
+@="{85cfccaf-2d14-42b6-80b6-f40f65d016e7}"
+
+; The following registry value is present in Windows 10 only. It does not
+; appear in Windows 8.1 or Windows 7 KB3009980 fix:
+
+; [HKEY_LOCAL_MACHINE\SOFTWARE\Classes\.symlink]
+; ; Data is REG_EXPAND_SZ of "@%SystemRoot%\shell32.dll,-4153"
+; "FriendlyTypeName"=hex(2):40,00,25,00,53,00,79,00,73,00,74,00,65,00,6d,00,\
+;   52,00,6f,00,6f,00,74,00,25,00,5c,00,73,00,68,00,65,00,6c,00,6c,00,33,00,\
+;   32,00,2e,00,64,00,6c,00,6c,00,2c,00,2d,00,34,00,31,00,35,00,33,00,00,00
