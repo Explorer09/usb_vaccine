@@ -385,25 +385,25 @@ Notes:
     associates file symbolic links with the "HKCR\.symlink" registry key.
     Windows 7 SP1 systems will also support the "HKCR\.symlink" association if
     KB3009980 hotfix is installed.
-    In Windows 8.1 or later, or in Windows 7 with the hotfix (the "new
-    behavior"), the symlink type has IconHandler that will displays the icon of
-    the file the link points to.
-    In Windows Vista, 8 or 7 without the hotfix (the "old behavior"), the
-    symlink's icon is determined by the file type to which the symlink's name
-    extension corresponds. (I.e. it is treated like an ordinary file besides
-    always showing a shortcut arrow overlay.) Unlike .lnk file, symlink, as a
-    special file, does not allow specification of a custom icon.
-    In new behavior, the display behavior of the symlink's name extension is
-    determined by "NeverShowExt" or "AlwayShowExt" values in "HKCR\.symlink"
-    key, or, if neither of the values exist (which is the default), user's
-    "HideFileExt" option (which is to hide by default).
-    In old behavior, the display of the symlink's extension is determined by
-    the file type to which the symlink's name extension corresponds.
-    In new behavior, the symlink type has a ContextMenuHandler which sets the
-    default verb of the symlink, similar to .lnk file. However, for a symlink
-    pointing to a .lnk file, no verbs will be assigned for the symlink (and a
-    generic file icon will be shown for the symlink). The new behavior won't
-    resolve .lnk target from a symbolic link pointing to a .lnk file.
+    In Windows 8.1 or later, or in Windows 7 with the hotfix, the symlink type
+    has an IconHandler that displays the icon of the file the link points to.
+    (Unlike .lnk file, a symlink doesn't allow specification of a custom icon.)
+    The display behavior of the symlink's name extension is determined by
+    "NeverShowExt" or "AlwayShowExt" values in "HKCR\.symlink" key, or, if
+    neither of the values exist (which is the default), user's "HideFileExt"
+    option (which is to hide by default).
+    The symlink type has a ContextMenuHandler that sets the default verb of the
+    symlink, similar to .lnk file. However, for a symlink pointing to a .lnk
+    file, no verbs will be assigned for the symlink (and the symlink will show
+    a generic file icon). It won't resolve .lnk target from a symbolic link
+    pointing to a .lnk file.
+    In Windows Vista, 8 or 7 without the hotfix, a symlink's icon, context
+    menu, default verb and the display of the symlink's name extension are all
+    determined by the file type that the symlink's name extension corresponds
+    to, except that a symlink always shows a shortcut arrow overlay despite the
+    symlink's name extension. The file type or name extension of the symlink's
+    target is not considered. Windows Explorer may resolve a .lnk target from a
+    symlink if the symlink's name is in ".lnk" extension.
 [7] It's possible to have a .shs file renamed to .shb. (The Shell Scrap handler
     doesn't check whether the file extension matches the format.) .shs files
     allow embedding executable code (as OLE objects).
