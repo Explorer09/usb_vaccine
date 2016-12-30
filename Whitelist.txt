@@ -1,0 +1,382 @@
+# *************************************************************************
+# * THIS FILE IS WORK IN PROGRESS                                         *
+# * DO NOT EXPECT CONTENT DESCRIBED IN THE FILE BEING ACCURATE OR CORRECT *
+# * (WIP notice made in 2016-12-30)                                       *
+# *************************************************************************
+
+# List of files and directories that shouldn't be touched by 'usb_vaccine.cmd'
+
+# This file is part of 'usb_vaccine.cmd' project.
+# Run "maintain\whitelist-to-cmd.cmd" to convert this list to code that can be
+# embedded into the main script 'usb_vaccine.cmd'.
+
+# W3: Windows 3.x; NT3: Windows NT 3.x; 95: Windows 95; NT4: Windows NT 4.0;
+# 98: Windows 98; 2000: Windows 2000; Me: Windows Me; XP: Windows XP;
+# Vista: Windows Vista; W7: Windows 7; W8: Windows 8.x; W10: Windows 10;
+# +: or later;
+# The Archive ('A') attribute is intentionally omitted in this file.
+# [Empty]: File is supposed to be empty or contain only dummy bytes.
+
+# See also <https://support.microsoft.com/kb/151667> for description of some
+# Win9X files in the root directory.
+
+# Attributes, "File name", Operating systems, Description and remarks
+
+# DOS kernel files
+# ----------------
+# IBM PC DOS is the oldest that we can list here, which is the time that FAT
+# filesystems and PC architectures are introduced. Anything older (CP/M or
+# 86-DOS) is incompatible with modern systems and so is out of our concern.
+
+HS, "ibmbio.com", PCDOS1, DOS kernel/initializer
+RHS, "ibmbio.com", PCDOS2+ DRDOS5+ OS2v1.0, DOS kernel/initializer
+H, "ibmbio.com", OS2v1.0, DOS kernel/initializer (attribute on some floppies)
+HS, "ibmdos.com", PCDOS1, DOS kernel
+RHS, "ibmdos.com", PCDOS2+ DRDOS5+ OS2v1.0, DOS kernel
+H, "ibmdos.com", OS2v1.0, DOS kernel (attribute on some floppies)
+# For DR DOS 3.x the equivalent files are DRBIOS.SYS and DRBDOS.SYS.
+# For PTS-DOS the equivalent files are PTSBIO.SYS and PTSDOS.SYS.
+# For FreeDOS the equivalent file is KERNEL.SYS.
+# All of the files in above comments have no Hidden or System attributes.
+
+# TODO: attributes 
+# "IBMBIO.COM" PCDOS2.x:RHS; PCDOS3:RHS; PCDOS4:RHS; PCDOS6: RHS; DRDOS6: RHS ; NWDOS7: RHS
+# OS2v1.0 floppy: H
+
+# http://www.os2museum.com/wp/dos/dos-4-0/
+# checked: 
+# PCDOS 1.0 1.1 2.0 2.1 3.0 3.1 3.2 3.3 4.0x 6.10 6.30
+# DRDOS 6.0
+# MSDOS 3.30a 5.0
+# TODO: does DRDOS6 have upgrade feature?
+# Novell DOS (NWDOS) 7
+
+HS, "IO.SYS", MSDOS1, MS-DOS kernel/initializer
+RHS, "IO.SYS", MSDOS2+ NT3 95 NT4 98 2000 Me XP, MS-DOS kernel/initializer / Win9x kernel
+RHS, "IO.DOS", 95 98 Me, IO.SYS backup during upgrade
+RHS, "WINBOOT.SYS", 95, Win9x IO.SYS temporary rename when running "Previous version of MS-DOS"
+RHS, "JO.SYS", 98, Win9x IO.SYS temporary rename when running "Previous version of MS-DOS" 
+HS, "MSDOS.SYS", MSDOS1, MS-DOS kernel
+RHS, "MSDOS.SYS", MSDOS2+ NT3 95 NT4 98 2000 Me XP, MS-DOS kernel / Win9x boot configuration
+RHS, "MSDOS.DOS", 95 98 Me, MSDOS.SYS (as kernel) backup during upgrade
+RHS, "MSDOS.BAK", 95 98 Me, MSDOS.SYS (as a configuration) backup during upgrade
+RHS, "MSDOS.W40", 95 98, Win9x MSDOS.SYS temporary rename when running "Previous version of MS-DOS"
+H, "MSDOS.---", 95 98, Contains "BootGUI=0" directive. Unknown purpose
+HS, "MSDOS.---", Me, Contains "BootGUI=0" directive. Unknown purpose
+
+RHS, "@oldbios.ui", NWDOS7, DOS initializer backup during upgrade
+RHS, "@oldbdos.ui", NWDOS7, DOS kernel backup during upgrade
+
+, "logo.sys", 95, Startup screen (Microsoft Plus!)
+H, "logo.sys", 95 98, Startup screen (OSR2+ or Microsoft Plus! 98)
+# For retail editions, logo.sys exists only when Windows starts up for the
+# first time (the "Getting ready to run Windows for the first time" screen,
+# internally named "sulogo.sys" in setup disks). However if user have Microsoft
+# Plus! (for 95 or 98) installed or is using 95 OEM Service Release (OSR) 2+,
+# then there will be a logo.sys.
+
+# DOS and OS/2 shells, startup scripts, and configuration
+# -------------------------------------------------------
+
+# TODO: check if NT can be installed on DOS?
+, "COMMAND.COM", DOS OS2v1 95 98, DOS command line interpreter (shell)
+R, "COMMAND.COM", MSDOS6 95, DOS command line interpreter (shell)
+# COMMAND.COM doesn't have "R" attribute when it's copied during "format /s",
+# but has "R" attribute when it's done by 'sys' or MS-DOS 6 setup.
+# TODO: check older MSDOS (MSDOS5.00 : no "R")
+HS, "COMMAND.COM", Me, DOS command line interpreter (shell)
+RH, "@command.ui", NWDOS7, COMMAND.COM backup during upgrade
+, "COMMAND.DOS", 95 98, COMMAND.COM backup during upgrade (attribute from original COMMAND.COM)
+R, "COMMAND.DOS", 95 98, COMMAND.COM backup during upgrade (attribute from original COMMAND.COM)
+HS, "COMMAND.DOS", Me, COMMAND.COM backup during upgrade
+
+, "autoexec.bat", DOS OS2 NT3 95 NT4 98 Me Vista W7 W8 W10, DOS automatic execution script
+H, "autoexec.bat", 2000 Me, DOS startup automatic execution script
+# In Windows Me, autoexec.bat has Hidden attribute after upgrade.
+RH, "@AUTOEXE.UI", NWDOS7, autoexec.bat backup during upgrade
+, "AUTOEXEC.DOS", 95 98, autoexec.bat backup during upgrade
+HS, "AUTOEXEC.DOS", Me, autoexec.bat backup during upgrade
+
+, "config.sys", DOS2+ OS2 NT3 95 NT4 98 Me XP Vista W7 W8 W10, DOS and OS/2 configuration
+H, "config.sys", 2000, DOS and OS/2 configuration
+RH, "@CONFIG.UI", NWDOS7, config.sys backup during upgrade
+, "CONFIG.DOS", 95 98, config.sys backup during upgrade
+HS, "CONFIG.DOS", Me, config.sys backup during upgrade
+
+# In Windows XP or later, Windows Explorer will automatically hide the
+# COMMAND.COM, autoexec.bat and config.sys files from view (by assuming "HS"
+# attributes) for any of them that doesn't have either "H" or "S" attribute.
+
+, "STARTUP.CMD", OS2, OS/2 startup automatic execution script
+
+# OS/2 kernel files
+# -----------------
+
+#TODO:  OS2BIO.COM and OS2DOS.COM ??
+# http://www.os2museum.com/wp/os2-history/os2-1-0/
+
+RHS, "OS2BOOT", OS2v2, OS/2 initializer
+HS, "OS2BOOT", OS2v3+, OS/2 initializer
+RHS, "OS2LDR", OS2v1.1+, OS/2 kernel/initializer
+H, "OS2LDR", OS2v1.1+, OS/2 kernel/initializer (attribute on some floppies)
+, "OS2LDR.MSG", OS2v2.0, OS2LDR module for system messages
+RHS, "OS2LDR.MSG", OS2v2.1+, OS2LDR module for system messages
+RHS, "OS2KRNL", OS2v1.1+, OS/2 kernel
+H, "OS2KRNL", OS2v1.1+, OS/2 kernel (attribute on some floppies)
+
+RHS, "OS2DUMP", OS2v2.1+, OS/2 kernel module for memory dumping
+RHS, "OS2VER", OS2v2.1+, Configuration for OS/2 application/driver compatibility
+RHS, "OS2LOGO", OS2v3+, Startup screen
+
+# OS/2 metadata
+# -------------
+
+RHS, "EA DATA. SF", OS2v1.2+, Extended Attribute data. Used only on FAT volumes for HPFS compatibility.
+HS, "WP ROOT. SF", OS2v2+, Stores attribute information for the root folder of Workplace Shell.
+# Both "EA DATA. SF" and "WP ROOT. SF" require spaces in their short (8.3) name
+# form. Creating or copying them in VFAT LFN environments will make the files
+# useless. (The short name will be "EADATA~1.SF" or like.) 'usb_vaccine.cmd'
+# will make a special case in checking this.
+, "Nowhere\", OS2v2+, Stores transient objects. Always hidden under Workplace Shell.
+HS, "Nowhere\", OS2v4+, Stores transient objects. Always hidden under Workplace Shell.
+# The existence of Nowhere1, Nowhere2, ... directories usually means the
+# original Nowhere directory gets corrupt (so that Workplace Shell creates
+# another one). We don't bother white-listing them. Third-party tool is
+# available to fix that: <http://home.earthlink.net/~steve53/os2diags/>
+
+# Paging and hibernation
+# ----------------------
+
+HS, "386SPART.PAR", W3, Paging file (aka. swap file) (permanent)
+# Windows 3.x creates temporary swap file "%WinDir%\WIN386.SWP" if no permanent
+# one is found. The name "\386SPART.PAR" is only used on permanent swap files.
+# (Configurable via "%WinDir%\SYSTEM\SWAPFILE.EXE")
+# , "WIN386.SWP", 95 98 Me, Paging file (aka. swap file) (on non-system drives)
+# For 95/98/Me, the swap file is always named "WIN386.SWP" no matter temporary
+# or permanent. (Resides in %WinDir% if it's on the system drive, in root
+# directory otherwise.)
+# <https://support.microsoft.com/kb/169925>
+, "pagefile.sys", NT3 NT4, Paging file (aka. swap file)
+HS, "pagefile.sys", 2000 XP Vista W7 W8 W10, Paging file (aka. swap file)
+HS, "swapfile.sys", W8 W10, Paging file (aka. swap file)
+HS, "hiberfil.sys", 2000 XP Vista W7 W8 W10, Hibernation file (memory dump)
+# The hibernation file in Windows Me is "%WinDir%\VMMHIBER.W9X".
+
+# Disk compression
+# ----------------
+
+# , "SSTORDRV.SYS", DRDOS6, SuperStor driver (not "SuperStor/DS")
+RHS, "SSPARTSS.ADD", DRDOS6, SuperStor compressed volume
+
+RHS, "STACKER.BIN", NWDOS7, Stacker driver
+RHS, "STACKER.INI", Stacker4 NWDOS7, Stacker configuration
+, "STACKER.EXE", NWDOS7, Stacker Anywhere (portable mounting program for floppy)
+RHS, "STACVOL.DSK", Stacker2.0 NWDOS7, Stacker compressed volume
+# There could be multiple volume files in the same "host" drive (STACVOL.000,
+# STACVOL.001 and so on), each mounted as a different drive letter. All of the
+# "STACVOL.*" files have attributes "RHS". It's an advanced feature and users
+# should know what they're doing. Therefore we don't white-list them.
+#tested: stacker 2.0
+# TODO: What is "STACSAVQ.000"?
+
+# TODO: check the attribute on floppy
+# MSDOS6.22: RHS DRVSPACE.000
+# Win98 : RHS DRVSPACE.000 DBLSPACE.000 DRVSPACE.BIN
+, "DBLSPACE.BIN", 95, DoubleSpace / DriveSpace / SuperStor/DS real-mode driver
+RHS, "DBLSPACE.BIN", PCDOS6.3 98, DoubleSpace / DriveSpace / SuperStor/DS real-mode driver
+, "DRVSPACE.BIN", MSDOS6 95 98, DriveSpace real-mode driver (attribute on 95 system HDD or Startup Disk)
+RHS, "DRVSPACE.BIN", MSDOS6 95 98, DriveSpace real-mode driver (identical to DBLSPACE.BIN)
+# For 95, DRVSPACE.BIN (and the bit-for-bit identical DBLSPACE.BIN) on system
+# hard disk drive have only Archive attribute. DRVSPACE.BIN in drives newly
+# formatted with "format /s" or made bootable with 'sys' has attributes "RHS".
+# For 98, DRVSPACE.BIN and DBLSPACE.BIN on system HDD have attributes "RHS".
+# TODO: how about MSDOS6 ?
+RHS, "DBLSPACE.INI", PCDOS6.3 95 98, DoubleSpace / DriveSpace / SuperStor/DS configuration
+RHS, "DRVSPACE.INI", MSDOS6 , DriveSpace configuration
+RHS, "DBLSPACE.000", PCDOS6.3 95 98, DoubleSpace compressed volume file (CVF)
+RHS, "DRVSPACE.000", MSDOS6 95 98, DriveSpace compressed volume file (CVF)
+# There could be multiple volume files in the same "host" drive (DRVSPACE.001
+# and so on), each mounted as a different drive letter. All of the "DRVSPACE.*"
+# files have attributes "RHS". It's an advanced feature and users should know
+# what they're doing. Therefore we don't white-list them.
+RHS, "FAILSAFE.DRV\", 95 98, DoubleSpace / DriveSpace fail safe files (autoexec.bat and config.sys)
+
+# TODO: how about Stacker disk compression in DOS?
+
+# Trash, Recycle Bin, and other storage for deleted files
+# -------------------------------------------------------
+
+S, "PCTRACKR.DEL", MSDOS5+, Delete Tracker file for UNDELETE.EXE (aka. Microsoft Undelete)
+H, "SENTRY\", MSDOS5+, Delete Sentry for UNDELETE.EXE (aka. Microsoft Undelete)
+RHS, "@DLWATCH.DAT", DRDOS6, DELWATCH data file
+HS, "Recycled\", 95 NT4 98 2000 Me XP, Recycle Bin (FAT, FAT32, exFAT)
+HS, "RECYCLER\", NT4 2000 XP, Recycle Bin (NTFS)
+HS, "$Recycle.Bin\", Vista W7 W8 W10, Recycle Bin (FAT, FAT32, NTFS, exFAT)
+# <http://blogs.msdn.com/b/oldnewthing/archive/2006/01/31/520225.aspx>
+
+# Boot loader files
+# -----------------
+
+RS, "boot.ini", NT3 NT4, NTLDR boot configuration
+HS, "boot.ini", 2000 XP, NTLDR boot configuration (after fresh install of Windows)
+RHS, "boot.ini", 2000 XP Vista W7 W8 W10, NTLDR boot configuration (with cmdcons installed, or dual-boot with Vista+)
+, "Boot.BAK", NT3 NT4, boot.ini backup
+HS, "Boot.BAK", 2000 XP, boot.ini backup
+H, "Boot.BAK", Vista W7 W8 W10, boot.ini backup
+RHS, "bootfont.bin", NT3 NT4 2000 XP, NT boot loader (NTLDR) files
+HS, "bootsect.dos", NT3 NT4 2000 XP, DOS/Win9x boot sector for NTLDR (generated during upgrade)
+RHS, "NTDETECT.COM", NT3 NT4 2000 XP, NT boot loader (NTLDR) files
+RHS, "ntldr", NT3 NT4 2000 XP, NT boot loader (NTLDR) files
+
+RHS, "@oldboot.ui", NWDOS7, Boot sector backup during upgrade
+
+RH, "SUHDLOG.DAT", 95 98, Boot sector backup (generated during setup)
+HS, "SUHDLOG.DAT", Me, Boot sector backup (generated during setup)
+RH, "SUHDLOG.---", 95 98, SUHDLOG.DAT backup during upgrade
+HS, "SUHDLOG.---", Me, SUHDLOG.DAT backup during upgrade
+
+RHS, "arcldr.exe", 2000, Unknown (file does not appear after upgrade)
+RHS, "arcsetup.exe", 2000, Unknown (file does not appear after upgrade)
+# It seems these 2 files are related to booting and Advanced RISC Computing
+# (ARC). Details unknown. File names mentioned in:
+# <https://support.microsoft.com/kb/238359>
+
+# Not tested, attribute unknown: "NTBOOTDD.SYS", SCSI driver
+
+HS, "Boot\", Vista W7 W8 W10, Windows Boot Manager (BOOTMGR) files
+RHS, "bootmgr", Vista W7 W8 W10, Windows Boot Manager (BOOTMGR) files
+HS, "BOOTNXT", W8 W10, [Empty] Unknown purpose
+RS, "BOOTSECT.BAK", Vista, Boot sector backup (generated during setup)
+RHS, "BOOTSECT.BAK", W7 W8 W10, Boot sector backup (generated during setup)
+RHS, "BOOTTGT", W8 W10, [Empty] Exists when Windows To Go startup options are enabled.
+
+# System logs
+# -----------
+
+H, "BOOTLOG.TXT", 95 98 Me, Startup (boot) log
+HS, "BOOTLOG.TXT", Me, Startup (boot) log
+H, "BOOTLOG.PRV", 95 98 Me, Log of previous boot (BOOTLOG.TXT rename)
+HS, "BOOTLOG.PRV", Me, Log of previous boot (BOOTLOG.TXT rename)
+# In Windows Me, BOOTLOG.TXT will have a System attribute when Setup is
+# completed. Later log files generated when user chooses "Logged" boot option
+# will have only "HA" attributes (no "S").
+# The boot log in 2000/XP is "%WinDir%\ntbtlog.txt"
+
+HS, "DETLOG.TXT", 95 98 Me, System Detection log (generated during setup)
+HS, "DETLOG.OLD", 95 98 Me, DETLOG.TXT backup during upgrade
+, "NETLOG.TXT", 95 98, Network Device Installer (NETDI) log (generated during setup)
+HS, "NETLOG.TXT", Me, Network Device Installer (NETDI) log (generated during setup)
+H, "SETUPLOG.TXT", 95 98, Setup log (generated during setup)
+HS, "SETUPLOG.TXT", Me, Setup log (generated during setup)
+H, "SETUPLOG.OLD", 95 98, SETUPLOG.TXT backup during upgrade
+HS, "SETUPLOG.OLD", Me, SETUPLOG.TXT backup during upgrade
+RH, "ASD.LOG", 98, Automatic Skip Driver agent (ASD) log (generated during setup)
+
+# Registry hive copies
+# --------------------
+
+# Generated during the in-DOS setup phase. Replacing SYSTEM.DAT and CLASSES.DAT
+# in WINDOWS directory with the respective .1ST files reverts your OS back to
+# the "Setting up Hardware" setup phase.
+# Note: IE4 setup for Windows 95 will regenerate the system.1st file, your old
+# registry backup will be lost!
+RH, "CLASSES.1ST", Me, Registry hive (HKLM\SOFTWARE\CLASSES) copy during setup
+RHS, "system.1st", 95, Registry hive (HKLM) copy during setup
+RH, "system.1st", 98, Registry hive (HKLM) copy during setup
+HS, "system.1st", Me, Registry hive (HKLM except SOFTWARE\CLASSES) copy during setup
+
+# OS upgrade backups
+# ------------------
+
+RHS, "UNINSTAL.INI", NWDOS7, Uninstall information (backup during upgrade)
+
+# NWDOS7 INSTALL program will rename (as backup) every file that will be
+# replaced during upgrade, except for the "@*.UI" files noted elsewhere in
+# this list, all other files are renamed by this rule: (1) If the base name
+# consists of 8 characters, remove the last one. (2) Prefix the base name with
+# an '@' character. Examples: "SECURITY.BIN"->"@SECURIT.BIN"; "NWDOS.386"->
+# "@NWDOS.386" (both example files reside in root directory)
+# 'usb_vaccine.cmd' is not going to whitelist any of these backup files except
+# the "@*.UI" files (which are core system files).
+
+RHS, "WINLFN.INI", 98 Me, Backup during upgrade (Long File Name (LFN) backup information)
+# In Windows 98 SE and Windows Me, WINLFN.INI may have additional fragments
+# named "WINLFN<num>.INI" (<num> is lowercase hexadecimal matching regex:
+# "[1-9a-f][0-9a-f]*"), each file being around 50000 bytes. As it is impossible
+# to whitelist all files without a wildcard, 'usb_vaccine.cmd' will handle
+# these as a special case.
+RH, "W95UNDO.DAT", 95, Uninstall information (backup during upgrade)
+RH, "W95UNDO.INI", 95, Uninstall information (backup during upgrade)
+# Windows 95 Setup does not create "W95UNDO.*" files when "upgrading" from
+# another Windows 95. It creates only when upgrading from Windows 3.x _and_
+# MS-DOS 5+.
+RH, "WINUNDO.DAT", 98, Uninstall information (original) (backup during upgrade)
+RH, "WINUNDO.INI", 98, Uninstall information (original) (backup during upgrade)
+RH, "W98UNDO.DAT", 98, Uninstall information (98 SE) (backup during upgrade)
+RH, "W98UNDO.INI", 98, Uninstall information (98 SE) (backup during upgrade)
+RH, "W9XUNDO.DAT", Me, Uninstall information (backup during upgrade)
+RH, "W9XUNDO.INI", Me, Uninstall information (backup during upgrade)
+H, "$INPLACE.~TR\", Vista W7, Backup during upgrade
+H, "$WINDOWS.~Q\", Vista W7, Backup during upgrade
+H, "$Windows.~BT\", W8, Backup during upgrade
+HI, "$Windows.~BT\", W10, Backup during upgrade
+# Not tested, attribute unknown: H, "$Windows.~WS\", W10, Backup during upgrade
+
+# Recovery
+# --------
+
+HS, "System Volume Information\", 2000 XP Vista W7 W8 W10, Used by System Restore and others
+# <http://blogs.msdn.com/b/oldnewthing/archive/2003/11/20/55764.aspx>
+# Note: Windows 2000 has this directory due to Distributed Link Tracking
+# service and Indexing Service. It doesn't have System Restore.
+H, "_Restore\", Me, System Restore
+
+RHS, "cmdcons\", 2000 XP, Recovery Console
+RHS, "cmldr", 2000 XP, Recovery Console
+HSI, "Recovery\", W7 W8 W10, Windows Recovery Environment (WinRE)
+# Since W8 "Recovery\" is in System Reserved partition rather than C: drive.
+H, "$WINRE_BACKUP_PARTITION.MARKER", W10, [Empty] Unknown purpose
+
+# Other (uncategorized)
+# ---------------------
+
+RHS, "SECURITY.BIN", NWDOS7, Novell DOS 7 Security feature
+# Partition should be unreadable by other operating systems when @FDS.SAV file
+# exists. Not included for now.
+# RH, "@FDS.SAV", NWDOS7, Exists when Security is enabled on a Fixed Disk (FDS).
+
+HS, "VIDEOROM.BIN", 98 Me, ROM dump of primary video card (generated during setup)
+# 98/Me uses VIDEOROM.BIN to support multiple monitors.
+
+H, "DOS00I.400", PCDOS4, [Empty] File identifying IBM DOS 4.0x Install floppy disk
+H, "DOS01L.400", PCDOS4, [Empty] File identifying IBM DOS 4.0x Operating floppy disk
+
+RHS, "EBD.SYS", 95 98 Me, [Empty] File identifying the Emergency Startup Disk (EBD/ESD)
+
+HI, "ProgramData\", Vista W7 W8, Program data
+H, "ProgramData\", W8 W10, Program data
+# In Windows 8 and 8.1 IA-32 version, the ProgramData directories have no "I"
+# attribute. In the corresponding x64 versions it has the "I" attribute.
+
+, "Documents and Settings\", 2000 XP, Users profiles directory
+HSLI, "Documents and Settings\", Vista W7 W8 W10, Directory junction to "\Users" for compatibility
+
+RH, "MSOCache\", Office2003, Microsoft Office installers caches
+RHI, "MSOCache\", Office2007+, Microsoft Office installers caches
+# <https://support.microsoft.com/kb/825933>
+
+# Don't whitelist temporary generated files or directories.
+
+# Config.Msi shouldn't exist after an MSI installation is completed.
+# HS, "Config.Msi\", MSI, Windows Installer (MSI) temporary files
+
+# Don't whitelist files generated by OS in every directory which might be junk.
+# Such as: "Desktop.ini", "Thumbs.db", ".DS_Store"
+# We clean "Desktop.ini" in root directories for security reasons.
+
+# Don't whitelist DOS utilities that reside in root directories of floppies,
+# and often have .COM or .EXE extension.
+# Reasons: (1) It's a bad idea to identify which utilities are trustworthy just
+# by file names. (2) They're in sub-directories when installed in hard disks
+# (usually "\DOS"). (3) That's what write-protection is for. (You should write-
+# protect system/install disks.)
