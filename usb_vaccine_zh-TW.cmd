@@ -14,8 +14,8 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2016-12-25)
-REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-01-04)
+REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
 REM modify it under the terms of the GNU Lesser General Public
@@ -130,6 +130,7 @@ IF "!arg1!"=="" GOTO main_sanity_test
     IF "!arg1:~0,7!"=="--skip-" (
         FOR %%i IN (
             cmd_autorun mountpoints known_ext pif_ext scf_icon scrap_ext
+            symlink_ext
         ) DO (
             IF "!arg1:-=_!"=="__skip_%%i" SET "opt_%%i=SKIP"
         )
@@ -387,8 +388,10 @@ SET "user_msg=目前使用者"
 IF "!opt_reassoc!"=="ALL_USERS" SET "user_msg=所有使用者"
 
 IF "!opt_pif_ext!"=="SKIP" GOTO main_scf_icon
-reg query "%HKLM_CLS%\piffile" /v "NeverShowExt" >NUL: 2>NUL: || GOTO main_scf_icon
-REM Thankfully cmd.exe handles .pif right. Only Explorer has this flaw.
+reg query "%HKLM_CLS%\piffile" /v "NeverShowExt" >NUL: 2>NUL: || (
+    GOTO main_scf_icon
+)
+REM Thankfully cmd.exe handles .pif right. Only Windows Explorer has this flaw.
 ECHO.
 ECHO [pif-ext]
 ECHO .pif 檔案為 DOS 程式的捷!BIG5_AE7C!。Windows 檔案總管!BIG5_B77C!在使用者請求建立 .com 執行檔的捷
@@ -406,7 +409,9 @@ CALL :reassoc_file_types "pif=piffile"
 :main_scf_icon
 IF "!opt_scf_icon!"=="SKIP" GOTO main_scrap_ext
 reg query "%HKLM_CLS%\SHCmdFile" >NUL: 2>NUL: || GOTO main_scrap_ext
-reg query "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" >NUL: 2>NUL: && GOTO main_scrap_ext
+reg query "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" >NUL: 2>NUL: && (
+    GOTO main_scrap_ext
+)
 ECHO.
 ECHO [scf-icon]
 ECHO .scf 檔案為 Windows 檔案總管殼層（shell!BIG5_A15E!的指令檔。它們!BIG5_B77C!在使用者開啟的時候執行
@@ -428,14 +433,15 @@ REM Other references:
 REM http://www.trojanhunter.com/papers/scrapfiles/
 REM http://www.giac.org/paper/gsec/614/wrapping-malicious-code-windows-shell-scrap-objects/101444
 REM WordPad, Office Word and Excel are all known to support scrap files.
-IF "!opt_scrap_ext!"=="SKIP" GOTO main_shortcut_icon
+IF "!opt_scrap_ext!"=="SKIP" GOTO main_symlink_ext
+REM Scrap files already have static icon; no need to suggest AlwaysShowExt.
 SET scrap_ext_keys=
 FOR %%k IN (ShellScrap DocShortcut) DO (
     reg query "%HKLM_CLS%\%%k" /v "NeverShowExt" >NUL: 2>NUL: && (
         SET scrap_ext_keys=!scrap_ext_keys! %%k
     )
 )
-IF "!scrap_ext_keys!"=="" GOTO main_shortcut_icon
+IF "!scrap_ext_keys!"=="" GOTO main_symlink_ext
 ECHO.
 ECHO [scrap-ext]
 ECHO .shs 與 .shb 檔案分別為儲存文件剪輯資料（scrap!BIG5_A15E!與文件捷!BIG5_AE7C!的格式。它們!BIG5_B77C!在使用
@@ -445,11 +451,40 @@ ECHO Vista 與之後已經移除剪輯資料檔案的支援。!BIG5_A15E!
 ECHO 我們將刪除這些檔案類型的 "NeverShowExt" 登錄值，若使用者取消了「隱藏已知檔案類
 ECHO 型的副檔名」，他們將!BIG5_B77C!看見 .shs 與 .shb 的副檔名。這可提高警覺。
 ECHO （這是全機設定。同時!user_msg!對於此檔案類型的關聯!BIG5_B77C!被重設，而此無法被復原。!BIG5_A15E!
-CALL :continue_prompt || GOTO main_shortcut_icon
+CALL :continue_prompt || GOTO main_symlink_ext
 FOR %%k IN (!scrap_ext_keys!) DO (
     CALL :delete_reg_value "%HKLM_CLS%" "%%k" "NeverShowExt" "HKCR\%%k /v NeverShowExt"
 )
 CALL :reassoc_file_types "shs=ShellScrap" "shb=DocShortcut"
+
+:main_symlink_ext
+REM The ".symlink" association only applies to Windows 8.1 or later, or
+REM Windows 7 SP1 with KB3009980 hotfix. This requires shell32.dll's support.
+IF "!opt_symlink_ext!"=="SKIP" GOTO main_shortcut_icon
+REM If symlinks are not "known" (i.e. there's no "HKCR\.symlink" entry), then
+REM the extensions will be always shown. Don't bother then.
+reg query "%HKLM_CLS%\.symlink" >NUL: 2>NUL: || GOTO main_shortcut_icon
+reg query "%HKLM_CLS%\.symlink" /v "AlwaysShowExt" >NUL: 2>NUL: && (
+    reg query "%HKLM_CLS%\.symlink" /v "NeverShowExt" >NUL: 2>NUL: || (
+        GOTO main_shortcut_icon
+    )
+)
+ECHO.
+ECHO [symlink-ext]
+ECHO 符號連結（symbolic link!BIG5_A15E!是 NTFS 檔案系統中的一種特殊檔案。它類似於捷!BIG5_AE7C!，根據
+ECHO 路!BIG5_AE7C!與檔名來連結到另一個檔案。符號連結!BIG5_B77C!顯示捷!BIG5_AE7C!的箭頭圖示來辨別。符號連結的不
+ECHO 同之處在於它可以是任意的副檔名或不帶副檔名。Windows 檔案總管!BIG5_B77C!預設隱藏符號連結
+ECHO 的副檔名（例如 ".txt" 或 ".exe"，它不像捷!BIG5_AE7C!的 ".lnk" 能標記自己為連結!BIG5_A15E!。隱藏
+ECHO 符號連結的副檔名並不像隱藏捷!BIG5_AE7C!的 ".lnk" 有意義。
+ECHO 我們將強制檔案符號連結永遠顯示其副檔名。這無論使用者是否使用「隱藏已知檔案類型
+ECHO 的副檔名」的選項。
+ECHO （這是全機設定。同時!user_msg!對於此檔案類型的關聯!BIG5_B77C!被重設，而此無法被復原。!BIG5_A15E!
+CALL :continue_prompt || GOTO main_shortcut_icon
+reg add "%HKLM_CLS%\.symlink" /v "AlwaysShowExt" /t REG_SZ /f >NUL: || (
+    CALL :show_reg_write_error "HKCR\.symlink /v AlwaysShowExt"
+)
+CALL :delete_reg_value "%HKLM_CLS%" ".symlink" "NeverShowExt" "HKCR\.symlink /v NeverShowExt"
+CALL :reassoc_file_types "symlink=.symlink"
 
 :main_shortcut_icon
 IF NOT "!opt_shortcut_icon!"=="FIX" GOTO main_file_icon
@@ -736,6 +771,7 @@ ECHO   --always-exe-ext         永遠顯示 .exe 與 .scr 檔案類型的副檔名（預設不進
 ECHO   --skip-pif-ext           不要刪除 .pif 檔案的 NeverShowExt 登錄值
 ECHO   --skip-scf-icon          不要為 .scf 檔案添加捷!BIG5_AE7C!箭頭圖示
 ECHO   --skip-scrap-ext         不要刪除 .shs 與 .shb 檔案的 NeverShowExt 登錄值
+ECHO   --skip-symlink-ext       不要永遠顯示符號連結（symbolic link!BIG5_A15E!的副檔名
 ECHO   --fix-shortcut-icon      復原捷!BIG5_AE7C!檔案的箭頭圖示（預設不進行!BIG5_A15E!
 ECHO   --fix-file-icon          復原未知類型、com、pif、lnk、shs、shb、url、scf、
 ECHO                            appref-ms 與 glk 檔案類型的圖示（預設不進行!BIG5_A15E!
@@ -963,15 +999,15 @@ REM @return 0 on successful deletion, 1 if key doesn't exist, or 2 on error
 GOTO :EOF
 
 REM Changes file association for a file type.
-REM @param %1 File extension
+REM @param %1 File extension with "." prefix
 REM @param %2 ProgID
-REM @return 0 on success, 1 if not both .%1 and %2 keys exist, or 2 on error
+REM @return 0 on success, 1 if not both %1 and %2 keys exist, or 2 on error
 :safe_assoc
     reg query "%HKLM_CLS%\%~2" >NUL: 2>NUL: || EXIT /B 1
-    CALL :backup_reg "%HKLM_CLS%" ".%~1" /ve
+    CALL :backup_reg "%HKLM_CLS%" "%~1" /ve
     IF "!ERRORLEVEL!"=="1" EXIT /B 1
-    reg add "%HKLM_CLS%\.%~1" /ve /t REG_SZ /d "%~2" /f >NUL: && EXIT /B 0
-    CALL :show_reg_write_error "%HKLM_CLS%\.%~1"
+    reg add "%HKLM_CLS%\%~1" /ve /t REG_SZ /d "%~2" /f >NUL: && EXIT /B 0
+    CALL :show_reg_write_error "%HKLM_CLS%\%~1"
 EXIT /B 2
 
 REM Resets file associations for given file types.
@@ -981,7 +1017,10 @@ REM @param %* List of extensions in "ext=ProgID" (quoted) data pairs.
     SET keys=
     FOR %%p IN (%*) DO (
         FOR /F "tokens=1,2 delims==" %%e IN (%%p) DO (
-            CALL :safe_assoc "%%e" "%%f" && SET keys=!keys! ".%%e" "%%f"
+            CALL :safe_assoc ".%%e" "%%f" && (
+                SET keys=!keys! ".%%e"
+                IF /I NOT ".%%e"=="%%f" SET keys=!keys! "%%f"
+            )
         )
     )
     FOR %%k IN (!keys!) DO (

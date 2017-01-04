@@ -14,8 +14,8 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2016-12-25)
-REM Copyright (C) 2013-2016 Kang-Che Sung <explorer09 @ gmail.com>
+REM 'usb_vaccine.cmd' version 3 beta (2017-01-04)
+REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
 REM modify it under the terms of the GNU Lesser General Public
@@ -124,6 +124,7 @@ IF "!arg1!"=="" GOTO main_sanity_test
     IF "!arg1:~0,7!"=="--skip-" (
         FOR %%i IN (
             cmd_autorun mountpoints known_ext pif_ext scf_icon scrap_ext
+            symlink_ext
         ) DO (
             IF "!arg1:-=_!"=="__skip_%%i" SET "opt_%%i=SKIP"
         )
@@ -388,8 +389,11 @@ SET "user_msg=the current user"
 IF "!opt_reassoc!"=="ALL_USERS" SET "user_msg=ALL USERS"
 
 IF "!opt_pif_ext!"=="SKIP" GOTO main_scf_icon
-reg query "%HKLM_CLS%\piffile" /v "NeverShowExt" >NUL: 2>NUL: || GOTO main_scf_icon
-REM Thankfully cmd.exe handles .pif right. Only Explorer has this flaw.
+REM .pif files already have shortcut arrows; no need to suggest AlwaysShowExt.
+reg query "%HKLM_CLS%\piffile" /v "NeverShowExt" >NUL: 2>NUL: || (
+    GOTO main_scf_icon
+)
+REM Thankfully cmd.exe handles .pif right. Only Windows Explorer has this flaw.
 ECHO.
 ECHO [pif-ext]
 ECHO The .pif files are shortcuts to DOS programs. Windows Explorer will generate a
@@ -411,7 +415,9 @@ CALL :reassoc_file_types "pif=piffile"
 :main_scf_icon
 IF "!opt_scf_icon!"=="SKIP" GOTO main_scrap_ext
 reg query "%HKLM_CLS%\SHCmdFile" >NUL: 2>NUL: || GOTO main_scrap_ext
-reg query "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" >NUL: 2>NUL: && GOTO main_scrap_ext
+reg query "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" >NUL: 2>NUL: && (
+    GOTO main_scrap_ext
+)
 ECHO.
 ECHO [scf-icon]
 ECHO The .scf files are directive files that run internal commands of the Windows
@@ -436,14 +442,15 @@ REM Other references:
 REM http://www.trojanhunter.com/papers/scrapfiles/
 REM http://www.giac.org/paper/gsec/614/wrapping-malicious-code-windows-shell-scrap-objects/101444
 REM WordPad, Office Word and Excel are all known to support scrap files.
-IF "!opt_scrap_ext!"=="SKIP" GOTO main_shortcut_icon
+IF "!opt_scrap_ext!"=="SKIP" GOTO main_symlink_ext
+REM Scrap files already have static icon; no need to suggest AlwaysShowExt.
 SET scrap_ext_keys=
 FOR %%k IN (ShellScrap DocShortcut) DO (
     reg query "%HKLM_CLS%\%%k" /v "NeverShowExt" >NUL: 2>NUL: && (
         SET scrap_ext_keys=!scrap_ext_keys! %%k
     )
 )
-IF "!scrap_ext_keys!"=="" GOTO main_shortcut_icon
+IF "!scrap_ext_keys!"=="" GOTO main_symlink_ext
 ECHO.
 ECHO [scrap-ext]
 ECHO The .shs and .shb files are generated when user drags text out of a document
@@ -456,11 +463,43 @@ ECHO will see the extensions for these if they disable ^"Hide extensions for kno
 ECHO file types^". This increases awareness.
 ECHO ^(This is a machine setting. In addition, the associations for these file types
 ECHO for !user_msg! will be reset, which cannot be undone.^)
-CALL :continue_prompt || GOTO main_shortcut_icon
+CALL :continue_prompt || GOTO main_symlink_ext
 FOR %%k IN (!scrap_ext_keys!) DO (
     CALL :delete_reg_value "%HKLM_CLS%" "%%k" "NeverShowExt" "HKCR\%%k /v NeverShowExt"
 )
 CALL :reassoc_file_types "shs=ShellScrap" "shb=DocShortcut"
+
+:main_symlink_ext
+REM The ".symlink" association only applies to Windows 8.1 or later, or
+REM Windows 7 SP1 with KB3009980 hotfix. This requires shell32.dll's support.
+IF "!opt_symlink_ext!"=="SKIP" GOTO main_shortcut_icon
+REM If symlinks are not "known" (i.e. there's no "HKCR\.symlink" entry), then
+REM the extensions will be always shown. Don't bother then.
+reg query "%HKLM_CLS%\.symlink" >NUL: 2>NUL: || GOTO main_shortcut_icon
+reg query "%HKLM_CLS%\.symlink" /v "AlwaysShowExt" >NUL: 2>NUL: && (
+    reg query "%HKLM_CLS%\.symlink" /v "NeverShowExt" >NUL: 2>NUL: || (
+        GOTO main_shortcut_icon
+    )
+)
+ECHO.
+ECHO [symlink-ext]
+ECHO A symbolic link is a kind of special file in NTFS file system that link to
+ECHO another file by its path and file name. It's similar to a shortcut, and can be
+ECHO identified by a shortcut arrow on its icon. However, a symbolic link may be
+ECHO named with any or no extension. Windows Explorer hides file symbolic links'
+ECHO extensions ^(which does not identify itself as being a link, such as ".txt" or
+ECHO ".exe"^) by default. Unlike hiding ".lnk" for shortcuts, hiding such extensions
+ECHO makes no sense.
+ECHO We will force file symbolic links to always show their extensions, regardless
+ECHO of users' "Hide extensions for known file types" option.
+ECHO ^(This is a machine setting. In addition, the associations for this file type
+ECHO for !user_msg! will be reset, which cannot be undone.^)
+CALL :continue_prompt || GOTO main_shortcut_icon
+reg add "%HKLM_CLS%\.symlink" /v "AlwaysShowExt" /t REG_SZ /f >NUL: || (
+    CALL :show_reg_write_error "HKCR\.symlink /v AlwaysShowExt"
+)
+CALL :delete_reg_value "%HKLM_CLS%" ".symlink" "NeverShowExt" "HKCR\.symlink /v NeverShowExt"
+CALL :reassoc_file_types "symlink=.symlink"
 
 :main_shortcut_icon
 IF NOT "!opt_shortcut_icon!"=="FIX" GOTO main_file_icon
@@ -765,6 +804,7 @@ ECHO   --always-exe-ext         always show ext for .exe and .scr ^(default: no^
 ECHO   --skip-pif-ext           don't delete NeverShowExt for .pif files
 ECHO   --skip-scf-icon          don't add shortcut arrow icons for .scf files
 ECHO   --skip-scrap-ext         don't delete NeverShowExt for .shs and .shb
+ECHO   --skip-symlink-ext       don't always show extensions for symbolic links
 ECHO   --fix-shortcut-icon      restore shortcut arrow icons ^(default: no^)
 ECHO   --fix-file-icon          restore icons for Unknown, com, pif, lnk, shs, shb,
 ECHO                            url, scf, appref-ms and glk types ^(default: no^)
@@ -992,15 +1032,15 @@ REM @return 0 on successful deletion, 1 if key doesn't exist, or 2 on error
 GOTO :EOF
 
 REM Changes file association for a file type.
-REM @param %1 File extension
+REM @param %1 File extension with "." prefix
 REM @param %2 ProgID
-REM @return 0 on success, 1 if not both .%1 and %2 keys exist, or 2 on error
+REM @return 0 on success, 1 if not both %1 and %2 keys exist, or 2 on error
 :safe_assoc
     reg query "%HKLM_CLS%\%~2" >NUL: 2>NUL: || EXIT /B 1
-    CALL :backup_reg "%HKLM_CLS%" ".%~1" /ve
+    CALL :backup_reg "%HKLM_CLS%" "%~1" /ve
     IF "!ERRORLEVEL!"=="1" EXIT /B 1
-    reg add "%HKLM_CLS%\.%~1" /ve /t REG_SZ /d "%~2" /f >NUL: && EXIT /B 0
-    CALL :show_reg_write_error "%HKLM_CLS%\.%~1"
+    reg add "%HKLM_CLS%\%~1" /ve /t REG_SZ /d "%~2" /f >NUL: && EXIT /B 0
+    CALL :show_reg_write_error "%HKLM_CLS%\%~1"
 EXIT /B 2
 
 REM Resets file associations for given file types.
@@ -1010,7 +1050,10 @@ REM @param %* List of extensions in "ext=ProgID" (quoted) data pairs.
     SET keys=
     FOR %%p IN (%*) DO (
         FOR /F "tokens=1,2 delims==" %%e IN (%%p) DO (
-            CALL :safe_assoc "%%e" "%%f" && SET keys=!keys! ".%%e" "%%f"
+            CALL :safe_assoc ".%%e" "%%f" && (
+                SET keys=!keys! ".%%e"
+                IF /I NOT ".%%e"=="%%f" SET keys=!keys! "%%f"
+            )
         )
     )
     FOR %%k IN (!keys!) DO (

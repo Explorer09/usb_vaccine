@@ -14,8 +14,8 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine_reg_undo.cmd' version 3 beta (2016-11-24)
-REM Copyright (C) 2015-2016 Kang-Che Sung <explorer09 @ gmail.com>
+REM 'usb_vaccine_reg_undo.cmd' version 3 beta (2017-01-04)
+REM Copyright (C) 2015-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
 REM modify it under the terms of the GNU Lesser General Public
@@ -76,6 +76,8 @@ reg delete "HKCU\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /f >NUL:
 ECHO.
 ECHO Undo [exe-ext]
 ECHO We will delete the "AlwaysShowExt" values for .exe and .scr file types.
+ECHO This will hide their extensions if user enables the ^"Hide extensions for known
+ECHO file types^" option.
 CALL :confirm_prompt || GOTO main_undo_pif_ext
 FOR %%e IN (exe scr) DO (
     reg delete "%HKLM_CLS%\%%efile" /v "AlwaysShowExt" /f >NUL:
@@ -103,12 +105,21 @@ ECHO.
 ECHO Undo [scrap-ext]
 ECHO We will restore the "NeverShowExt" value for .shs and .shb file types. This
 ECHO hides the extensions for them.
-CALL :confirm_prompt || GOTO main_undone
+CALL :confirm_prompt || GOTO main_undo_symlink_ext
 FOR %%k IN (ShellScrap DocShortcut) DO (
     reg query "%HKLM_CLS%\%%k" >NUL: 2>NUL: && (
         reg add "%HKLM_CLS%\%%k" /v "NeverShowExt" /t REG_SZ /f >NUL:
     )
 )
+
+:main_undo_symlink_ext
+ECHO.
+ECHO Undo [symlink-ext]
+ECHO We will delete the "AlwaysShowExt" value for file symbolic links ^(the
+ECHO ".symlink" file type^). This will hide their extensions if user enables the
+ECHO "Hide extensions for known file types" option.
+CALL :confirm_prompt || GOTO main_undone
+reg delete "%HKLM_CLS%\.symlink" /v "AlwaysShowExt" /f >NUL:
 
 :main_undone
 ECHO.
