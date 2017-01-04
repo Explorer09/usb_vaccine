@@ -192,6 +192,9 @@ CALL :has_ci_substr "\!opt_move_subdir!\" "\..\" "*" "?" ":" "<" ">" "|" && (
 )
 
 reg query "HKCU" >NUL: 2>NUL: || (
+    REM Without 'reg', we cannot detect Command Processor AutoRun, so always
+    REM try restarting without it before going further.
+    IF NOT "!opt_restart!"=="SKIP" GOTO main_restart
     ECHO.>&2
     ECHO *** 錯誤：無法使用 reg.exe 來存取 Windows 登錄！>&2
     ECHO.>&2
