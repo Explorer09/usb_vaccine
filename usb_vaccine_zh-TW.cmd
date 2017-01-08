@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-01-04)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-01-08)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -809,10 +809,24 @@ ENDLOCAL
 EXIT /B 1
 
 :main_restart_native
-REM KB942589 hotfix brings Sysnative folder support to Windows XP (IA64 and
-REM x64) but is never offered in Windows Update.
-%WinDir%\Sysnative\cmd /d /c "%0 --no-restart !args!" && EXIT /B 0
-SET status=!ERRORLEVEL!
+REM KB942589 hotfix brings Sysnative folder support to Windows 2003 SP1+ (IA64
+REM and x64) and XP x64 but is never offered in Windows Update.
+SET status=1
+REM Even with file system redirection in WoW64, the "IF EXIST" construct and
+REM 'attrib' command do not redirect and can be used to check the existence of
+REM real file names on disk. (Better not run cmd.exe inside if we're unsure
+REM that "Sysnative" is a redirected pseudo-directory.)
+FOR %%i IN ("%WinDir%\Sysnative") DO (
+    REM "%~a1" redirects.
+    CALL :has_ci_substr "%%~ai" "d" && (
+        CALL :has_ci_substr "%%~ai" "h" || (
+            IF NOT EXIST %%i (
+                %%i\cmd /d /c "%0 --no-restart !args!" && EXIT /B 0
+                SET status=!ERRORLEVEL!
+            )
+        )
+    )
+)
 ECHO *** 偵測到 WoW64 的執行環境。本腳本應該要在作業系統預設的 64 位元命令直譯器>&2
 ECHO     （cmd.exe!BIG5_A15E!下執行。>&2
 ECHO 請按照下列步驟操作：>&2
@@ -825,7 +839,7 @@ ECHO 4. 在新的命令提示字元視窗，執行下列命令：>&2
 ECHO    %0 !args!>&2
 ECHO.
 PAUSE
-EXIT /B !status!
+ENDLOCAL & EXIT /B %status%
 
 :main_restart
 cmd /d /c "%0 --no-restart !args!" && EXIT /B 0
@@ -835,7 +849,7 @@ ECHO     '--no-restart' 選項!BIG5_A15E!：>&2
 ECHO     cmd /d /c ^"%0 --no-restart !args!^">&2
 ECHO.
 PAUSE
-EXIT /B !status!
+ENDLOCAL & EXIT /B %status%
 
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES
