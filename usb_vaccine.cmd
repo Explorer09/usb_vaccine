@@ -185,6 +185,14 @@ CALL :has_ci_substr "\!opt_move_subdir!\" "\..\" "*" "?" ":" "<" ">" "|" && (
     GOTO main_invalid_path
 )
 
+SET g_is_wow64=0
+IF DEFINED PROCESSOR_ARCHITEW6432 (
+    IF NOT "!opt_restart!"=="SKIP" GOTO main_restart_native
+    SET g_is_wow64=1
+    ECHO NOTICE: A WoW64 environment is detected. This script is supposed to be run in a>&2
+    ECHO native, 64-bit cmd.exe interpreter.>&2
+)
+
 reg query "HKCU" >NUL: 2>NUL: || (
     REM Without 'reg', we cannot detect Command Processor AutoRun, so always
     REM try restarting without it before going further.
@@ -201,13 +209,6 @@ reg query "HKCU" >NUL: 2>NUL: || (
     GOTO main_all_drives
 )
 
-SET g_is_wow64=0
-IF DEFINED PROCESSOR_ARCHITEW6432 (
-    IF NOT "!opt_restart!"=="SKIP" GOTO main_restart_native
-    SET g_is_wow64=1
-    ECHO NOTICE: A WoW64 environment is detected. This script is supposed to be run in a>&2
-    ECHO native, 64-bit cmd.exe interpreter.>&2
-)
 SET has_wow64=0
 reg query "%HKLM_SFT_WOW%" >NUL: 2>NUL: && SET has_wow64=1
 
