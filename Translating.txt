@@ -11,7 +11,9 @@ Notes for translators.
     "system32".)
   - Sysnative (Not "SysNative")
   - SysWOW64 (Not "SysWoW64")
-  - Wow6432Node (Not "WoW6432Node")
+  - Wow6432Node (This is the case used in MSDN. Some OS versions and Microsoft
+    Support articles case this key as "WOW6432Node" (especially in Windows 10)
+    or "Wow6432node" but we consider none of these official.)
   - explorer.exe (Some documentaion and registry settings will refer it to as
     "Explorer.exe" but it's always named all-lowercase in the file system.)
 
