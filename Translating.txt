@@ -22,3 +22,23 @@ Notes for translators.
   keep using the old name because (1) it is more widely known, and (2) we are
   supporting old versions of Windows (2000, XP and 7), in which it is called
   Windows Explorer.
+
+- The messages in :show_reg_write_error subroutine is designed in a way that,
+  in English version, each message can be displayed in one line within the
+  default 80 characters per line display. The arguments passed to this
+  subroutine are all deliberately constrained to not longer than 37 characters
+  (including quotation marks). If possible in your translation, please keep the
+  message displayable in one line; if not, split it into two ECHO lines. Don't
+  make the latter part of the message wrapped wierdly like example below.
+
+Okay:
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx:"Application.Reference /v IsShortcut"
+
+Okay:
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx:
+"Application.Reference /v IsShortcut"
+
+Not looking good (wrapped weirdly):
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx:"Application.Reference /v IsSh
+ortcut"
+
