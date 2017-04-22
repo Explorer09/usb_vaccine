@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-01-08)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-04-22)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -861,6 +861,9 @@ REM @param %2... substrings, each must be quoted and not contain "!" or "="
 REM @return 0 (true) if any of substrings is found in string
 :has_ci_substr
     SET "str=%~1"
+    REM cmd.exe bug! "SET v=&ECHO.!v:s=!x" outputs "s=x" instead of "x".
+    REM Must return early lest the bug break the condtional below.
+    IF "%~1"=="" EXIT /B 1
     SHIFT /1
     REM Can't use FOR because it expands "*" and "?" that we don't want.
 GOTO has_ci_substr_loop_
