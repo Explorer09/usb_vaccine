@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-04-22)
+REM 'usb_vaccine.cmd' version 3 beta (2017-04-23)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1113,9 +1113,9 @@ REM @return 0 (true) if the file is in the list
 :is_file_to_keep
     REM Special case for OS/2 "EA DATA. SF" and "WP ROOT. SF", which MUST
     REM contain spaces in their short name form.
-    FOR %%i IN ("EA DATA. SF" "WP ROOT. SF") DO (
-        IF /I "%~2"==%%i (
-            IF /I NOT "%~s2"==%%i EXIT /B 1
+    FOR %%I IN ("EA DATA. SF" "WP ROOT. SF") DO (
+        IF /I "%~2"==%%I (
+            IF /I NOT "%%~nxsI"==%%I EXIT /B 1
         )
     )
     SET attr_d=0
