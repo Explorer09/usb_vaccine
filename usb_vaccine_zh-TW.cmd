@@ -817,10 +817,10 @@ REM Even with file system redirection in WoW64, the "IF EXIST" construct and
 REM 'attrib' command do not redirect and can be used to check the existence of
 REM real file names on disk. (Better not run cmd.exe inside if we're unsure
 REM that "Sysnative" is a redirected pseudo-directory.)
-FOR %%i IN ("%WinDir%\Sysnative") DO (
+FOR %%I IN ("%WinDir%\Sysnative") DO (
     REM "%~a1" redirects.
-    CALL :has_ci_substr "%%~ai" "d" && (
-        CALL :has_ci_substr "%%~ai" "h" || (
+    CALL :has_ci_substr "%%~aI" "d" && (
+        CALL :has_ci_substr "%%~aI" "h" || (
             IF NOT EXIST %%i (
                 %%i\cmd /d /c "%0 --no-restart !args!" && EXIT /B 0
                 SET status=!ERRORLEVEL!
