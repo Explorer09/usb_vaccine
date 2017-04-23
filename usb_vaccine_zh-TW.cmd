@@ -113,7 +113,7 @@ REM MAIN
 SET g_reg_bak=
 SET g_sids=
 
-REM Needed by restart routine. SHIFT will change %*.
+REM Needed by restart routine. SHIFT will change %%*.
 SET "args=%*"
 
 :main_parse_options
@@ -165,7 +165,7 @@ IF "!arg1!"=="" GOTO main_sanity_test
         SET opt_move_subdir=!opt_move_subdir:^"=!
         SET opt_move_subdir=!opt_move_subdir:/=\!
     )
-    REM %0 is needed by restart routine. Don't touch.
+    REM %%0 is needed by restart routine. Don't touch.
     SHIFT /1
 GOTO main_parse_options
 
@@ -818,7 +818,7 @@ REM 'attrib' command do not redirect and can be used to check the existence of
 REM real file names on disk. (Better not run cmd.exe inside if we're unsure
 REM that "Sysnative" is a redirected pseudo-directory.)
 FOR %%I IN ("%WinDir%\Sysnative") DO (
-    REM "%~a1" redirects.
+    REM "%%~aI" redirects.
     CALL :has_ci_substr "%%~aI" "d" && (
         CALL :has_ci_substr "%%~aI" "h" || (
             IF NOT EXIST %%i (
