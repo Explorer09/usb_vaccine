@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-04-23)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-04-24)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -861,7 +861,7 @@ REM @param %2... substrings, each must be quoted and not contain "!" or "="
 REM @return 0 (true) if any of substrings is found in string
 :has_ci_substr
     SET "str=%~1"
-    REM cmd.exe bug! "SET v=&ECHO.!v:s=!x" outputs "s=x" instead of "x".
+    REM cmd.exe bug! "SET v=&ECHO.!v:s=r!x" outputs "s=rx" instead of "x".
     REM Must return early lest the bug break the condtional below.
     IF "%~1"=="" EXIT /B 1
     SHIFT /1
@@ -942,8 +942,9 @@ REM @return 0 on success, 1 if key/value doesn't exist, 2 if backup file fails
     REM With '/ve' option, 'reg' in Windows 2000 or XP exits with 1 on a "value
     REM not set" default, while in 2003 or later it exits with 0. We ensures
     REM Windows 2003's behavior by querying the whole key.
-    SET "v_opt=%3"
-    reg query "%~1\%~2" !v_opt:/ve=! %4 >NUL: 2>NUL: || EXIT /B 1
+    SET "v=%3"
+    IF "%3"=="/ve" SET v=
+    reg query "%~1\%~2" !v! %4 >NUL: 2>NUL: || EXIT /B 1
     IF "!g_reg_bak!"=="" CALL :init_reg_bak
     IF "!g_reg_bak!"=="FAIL" EXIT /B 2
     IF "!g_is_wow64!%~1"=="1%HKLM_SFT%" (
