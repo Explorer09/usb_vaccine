@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-04-24)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-04-25)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -182,8 +182,6 @@ IF "!opt_move_subdir!"=="" SET opt_move_subdir=\MALWARE
 IF /I "!opt_move_subdir!"=="NUL:" SET opt_move_subdir=NUL
 REM Technically we can't check for every possibility of valid path without
 REM actually 'mkdir' with it, but we may filter out common path attacks.
-REM Note: False positive is possible with a multi-byte encoding (including GBK,
-REM Big5, Shift_JIS, CP949 or Mac OS Korean) and code point 0x??5C.
 IF "!opt_move_subdir:~0,2!"=="\\" GOTO main_invalid_path
 REM Windows 9x allows "\...\", "\....\" and so on for grandparent or any
 REM ancestor directory. Thankfully it doesn't work anymore in NT.
@@ -861,7 +859,7 @@ REM @param %2... substrings, each must be quoted and not contain "!" or "="
 REM @return 0 (true) if any of substrings is found in string
 :has_ci_substr
     SET "str=%~1"
-    REM cmd.exe bug! "SET v=&ECHO.!v:s=r!x" outputs "s=rx" instead of "x".
+    REM cmd.exe bug: "SET v=&ECHO.!v:s=r!x" outputs "s=rx" instead of "x".
     REM Must return early lest the bug break the condtional below.
     IF "%~1"=="" EXIT /B 1
     SHIFT /1
@@ -872,7 +870,9 @@ GOTO has_ci_substr_loop_
     IF "%~1"=="" EXIT /B 1
     REM The first "*" in "!v:*s=r!" syntax is special (read "SET /?" page);
     REM the rest is matched literally even if it contains "*".
-    REM Undocumented: string substitution is case insensitive.
+    REM Undocumented: String substitution is case insensitive.
+    REM Undocumented: On a multi-byte code page, string substitution operates
+    REM on characters, not bytes. E.g. !v:s=! won't match the character 0xE073.
     IF NOT "!str!"=="!str:*%~1=!" EXIT /B 0
     SHIFT /1
 GOTO has_ci_substr_loop_
@@ -1068,7 +1068,7 @@ REM @return 0 (true) if it matches
     SET "name=!name:~6,-4!"
     IF "!name!"=="" EXIT /B 0
     FOR %%c IN (0 1 2 3 4 5 6 7 8 9 a b c d e f) DO (
-        REM Undocumented: string substitution is case insensitive.
+        REM Undocumented: String substitution is case insensitive.
         SET "name=!name:%%c=!"
         IF "!name!"=="" EXIT /B 0
     )
