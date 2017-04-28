@@ -339,6 +339,7 @@ Rule of generating "short names" from long file names in Windows:
    then this file has no extension, and define "base name" as the whole string.
 2. An LFN entry will not be generated for the file when:
    - "base name" and "extension" fit the 8.3 length limit,
+   - "base name" is not empty when determined by the method above,
    - neither "base name" nor "extension" contains space " " or any of the
      following characters:
      + , . ; = [ ]
@@ -397,16 +398,16 @@ Rule of generating "short names" from long file names in Windows:
      at most 4 bytes and try "~100" suffix, and so on.
 
 Forbidden characters in long file names in Windows:
-0x00-0x1F " *     / :   <   > ?   \       |
+0x00-0x1F " *       / :   <   > ?   \       |
 (41 characters in total)
 
 Forbidden characters in file names in IBM PC DOS / MS-DOS (2.00 and later):
-0x00-0x20 " * + , / : ; < = > ? [ \ ] a-z |
-(74 characters in total)
+0x00-0x20 " * + , . / : ; < = > ? [ \ ] a-z |
+(75 characters in total)
 
 Forbidden characters in file names in IBM PC DOS / MS-DOS (1.x):
-0x00-0x20 " * + , / : ;   =   ? [   ] a-z
-(70 characters in total)
+0x00-0x20 " * + , . / : ;   =   ? [   ] a-z
+(71 characters in total)
 Note: \ < > | was allowed in DOS 1.x, before DOS 2 introduces directories and
 I/O redirection.
 
