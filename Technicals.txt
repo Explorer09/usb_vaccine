@@ -296,6 +296,122 @@ writing.
 
 -------------------------------------------------------------------------------
 
+Important notes about file names, long file names (LFN), "short names" (a.k.a.
+8.3 file name), and how Windows processes them:
+
+1. Long file names, as stored in NTFS and VFAT LFN entries, are all encoded in
+   UCS-2LE (or UTF-16LE in Windows 2000, XP or later).
+2. In FAT, short names are encoded in OS's active code page. On a multi-byte
+   code page, Windows may generate short names that contain bytes 0x5C "\" or
+   0x7C "|". GBK, Big5 and Shift_JIS encodings all suffer from this because a
+   code point like 0xE05C may be a valid character in them.
+3. Short names can be optionally generated in NTFS (it's enabled by default),
+   short names in NTFS are encoded in UCS-2LE or UTF-16LE and stored as
+   variable-length strings in on-disk format, just like long file names.
+4. When reading file names, they are transparently converted from Unicode to
+   system's active code page (for non-Unicode programs including cmd.exe).
+   Unmappable characters are converted to question marks "?" (0x3F) on display
+   and command output.
+5. cmd.exe has limitations and bugs regarding file name processing:
+   - If two files can be presented as same name in DIR output (possible when
+     name contains characters unmappable in OS's active code page and become
+     question marks on display), retrieving file info via parsing DIR output
+     may retrieve the wrong file. Example that won't work:
+         FOR /F "delims=" %%I IN ('DIR /B') DO (ECHO "%%~atzfsI" & DIR "%%I")
+     But this works:
+         FOR %%I IN (*) DO (ECHO "%%~atzfsI" & DIR "%%I")
+     Retrieving file name via "file name completion" (tab key, or Ctrl+F and
+     Ctrl+D if cmd.exe is invoked with "/f:on") can refer to the correct file
+     even though question marks might appear on display.
+   - If a file's short name happens to contain a 0x5C "\" byte (for example
+     from a 0xE05C character) in a FAT filesystem, and the system's "active
+     code page" doesn't treat a "\" byte as part of a multi-byte character,
+     "%%~psI" will contain part of the file name up to and including the last
+     "\" byte, while "%%~nsI" will have the aforementioned part of file name
+     cut out. Note that this bugs happens only in FAT with short names -
+     Windows never leak out "\" character on interpreting UTF-16LE file names.
+
+Rule of generating "short names" from long file names in Windows:
+1. First, determine the "base name" and the "extension" from the file name.
+   Search for last period "." in the file name, and split the file name string.
+   Define "base name" as part of the string before the period, and "extension"
+   as part of the string after the period. If the file name contains no period,
+   then this file has no extension, and define "base name" as the whole string.
+2. An LFN entry will not be generated for the file when:
+   - "base name" and "extension" fit the 8.3 length limit,
+   - neither "base name" nor "extension" contains space " " or any of the
+     following characters:
+     + , . ; = [ ]
+     (multi-byte characters don't count here even for those containing afore-
+     mentioned bytes), and
+   - file name's case meets the OS- and file-system-specific requirement:
+     FAT in Windows 95, 98 or Me: File name doesn't contain underscore "_" and
+     is in all UPPERCASE.
+     FAT in Windows NT: "Base name" is in the same case (either all UPPERCASE
+     or all lowercase) and so is "extension", although two strings' cases may
+     be different. (e.g. "test.TXT" or "TEST.txt") (Windows NT logs such case
+     information as two flag bits in FAT directory entry of the file. The file
+     name will be stored in all UPPERCASE on disk after this.)
+     NTFS: No specific requirement. (i.e. may be in mixed case)
+3. If "base name" and "extension" almost meet the condition above except for
+   the letter casing or containing underscores or both, an LFN entry is
+   created, with "short name" being the file name converted to all uppercase.
+   In Windows 95, 98 or Me, an LFN entry may be created unnecessarily, with the
+   byte-identical name if the name just happens to contain underscores and no
+   lowercase letters.
+4. Otherwise, an LFN entry is created, and the "short name" generated via this
+   algorithm:
+(1)  If "base name" is empty when determined by the method above (possible with
+     file names like ".bashrc"), set "extension" to empty and "base name" to
+     what was the "extension".
+(2)  Remove all spaces and periods "." from "base name" and "extension".
+(3)  Convert lowercase letters in both strings to UPPERCASE (ASCII conversion;
+     locale ignored), and convert each of following characters to underscores:
+     + , ; = [ ]
+     (Multi-byte characters are not touched, even for those just happening to
+     contain any these bytes.)
+(4)  Remove characters (not bytes) from the right of "base name" and
+     "extension", until "basename" is at most 6 bytes and "extension" at most
+     3 bytes.
+(5)  Let "suffix" be "~1".
+(6)  Construct "name" from "base name", "suffix", a period and "extension".
+(7)  If no file with this "name" exists in the directory, make this be the
+     file's short name. End.
+(8)  Otherwise, a collision occurs. Let "suffix" be "~2" and go to (6).
+     If "name" with "~2" suffix also collides with a file name, let "suffix" be
+     "~3" and go to (6) and so on.
+(8a) In Windows NT only, if "name" with "~4" suffix still collides at this
+     point, remove characters from the right of "base name" to at most 2 bytes,
+     append 4 uppercase hexadecimal digits from an undocumented hash of the
+     file name, let suffix be "~1", and go to (6) again. (If the hash is
+     already used in "base name", and collision still occurs while the suffix
+     is "~4", continue trying the "~5" suffix, "~6" suffix and so on.)
+     (Side note: Linux vfat driver does not implement the hash, but instead
+     use hexadecimal digits generated from "jiffies" and thus the digits are
+     not deterministic.)
+(8b) If "name" with "~9" suffix still collides, truncate "base name" further to
+     at most 5 bytes (note: in Windows NT this can result in one digit of hash
+     being removed), let suffix be "~10", and go to (6), if "name" with "~10"
+     suffix still exists, try "~11" and so on.
+     If "name" with "~99" suffix still exists, truncate "base name" further to
+     at most 4 bytes and try "~100" suffix, and so on.
+
+Forbidden characters in long file names in Windows:
+0x00-0x1F " *     / :   <   > ?   \       |
+(41 characters in total)
+
+Forbidden characters in file names in IBM PC DOS / MS-DOS (2.00 and later):
+0x00-0x20 " * + , / : ; < = > ? [ \ ] a-z |
+(74 characters in total)
+
+Forbidden characters in file names in IBM PC DOS / MS-DOS (1.x):
+0x00-0x20 " * + , / : ;   =   ? [   ] a-z
+(70 characters in total)
+Note: \ < > | was allowed in DOS 1.x, before DOS 2 introduces directories and
+I/O redirection.
+
+-------------------------------------------------------------------------------
+
 Important notes about commands behaviors:
 - MOVE command exits with 1 when a move error occurs. There's no way to specify
   "don't overwrite" option for MOVE command.
@@ -434,9 +550,9 @@ SIDs as subkey names. (Windows might create profile backups with key names like
 "<SID>.bak" inside "ProfileList", in case that some profiles fail to logon).
 For ease of documenting, we will refer to this key as the "ProfileList" key.
 
-The forbidden characters in usernames of all NT-based Windows versions are:
-" * + , / : ; < = > ? [ \ ] |
-(15 characters in total)
+Forbidden characters in usernames of all NT-based Windows versions:
+0x00-0x1F " * + , / : ; < = > ? [ \ ] |
+(47 characters in total)
 
 For NT-based Windows versions, the list of currently loaded hives and the file
 locations of them may be seen in
@@ -551,7 +667,7 @@ value's data be 0 before attempting to load and edit the user's hives.)
 
 User's "Home folder" still defaults to "C:\".
 
-Windows 2000 and later separate "local" data (files) from roaming data in a
+Windows 2000, XP and later separate "local" data (files) from roaming data in a
 profile. Local files are not synchronized with what's in the central profile
 folder when the profile is logged off. Registry value "ExcludeProfileDirs" in
 key "HKCU\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" determines
