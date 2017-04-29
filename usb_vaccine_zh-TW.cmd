@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-04-25)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-04-29)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -899,9 +899,9 @@ REM @return 0 if file is created
     REM "%~a1" outputs empty string for files with (hacked) Device attribute.
     REM Neither of them are more reliable than MKDIR for checking file's
     REM existence (or availability of the file name).
-    MKDIR %1 || EXIT /B 1
-    RMDIR %1 & TYPE NUL: >>%1
-    IF NOT EXIST %1 EXIT /B 1
+    MKDIR "%~1" || EXIT /B 1
+    RMDIR "%~1" & TYPE NUL: >>"%~1"
+    IF NOT EXIST "%~1" EXIT /B 1
     CALL :has_ci_substr "%~a1" "d" && EXIT /B 1
 EXIT /B 0
 
