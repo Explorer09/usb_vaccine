@@ -157,6 +157,7 @@ IF "!arg1!"=="" GOTO main_sanity_test
             SHIFT /1
         )
         SET opt_move_subdir=!opt_move_subdir:^"=!
+        REM ^"
         SET opt_move_subdir=!opt_move_subdir:/=\!
     )
     REM %%0 is needed by restart routine. Don't touch.
