@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-04-29)
+REM 'usb_vaccine.cmd' version 3 beta (2017-05-08)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1317,7 +1317,9 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
         attrib +R +H +S "%~1"
         EXIT /B 0
     )
-    CALL :process_file EXECUTE "file" %1
+    DIR /A:-D /B "%~1" >NUL: 2>NUL: && (
+        CALL :process_file EXECUTE "file" %1
+    )
     IF "!opt_mkdir!"=="SKIP" EXIT /B 0
     MKDIR "%~1" || (
         ECHO Error occurred when creating directory "%~1">&2
