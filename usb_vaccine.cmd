@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-05-08)
+REM 'usb_vaccine.cmd' version 3 beta (2017-05-09)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1200,16 +1200,26 @@ REM @param %3 Name of file to process
     REM Always Delete Hidden or System symlinks.
     IF NOT "!attr_h!!attr_s!"=="-h-s" (
         IF "!attr_l!!attr_d!"=="l-d" (
-            ECHO Delete symbolic link "%~3"
-            DEL /F /A:!attr_h!!attr_s!l-d "%~3" >NUL:
+            DEL /F /A:!attr_h:h=H!!attr_s:s=S!L-D "%~3" >NUL:
+            DIR /A:!attr_h:h=H!!attr_s:s=S!L-D /B "%~3" >NUL: 2>NUL:
+            IF ERRORLEVEL 1 (
+                ECHO Deleted symbolic link "%~3"
+            ) ELSE (
+                ECHO Can't delete symbolic link "%~3">&2
+            )
             GOTO :EOF
         )
     )
     IF "!g_move_status!"=="" CALL :init_move_subdir
     IF "!g_move_status!"=="DEL" (
         IF "!attr_d!"=="d" GOTO :EOF
-        ECHO Delete !type! "%~3"
-        DEL /F /A:!attr_h!!attr_s!!attr_l!-d "%~3" >NUL:
+        DEL /F /A:!attr_h:h=H!!attr_s:s=S!!attr_l:l=L!-D "%~3" >NUL:
+        DIR /A:!attr_h:h=H!!attr_s:s=S!!attr_l:l=L!-D /B "%~3" >NUL: 2>NUL:
+        IF ERRORLEVEL 1 (
+            ECHO Deleted !type! "%~3"
+        ) ELSE (
+            ECHO Can't delete !type! "%~3">&2
+        )
         GOTO :EOF
     )
     IF NOT "!g_move_status:~0,2!"=="OK" (
