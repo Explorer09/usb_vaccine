@@ -883,11 +883,11 @@ REM @return 0 if user says to continue, or 1 if says to skip
 :continue_prompt
     REM Note: If the user answers empty string after a "SET /P", The variable
     REM is kept the previous value and NOT set to the empty string.
-    SET prompt=
-    SET /P prompt="請按 Enter 鍵繼續，或是輸入 'skip' 跳過此步驟："
-    IF "!prompt!"=="" EXIT /B 0
-    IF /I "!prompt!"=="Y" EXIT /B 0
-    IF /I "!prompt!"=="SKIP" EXIT /B 1
+    SET reply=
+    SET /P reply="請按 Enter 鍵繼續，或是輸入 'skip' 跳過此步驟："
+    IF "!reply!"=="" EXIT /B 0
+    IF /I "!reply!"=="Y" EXIT /B 0
+    IF /I "!reply!"=="SKIP" EXIT /B 1
 GOTO continue_prompt
 
 REM Creates a file.
