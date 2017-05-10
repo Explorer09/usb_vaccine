@@ -190,6 +190,21 @@ CALL :has_ci_substr "\!opt_move_subdir!\" "\..\" "*" "?" ":" "<" ">" "|" && (
     GOTO main_invalid_path
 )
 
+REM Check if "FOR /F" supports unquoted options and 'eol' being null.
+REM Check this in a subshell because (a) it won't halt our script in case of
+REM unsupported syntax; (b) we need to disable Command Processor AutoRun.
+SET g_cmdfor_unquoted_opts=0
+SET "a=FOR /F tokens^=1-2^ delims^=^"
+SET b="^ eol^= %%i IN (" ;""x") DO IF NOT "%%i.%%j"==" ;.x^" EXIT /B 1
+%ComSpec% /q /d /e:on /c "!a!!b!" >NUL: 2>NUL: && SET g_cmdfor_unquoted_opts=1
+REM No delayed expansion is allowed in "FOR /F" option field.
+IF "!g_cmdfor_unquoted_opts!"=="1" (
+    SET "FOR_OPTS_FOR_DIR_B=/F delims^=^ eol^="
+) ELSE (
+    SET FOR_OPTS_FOR_DIR_B=/F "eol=/ delims="
+    ECHO 警告：此命令直譯器（cmd.exe!BIG5_A15E!不支援無引號的 "FOR /F" 選項字串。>&2
+)
+
 SET g_is_wow64=0
 IF DEFINED PROCESSOR_ARCHITEW6432 (
     IF NOT "!opt_restart!"=="SKIP" GOTO main_restart_native
@@ -1223,7 +1238,7 @@ REM Moves or deletes all file symlinks in current directory.
     REM Directory symlinks/junctions are harmless. Leave them alone.
     REM DIR command in Windows 2000 supports "/A:L", but displays symlinks
     REM (file or directory) as junctions. Undocumented feature.
-    FOR /F "eol=\ delims=" %%f IN ('DIR /A:L-D /B 2^>NUL:') DO (
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:L-D /B 2^>NUL:') DO (
         CALL :process_file SYMLINK "符號連結" "%%~f"
     )
 GOTO :EOF
@@ -1233,7 +1248,7 @@ REM Clears hidden and system attributes of all files in current directory.
     REM 'attrib' refuses to clear either H or S attribute for files with both
     REM attributes set. Must clear both simultaneously.
     REM The exit code of 'attrib' is unreliable.
-    FOR /F "eol=\ delims=" %%f IN ('DIR /A:HS-L /B 2^>NUL:') DO (
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:HS-L /B 2^>NUL:') DO (
         CALL :is_file_to_keep HS_ATTRIB "%%~f"
         IF ERRORLEVEL 1 (
             ECHO 解除隱藏+系統屬性 "%%~f"
@@ -1242,7 +1257,7 @@ REM Clears hidden and system attributes of all files in current directory.
             ECHO 為了安全原因，跳過檔案 "%%~f"（隱藏+系統屬性!BIG5_A15E!
         )
     )
-    FOR /F "eol=\ delims=" %%f IN ('DIR /A:H-S-L /B 2^>NUL:') DO (
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:H-S-L /B 2^>NUL:') DO (
         CALL :is_file_to_keep H_ATTRIB "%%~f"
         IF ERRORLEVEL 1 (
             ECHO 解除隱藏屬性 "%%~f"
@@ -1251,7 +1266,7 @@ REM Clears hidden and system attributes of all files in current directory.
             ECHO 為了安全原因，跳過檔案 "%%~f"（隱藏屬性!BIG5_A15E!
         )
     )
-    FOR /F "eol=\ delims=" %%f IN ('DIR /A:S-H-L /B 2^>NUL:') DO (
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:S-H-L /B 2^>NUL:') DO (
         CALL :is_file_to_keep S_ATTRIB "%%~f"
         IF ERRORLEVEL 1 (
             ECHO 解除系統屬性 "%%~f"
@@ -1264,7 +1279,7 @@ GOTO :EOF
 
 REM Moves or deletes shortcut files in current directory.
 :process_shortcuts
-    FOR /F "eol=\ delims=" %%f IN (
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN (
         'DIR /A:-D /B *.pif *.lnk *.shb *.url *.appref-ms *.glk 2^>NUL:'
     ) DO (
         CALL :process_file EXECUTE "捷!BIG5_AE7C!檔案" "%%~f"
@@ -1276,8 +1291,8 @@ REM folder in current directory.
 :process_folder_exes
     REM .bat, .cmd and .com are self-executable, but their icons are static, so
     REM leave them alone.
-    FOR /F "eol=\ delims=" %%d IN ('DIR /A:D /B 2^>NUL:') DO (
-        FOR /F "eol=\ delims=" %%f IN (
+    FOR %FOR_OPTS_FOR_DIR_B% %%d IN ('DIR /A:D /B 2^>NUL:') DO (
+        FOR %FOR_OPTS_FOR_DIR_B% %%f IN (
             'DIR /A:-D /B "%%~d.exe" "%%~d.scr" 2^>NUL:'
         ) DO (
             CALL :process_file EXECUTE "檔案" "%%~f"
