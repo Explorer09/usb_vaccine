@@ -1338,7 +1338,7 @@ REM @param %1 Name of file to remove or directory to create
 REM @return 0 if directory exists or is created successfully, or 1 on error
 :make_dummy_dir
     CALL :has_ci_substr "%~a1" "d" && (
-        REM File exists and is a directory. Keep it.
+        ECHO Directory "%~1" exists.
         attrib +R +H +S "%~1"
         EXIT /B 0
     )
@@ -1350,6 +1350,7 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
         ECHO Error occurred when creating directory "%~1">&2
         EXIT /B 1
     )
+    ECHO Directory "%~1" created.
     (
         REM Should be in ASCII encoding. It is better to keep an English
         REM version as well as localized one.

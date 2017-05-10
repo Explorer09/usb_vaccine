@@ -1305,7 +1305,7 @@ REM @param %1 Name of file to remove or directory to create
 REM @return 0 if directory exists or is created successfully, or 1 on error
 :make_dummy_dir
     CALL :has_ci_substr "%~a1" "d" && (
-        REM File exists and is a directory. Keep it.
+        ECHO 目錄 "%~1" 已存在。
         attrib +R +H +S "%~1"
         EXIT /B 0
     )
@@ -1314,9 +1314,10 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
     )
     IF "!opt_mkdir!"=="SKIP" EXIT /B 0
     MKDIR "%~1" || (
-        ECHO 建立目錄 "%~1" 時發生錯誤>&2
+        ECHO 建立目錄 "%~1" 時發生錯誤。>&2
         EXIT /B 1
     )
+    ECHO 已建立目錄 "%~1"
     (
         REM Should be in ASCII encoding. It is better to keep an English
         REM version as well as localized one.
