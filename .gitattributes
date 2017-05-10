@@ -17,3 +17,6 @@
 *.reg text eol=crlf
 
 *.sh text eol=lf
+
+# Enconding used in non-English versions of usb_vaccine.cmd.
+usb_vaccine_zh-TW.cmd encoding=Big5
