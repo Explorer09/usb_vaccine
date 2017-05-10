@@ -1339,7 +1339,6 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
 :make_dummy_dir
     CALL :has_ci_substr "%~a1" "d" && (
         ECHO Directory "%~1" exists.
-        attrib +R +H +S "%~1"
         EXIT /B 0
     )
     DIR /A:-D /B "%~1" >NUL: 2>NUL: && (
