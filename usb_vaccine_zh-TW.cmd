@@ -112,6 +112,7 @@ REM MAIN
 
 SET g_reg_bak=
 SET g_sids=
+IF "!opt_move_subdir!"=="" SET opt_move_subdir=\MALWARE
 
 REM Needed by restart routine. SHIFT will change %%*.
 SET "args=%*"
@@ -162,9 +163,6 @@ IF "!arg1!"=="" GOTO main_sanity_test
             SET "opt_move_subdir=%~2"
             SHIFT /1
         )
-        SET opt_move_subdir=!opt_move_subdir:^"=!
-        REM ^"
-        SET opt_move_subdir=!opt_move_subdir:/=\!
     )
     REM %%0 is needed by restart routine. Don't touch.
     SHIFT /1
@@ -179,7 +177,11 @@ REM 'findstr' or (ported) 'grep'.
 find . -prune >NUL: 2>NUL: && GOTO main_find_error
 ECHO X | find "X" >NUL: 2>NUL: || GOTO main_find_error
 
-IF "!opt_move_subdir!"=="" SET opt_move_subdir=\MALWARE
+IF "!opt_move_subdir!"=="" GOTO main_invalid_path
+SET opt_move_subdir=!opt_move_subdir:^"=!
+REM ^"
+IF "!opt_move_subdir!"=="" GOTO main_invalid_path
+SET opt_move_subdir=!opt_move_subdir:/=\!
 IF /I "!opt_move_subdir!"=="NUL:" SET opt_move_subdir=NUL
 REM Technically we can't check for every possibility of valid path without
 REM actually 'mkdir' with it, but we may filter out common path attacks.
