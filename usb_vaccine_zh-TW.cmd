@@ -192,7 +192,7 @@ CALL :has_ci_substr "\!opt_move_subdir!\" "\..\" "*" "?" ":" "<" ">" "|" && (
 
 REM Check if "FOR /F" supports unquoted options and 'eol' being null.
 REM Check this in a subshell because (a) it won't halt our script in case of
-REM unsupported syntax; (b) we need to disable Command Processor AutoRun.
+REM unsupported syntax, and (b) we need to disable Command Processor AutoRun.
 SET g_cmdfor_unquoted_opts=0
 SET "a=FOR /F tokens^=1-2^ delims^=^"
 SET b="^ eol^= %%i IN (" ;""x") DO IF NOT "%%i.%%j"==" ;.x^" EXIT /B 1
@@ -870,9 +870,9 @@ REM ---------------------------------------------------------------------------
 REM SUBROUTINES
 
 REM Checks if string contains any of the substrings, ignoring case.
-REM @param %1 string (must be quoted)
-REM @param %2... substrings, each must be quoted and not contain "!" or "="
-REM @return 0 (true) if any of substrings is found in string
+REM @param %1 String, which must be quoted
+REM @param %2... Substrings, each must be quoted and not contain "!" or "="
+REM @return 0 (true) if any of the substrings is found in string
 :has_ci_substr
     SET "str=%~1"
     REM cmd.exe bug: "SET v=&ECHO.!v:s=r!x" outputs "s=rx" instead of "x".
@@ -1091,7 +1091,7 @@ REM @return 0 (true) if it matches
 EXIT /B 1
 
 REM Checks if the file is in one of the list of files to keep.
-REM @param %1 Category
+REM @param %1 "Files to keep" list category
 REM @param %2 Name of file to check
 REM @return 0 (true) if the file is in the list
 :is_file_to_keep
@@ -1163,8 +1163,8 @@ REM   (with or without '/S') removes the symlink without touching anything in
 REM   the target directory (SAFE). MOVE command on links always processes links
 REM   themselves rather than link targets.
 
-REM Decides the file and keeps, moves, or deletes it according to decision.
-REM @param %1 Category of list of files to keep
+REM Moves or deletes the file if it's safe to do so.
+REM @param %1 "Files to keep" list category
 REM @param %2 Type of file, displayed in (localized) messages
 REM @param %3 Name of file to process
 :process_file
