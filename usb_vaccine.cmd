@@ -871,7 +871,7 @@ FOR %%I IN ("%WinDir%\Sysnative") DO (
     CALL :has_ci_substr "%%~aI" "d" && (
         CALL :has_ci_substr "%%~aI" "h" || (
             IF NOT EXIST %%i (
-                %%i\cmd /d /c "%0 --no-restart !args!" && EXIT /B 0
+                %%i\cmd /d /c "%0 --no-restart !args!" && GOTO :main_end
                 SET status=!ERRORLEVEL!
             )
         )
@@ -892,7 +892,7 @@ PAUSE
 ENDLOCAL & EXIT /B %status%
 
 :main_restart
-cmd /d /c "%0 --no-restart !args!" && EXIT /B 0
+cmd /d /c "%0 --no-restart !args!" && GOTO :main_end
 SET status=!ERRORLEVEL!
 ECHO *** Error occurred when restarting. Please rerun this script using the>&2
 ECHO     following command ^(note the '/d' and '--no-restart' options^):>&2

@@ -838,7 +838,7 @@ FOR %%I IN ("%WinDir%\Sysnative") DO (
     CALL :has_ci_substr "%%~aI" "d" && (
         CALL :has_ci_substr "%%~aI" "h" || (
             IF NOT EXIST %%i (
-                %%i\cmd /d /c "%0 --no-restart !args!" && EXIT /B 0
+                %%i\cmd /d /c "%0 --no-restart !args!" && GOTO :main_end
                 SET status=!ERRORLEVEL!
             )
         )
@@ -859,7 +859,7 @@ PAUSE
 ENDLOCAL & EXIT /B %status%
 
 :main_restart
-cmd /d /c "%0 --no-restart !args!" && EXIT /B 0
+cmd /d /c "%0 --no-restart !args!" && GOTO :main_end
 SET status=!ERRORLEVEL!
 ECHO *** 重新啟動時發生錯誤。請以下列命令來重新執行此腳本（注意 '/d' 與>&2
 ECHO     '--no-restart' 選項!BIG5_A15E!：>&2
