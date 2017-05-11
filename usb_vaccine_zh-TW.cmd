@@ -1314,8 +1314,8 @@ REM @param name Unquoted name of file to process
         GOTO :EOF
     )
     SET "dest=!name!"
-    IF /I "!name!"=="autorun.inf" SET dest=_autorun.in0
-    IF /I "!name!"=="Desktop.ini" SET dest=_Desktop.in0
+    IF /I "!name!"=="autorun.inf" SET dest=_!name:~0,10!0
+    IF /I "!name!"=="Desktop.ini" SET dest=_!name:~0,10!0
     IF /I "!name!"=="README.txt" SET dest=_!name!
     REM Should never exist name collisions except the forced rename above.
     IF EXIST "!opt_move_subdir!\!dest!" (
