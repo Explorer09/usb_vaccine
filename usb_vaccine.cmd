@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-05-10)
+REM 'usb_vaccine.cmd' version 3 beta (2017-05-11)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -785,8 +785,10 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         IF NOT "!opt_attrib!"=="SKIP" CALL :clear_files_attrib
         IF NOT "!opt_shortcuts!"=="SKIP" CALL :process_shortcuts
         IF NOT "!opt_folder_exe!"=="SKIP" CALL :process_folder_exes
-        IF NOT "!opt_autorun_inf!"=="SKIP" CALL :make_dummy_dir autorun.inf
-        IF NOT "!opt_desktop_ini!"=="SKIP" CALL :make_dummy_dir Desktop.ini
+        SET name=autorun.inf
+        IF NOT "!opt_autorun_inf!"=="SKIP" CALL :make_dummy_dir
+        SET name=Desktop.ini
+        IF NOT "!opt_desktop_ini!"=="SKIP" CALL :make_dummy_dir
         REM Process the locked files last.
         SET g_no_move_files=
         IF NOT "!opt_symlinks!"=="SKIP" CALL :process_symlinks
@@ -941,25 +943,28 @@ REM @return 0 if user says to continue, or 1 if says to skip
 GOTO continue_prompt
 
 REM Creates a file.
-REM @param %1 File name
+REM @param name Unquoted, valid file name
 REM @return 0 if file is created
 :create_file
     REM There's no atomic "create file if not exist" command in Batch, so we
     REM can't avoid a TOCTTOU attack completely.
     REM "IF EXIST" doesn't detect the existence of file with Hidden attribute.
-    REM "%~a1" outputs empty string for files with (hacked) Device attribute.
+    REM "%%~aI" outputs empty string for files with (hacked) Device attribute.
     REM Neither of them are more reliable than MKDIR for checking file's
     REM existence (or availability of the file name).
-    MKDIR "%~1" || EXIT /B 1
-    RMDIR "%~1" & TYPE NUL: >>"%~1"
-    IF NOT EXIST "%~1" EXIT /B 1
-    CALL :has_ci_substr "%~a1" "d" && EXIT /B 1
+    MKDIR "!name!" || EXIT /B 1
+    RMDIR "!name!" & TYPE NUL: >>"!name!"
+    IF NOT EXIST "!name!" EXIT /B 1
+    FOR %%I IN ("!name!") DO (
+        CALL :has_ci_substr "%%~aI" "d" && EXIT /B 1
+    )
 EXIT /B 0
 
 REM Creates and initializes "Vacc_reg.bak"
 :init_reg_bak
     REM This is not .reg format! So we don't allow user to specify file name.
-    CALL :create_file "Vacc_reg.bak" || (
+    SET name=Vacc_reg.bak
+    CALL :create_file || (
         SET g_reg_bak=FAIL
         ECHO.>&2
         ECHO WARNING: Can't create registry backup file "Vacc_reg.bak" in the directory>&2
@@ -1109,11 +1114,79 @@ REM @param %* List of extensions in "ext=ProgID" (quoted) data pairs.
     )
 GOTO :EOF
 
+REM Checks and displays warning message for invalid characters in file name.
+REM @param name Unquoted file name
+REM @return 0 (true) if file name contains all valid characters
+:is_valid_file_name
+    REM We check this only because some characters are unsafe to process in
+    REM cmd.exe environment. This function isn't meant to catch all invalid
+    REM file names. Specifically, checking reserved file names and checking
+    REM validity of "short names" are out of this function's scope.
+    REM "FOR /F" should have skipped empty lines, but for safety...
+    IF "!name!"=="" EXIT /B 1
+    REM "FOR /F delims" is faster than :has_ci_substr
+    SET "FOR_OPTS=/F tokens^=1^ eol^=/^ delims^=\/:*?^<^>^|^"
+    SET FOR_OPTS=!FOR_OPTS!^"
+    REM ^"
+    IF "!g_cmdfor_unquoted_opts!"=="1" (
+        FOR %FOR_OPTS_FOR_DIR_B% %%s IN ("x!name!") DO (
+            SETLOCAL DisableDelayedExpansion
+            FOR %FOR_OPTS% %%t IN ("%%s") DO (
+                IF "%%s"=="%%t" (
+                    ENDLOCAL & EXIT /B 0
+                )
+            )
+            ENDLOCAL
+        )
+    )
+    IF NOT "!name!"==^"!name:*^"=!^" (
+        REM ^"
+        ECHO WARNING: File name contains invalid character. File system might be corrupt.>&2
+        EXIT /B 1
+    )
+    FOR %FOR_OPTS_FOR_DIR_B% %%s IN ("x!name!") DO (
+        IF "!g_cmdfor_unquoted_opts!"=="0" (
+            SETLOCAL DisableDelayedExpansion
+            FOR /F "tokens=1 eol=/ delims=\/:*?<>|" %%t IN ("%%s") DO (
+                IF "%%s"=="%%t" (
+                    ENDLOCAL & EXIT /B 0
+                )
+            )
+            ENDLOCAL
+        )
+        SETLOCAL DisableDelayedExpansion
+        FOR /F "tokens=1 eol=/ delims=/:*" %%t IN ("%%s") DO (
+            IF NOT "%%s"=="%%t" (
+                ECHO WARNING: File name contains invalid character. File system might be corrupt.>&2
+                ENDLOCAL & EXIT /B 1
+            )
+        )
+        ENDLOCAL
+    )
+    CALL :has_ci_substr "!name!" "<" ">" && (
+        ECHO WARNING: File name contains invalid character "<" or ">". File system is>&2
+        ECHO corrupt or is not compatible with DOS 2 or later or Windows.>&2
+        EXIT /B 1
+    )
+    CALL :has_ci_substr "!name!" "?" && (
+        ECHO WARNING: File name contains invalid character "?". The name may be in an>&2
+        ECHO encoding not supported in your current system locale.>&2
+        EXIT /B 1
+    )
+    ECHO WARNING: File name contains invalid character "\" or "|". The name may be in an>&2
+    ECHO encoding not supported in your current system locale, or the file system is not>&2
+    ECHO compatible with DOS 2 or later or Windows.>&2
+EXIT /B 1
+
+:is_valid_file_name_NDE
+    SETLOCAL EnableDelayedExpansion
+    CALL :is_valid_file_name
+ENDLOCAL & EXIT /B %ERRORLEVEL%
+
 REM Checks if the name matches regex "(?i)WINLFN([1-9a-f][0-9a-f]*)?\.INI"
-REM @param %1 File name
+REM @param name Unquoted, valid file name
 REM @return 0 (true) if it matches
 :is_winlfn_name
-    SET "name=%~1"
     IF /I NOT "!name:~0,6!!name:~-4!"=="WINLFN.INI" EXIT /B 1
     IF "!name:~6,1!"=="0" EXIT /B 1
     SET "name=!name:~6,-4!"
@@ -1125,29 +1198,42 @@ REM @return 0 (true) if it matches
     )
 EXIT /B 1
 
-REM Checks if the file is in one of the list of files to keep.
+REM Checks if the file should be skipped.
 REM @param %1 "Files to keep" list category
-REM @param %2 Name of file to check
-REM @return 0 (true) if the file is in the list
-:is_file_to_keep
+REM @param name Unquoted name of file to check
+REM @return 0 (true) if the file should be skipped
+:is_file_to_skip
+    CALL :is_valid_file_name || EXIT /B 0
     REM Special case for OS/2 "EA DATA. SF" and "WP ROOT. SF", which MUST
     REM contain spaces in their short name form.
     FOR %%I IN ("EA DATA. SF" "WP ROOT. SF") DO (
-        IF /I "%~2"==%%I (
-            IF /I NOT "%%~nxsI"==%%I EXIT /B 1
+        IF /I %%I=="!name!" (
+            SETLOCAL DisableDelayedExpansion
+            IF %%I=="%%~nxsI" (
+                ENDLOCAL & EXIT /B 1
+            )
+            ENDLOCAL
         )
     )
     SET attr_d=0
-    CALL :has_ci_substr "%~a2" "d" && SET attr_d=1
+    FOR %%I IN ("!name!") DO (
+        CALL :has_ci_substr "%%~aI" "d" && SET attr_d=1
+    )
+    REM "Files to keep" list
     FOR %%i IN (!KEEP_%~1_FILES!) DO (
-        IF /I "!attr_d!%~2"=="0%%~i" EXIT /B 0
-        IF /I "!attr_d!%~2\"=="1%%~i" EXIT /B 0
+        IF /I "!attr_d!!name!"=="0%%~i" EXIT /B 0
+        IF /I "!attr_d!!name!\"=="1%%~i" EXIT /B 0
     )
     REM Special case for "WINLFN<hex>.INI"
     IF "%~1!attr_d!"=="HS_ATTRIB0" (
-        CALL :is_winlfn_name %2 && EXIT /B 0
+        CALL :is_winlfn_name && EXIT /B 0
     )
 EXIT /B 1
+
+:is_file_to_skip_NDE
+    SETLOCAL EnableDelayedExpansion
+    CALL :is_file_to_skip %1
+ENDLOCAL & EXIT /B %ERRORLEVEL%
 
 REM Creates and initializes directory specified by opt_move_subdir.
 :init_move_subdir
@@ -1201,28 +1287,30 @@ REM   themselves rather than link targets.
 REM Moves or deletes the file if it's safe to do so.
 REM @param %1 "Files to keep" list category
 REM @param %2 Type of file, displayed in (localized) messages
-REM @param %3 Name of file to process
+REM @param name Unquoted name of file to process
 :process_file
     REM Wrap around and delay-expand to guard against embedded 0x5E "^" or
     REM 0x7C "|" byte in localized strings.
     SET "type=%~2"
-    CALL :is_file_to_keep %1 %3 && (
-        ECHO Skip !type! "%~3" for safety.
+    CALL :is_file_to_skip %1 && (
+        ECHO Skip !type! "!name!" for safety.
         GOTO :EOF
     )
-    FOR %%A IN (h s d l) DO (
-        SET "attr_%%A=-%%A"
-        CALL :has_ci_substr "%~a3" "%%A" && SET "attr_%%A=%%A"
+    FOR %%I IN ("!name!") DO (
+        FOR %%A IN (h s d l) DO (
+            SET "attr_%%A=-%%A"
+            CALL :has_ci_substr "%%~aI" "%%A" && SET "attr_%%A=%%A"
+        )
     )
     REM Always Delete Hidden or System symlinks.
     IF NOT "!attr_h!!attr_s!"=="-h-s" (
         IF "!attr_l!!attr_d!"=="l-d" (
-            DEL /F /A:!attr_h:h=H!!attr_s:s=S!L-D "%~3" >NUL:
-            DIR /A:!attr_h:h=H!!attr_s:s=S!L-D /B "%~3" >NUL: 2>NUL:
+            DEL /F /A:!attr_h:h=H!!attr_s:s=S!L-D "!name!" >NUL:
+            DIR /A:!attr_h:h=H!!attr_s:s=S!L-D /B "!name!" >NUL: 2>NUL:
             IF ERRORLEVEL 1 (
-                ECHO Deleted symbolic link "%~3"
+                ECHO Deleted symbolic link "!name!"
             ) ELSE (
-                ECHO Can't delete symbolic link "%~3">&2
+                ECHO Can't delete symbolic link "!name!">&2
             )
             GOTO :EOF
         )
@@ -1230,51 +1318,65 @@ REM @param %3 Name of file to process
     IF "!g_move_status!"=="" CALL :init_move_subdir
     IF "!g_move_status!"=="DEL" (
         IF "!attr_d!"=="d" GOTO :EOF
-        DEL /F /A:!attr_h:h=H!!attr_s:s=S!!attr_l:l=L!-D "%~3" >NUL:
-        DIR /A:!attr_h:h=H!!attr_s:s=S!!attr_l:l=L!-D /B "%~3" >NUL: 2>NUL:
+        DEL /F /A:!attr_h:h=H!!attr_s:s=S!!attr_l:l=L!-D "!name!" >NUL:
+        DIR /A:!attr_h:h=H!!attr_s:s=S!!attr_l:l=L!-D /B "!name!" >NUL: 2>NUL:
         IF ERRORLEVEL 1 (
-            ECHO Deleted !type! "%~3"
+            ECHO Deleted !type! "!name!"
         ) ELSE (
-            ECHO Can't delete !type! "%~3">&2
+            ECHO Can't delete !type! "!name!">&2
         )
         GOTO :EOF
     )
     IF NOT "!g_move_status:~0,2!"=="OK" (
-        ECHO Detected but won't move !type! "%~3"
+        ECHO Detected but won't move !type! "!name!"
         GOTO :EOF
     )
     FOR %%i IN (!g_no_move_files!) DO (
-        IF /I "%~3"=="%%~i" GOTO :EOF
+        IF /I "!name!"=="%%~i" GOTO :EOF
     )
     IF NOT "!attr_h!!attr_s!"=="-h-s" (
-        ECHO Can't move !type! "%~3". ^(Has Hidden or System attribute^)>&2
+        ECHO Can't move !type! "!name!". ^(Has Hidden or System attribute^)>&2
         GOTO :EOF
     )
-    SET "dest=%~3"
-    IF /I "%~3"=="autorun.inf" SET dest=_autorun.in0
-    IF /I "%~3"=="Desktop.ini" SET dest=_Desktop.in0
-    IF /I "%~3"=="README.txt" SET dest=_%~3
+    SET "dest=!name!"
+    IF /I "!name!"=="autorun.inf" SET dest=_autorun.in0
+    IF /I "!name!"=="Desktop.ini" SET dest=_Desktop.in0
+    IF /I "!name!"=="README.txt" SET dest=_!name!
     REM Should never exist name collisions except the forced rename above.
     IF EXIST "!opt_move_subdir!\!dest!" (
-        ECHO Can't move !type! "%~3" to "!opt_move_subdir!". ^(Destination file exists^)>&2
+        ECHO Can't move !type! "!name!" to "!opt_move_subdir!". ^(Destination file exists^)>&2
         GOTO :EOF
     )
-    MOVE /Y "%~3" "!opt_move_subdir!\!dest!" >NUL: || (
-        ECHO Can't move !type! "%~3" to "!opt_move_subdir!".>&2
+    MOVE /Y "!name!" "!opt_move_subdir!\!dest!" >NUL: || (
+        ECHO Can't move !type! "!name!" to "!opt_move_subdir!".>&2
         GOTO :EOF
     )
     SET g_move_status=OK_MOVED
     SET g_files_moved=1
-    ECHO Moved !type! "%~3" to "!opt_move_subdir!".
+    ECHO Moved !type! "!name!" to "!opt_move_subdir!".
 GOTO :EOF
+
+:process_file_NDE
+    SETLOCAL EnableDelayedExpansion
+    CALL :process_file %1 %2
+    ENDLOCAL & (
+        SET g_move_status=%g_move_status%
+        SET g_files_moved=%g_files_moved%
+EXIT /B %ERRORLEVEL% )
 
 REM Moves or deletes all file symlinks in current directory.
 :process_symlinks
     REM Directory symlinks/junctions are harmless. Leave them alone.
+    SETLOCAL DisableDelayedExpansion
     REM DIR command in Windows 2000 supports "/A:L", but displays symlinks
     REM (file or directory) as junctions. Undocumented feature.
     FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:L-D /B 2^>NUL:') DO (
-        CALL :process_file SYMLINK "symbolic link" "%%~f"
+        SET "name=%%f"
+        CALL :process_file_NDE SYMLINK "symbolic link"
+    )
+    ENDLOCAL & (
+        SET g_move_status=%g_move_status%
+        SET g_files_moved=%g_files_moved%
     )
 GOTO :EOF
 
@@ -1283,41 +1385,52 @@ REM Clears hidden and system attributes of all files in current directory.
     REM 'attrib' refuses to clear either H or S attribute for files with both
     REM attributes set. Must clear both simultaneously.
     REM The exit code of 'attrib' is unreliable.
+    SETLOCAL DisableDelayedExpansion
     FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:HS-L /B 2^>NUL:') DO (
-        CALL :is_file_to_keep HS_ATTRIB "%%~f"
+        SET "name=%%f"
+        CALL :is_file_to_skip_NDE HS_ATTRIB
         IF ERRORLEVEL 1 (
-            ECHO Clear Hidden+System attributes of "%%~f"
-            attrib -H -S "%%~f"
+            ECHO Clear Hidden+System attributes of "%%f"
+            attrib -H -S "%%f"
         ) ELSE (
-            ECHO Skip file "%%~f" ^(Hidden+System attributes^) for safety.
+            ECHO Skip file "%%f" ^(Hidden+System attributes^) for safety.
         )
     )
     FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:H-S-L /B 2^>NUL:') DO (
-        CALL :is_file_to_keep H_ATTRIB "%%~f"
+        SET "name=%%f"
+        CALL :is_file_to_skip_NDE H_ATTRIB
         IF ERRORLEVEL 1 (
-            ECHO Clear Hidden attribute of "%%~f"
-            attrib -H "%%~f"
+            ECHO Clear Hidden attribute of "%%f"
+            attrib -H "%%f"
         ) ELSE (
-            ECHO Skip file "%%~f" ^(Hidden attribute^) for safety.
+            ECHO Skip file "%%f" ^(Hidden attribute^) for safety.
         )
     )
     FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:S-H-L /B 2^>NUL:') DO (
-        CALL :is_file_to_keep S_ATTRIB "%%~f"
+        SET "name=%%f"
+        CALL :is_file_to_skip_NDE S_ATTRIB
         IF ERRORLEVEL 1 (
-            ECHO Clear System attribute of "%%~f"
-            attrib -S "%%~f"
+            ECHO Clear System attribute of "%%f"
+            attrib -S "%%f"
         ) ELSE (
-            ECHO Skip file "%%~f" ^(System attribute^) for safety.
+            ECHO Skip file "%%f" ^(System attribute^) for safety.
         )
     )
+    ENDLOCAL
 GOTO :EOF
 
 REM Moves or deletes shortcut files in current directory.
 :process_shortcuts
+    SETLOCAL DisableDelayedExpansion
     FOR %FOR_OPTS_FOR_DIR_B% %%f IN (
         'DIR /A:-D /B *.pif *.lnk *.shb *.url *.appref-ms *.glk 2^>NUL:'
     ) DO (
-        CALL :process_file EXECUTE "shortcut file" "%%~f"
+        SET "name=%%f"
+        CALL :process_file_NDE EXECUTE "shortcut file"
+    )
+    ENDLOCAL & (
+        SET g_move_status=%g_move_status%
+        SET g_files_moved=%g_files_moved%
     )
 GOTO :EOF
 
@@ -1326,47 +1439,58 @@ REM folder in current directory.
 :process_folder_exes
     REM .bat, .cmd and .com are self-executable, but their icons are static, so
     REM leave them alone.
+    SETLOCAL DisableDelayedExpansion
     FOR %FOR_OPTS_FOR_DIR_B% %%d IN ('DIR /A:D /B 2^>NUL:') DO (
-        FOR %FOR_OPTS_FOR_DIR_B% %%f IN (
-            'DIR /A:-D /B "%%~d.exe" "%%~d.scr" 2^>NUL:'
-        ) DO (
-            CALL :process_file EXECUTE "file" "%%~f"
+        SET "name=%%d"
+        CALL :is_valid_file_name_NDE && (
+            FOR %FOR_OPTS_FOR_DIR_B% %%f IN (
+                'DIR /A:-D /B "%%d.exe" "%%d.scr" 2^>NUL:'
+            ) DO (
+                SET "name=%%f"
+                CALL :process_file_NDE EXECUTE "file"
+            )
         )
+    )
+    ENDLOCAL & (
+        SET g_move_status=%g_move_status%
+        SET g_files_moved=%g_files_moved%
     )
 GOTO :EOF
 
 REM Removes a file and optionally creates a directory with the same name.
-REM @param %1 Name of file to remove or directory to create
+REM @param name Unquoted, valid name of file to remove or directory to create
 REM @return 0 if directory exists or is created successfully, or 1 on error
 :make_dummy_dir
-    CALL :has_ci_substr "%~a1" "d" && (
-        ECHO Directory "%~1" exists.
-        EXIT /B 0
+    FOR %%I IN ("!name!") DO (
+        CALL :has_ci_substr "%%~aI" "d" && (
+            ECHO Directory "!name!" exists.
+            EXIT /B 0
+        )
     )
-    DIR /A:-D /B "%~1" >NUL: 2>NUL: && (
-        CALL :process_file EXECUTE "file" %1
+    DIR /A:-D /B "!name!" >NUL: 2>NUL: && (
+        CALL :process_file EXECUTE "file"
     )
     IF "!opt_mkdir!"=="SKIP" EXIT /B 0
-    MKDIR "%~1" || (
-        ECHO Error occurred when creating directory "%~1">&2
+    MKDIR "!name!" || (
+        ECHO Error occurred when creating directory "!name!">&2
         EXIT /B 1
     )
-    ECHO Directory "%~1" created.
+    ECHO Directory "!name!" created.
     (
         REM Should be in ASCII encoding. It is better to keep an English
         REM version as well as localized one.
-        ECHO This directory, "%~1", is to protect your disk from injecting a
-        ECHO malicious %1 file.
+        ECHO This directory, "!name!", is to protect your disk from injecting a
+        ECHO malicious !name! file.
         ECHO Your disk may still carry the USB or AutoRun malware, but it will NOT be
         ECHO executed anymore.
         ECHO Please do not remove this directory. If you do, you'll lose the protection.
         ECHO.
         ECHO This directory is generated by 'usb_vaccine.cmd'. Project website:
         ECHO ^<https://github.com/Explorer09/usb_vaccine^>
-    ) >"%~1\DONT_DEL.txt"
-    ECHO.>"%~1\dummy"
-    attrib +R +H +S "%~1\dummy"
-    attrib +R +H +S "%~1"
+    ) >"!name!\DONT_DEL.txt"
+    ECHO.>"!name!\dummy"
+    attrib +R +H +S "!name!\dummy"
+    attrib +R +H +S "!name!"
 EXIT /B 0
 
 REM ---------------------------------------------------------------------------
