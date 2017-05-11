@@ -408,6 +408,7 @@ SET "user_msg=目前使用者"
 IF "!opt_reassoc!"=="ALL_USERS" SET "user_msg=所有使用者"
 
 IF "!opt_pif_ext!"=="SKIP" GOTO main_scf_icon
+REM .pif files already have shortcut arrows; no need to suggest AlwaysShowExt.
 reg query "%HKLM_CLS%\piffile" /v "NeverShowExt" >NUL: 2>NUL: || (
     GOTO main_scf_icon
 )
