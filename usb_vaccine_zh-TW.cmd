@@ -188,8 +188,16 @@ REM actually 'mkdir' with it, but we may filter out common path attacks.
 IF "!opt_move_subdir:~0,2!"=="\\" GOTO main_invalid_path
 REM Windows 9x allows "\...\", "\....\" and so on for grandparent or any
 REM ancestor directory. Thankfully it doesn't work anymore in NT.
-CALL :has_ci_substr "\!opt_move_subdir!\" "\..\" "*" "?" ":" "<" ">" "|" && (
-    GOTO main_invalid_path
+CALL :has_ci_substr "\!opt_move_subdir!\" "\..\" && GOTO main_invalid_path
+FOR /F "eol=/ delims=" %%s IN ("x!opt_move_subdir!") DO (
+    FOR /F "tokens=1 eol=/ delims=:*?<>|" %%t IN ("x!opt_move_subdir!") DO (
+        SETLOCAL DisableDelayedExpansion
+        IF NOT "%%s"=="%%t" (
+            ENDLOCAL
+            GOTO main_invalid_path
+        )
+        ENDLOCAL
+    )
 )
 
 REM Check if "FOR /F" supports unquoted options and 'eol' being null.
