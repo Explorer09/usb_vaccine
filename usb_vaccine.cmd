@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-05-11)
+REM 'usb_vaccine.cmd' version 3 beta (2017-05-12)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1466,6 +1466,7 @@ REM folder in current directory.
 GOTO :EOF
 
 REM Removes a file and optionally creates a directory with the same name.
+REM @param %1 "LFN" if LFN entry should be preserved, empty otherwise
 REM @param name Unquoted, valid name of file to remove or directory to create
 REM @return 0 if directory exists or is created successfully, or 1 on error
 :make_dummy_dir
@@ -1482,6 +1483,19 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
     MKDIR "!name!" || (
         ECHO Error occurred when creating directory "!name!">&2
         EXIT /B 1
+    )
+    REM Rename to short name, if possible, so that we don't store two names for
+    REM this directory in file system.
+    IF NOT "%~1"=="LFN" (
+        FOR %%I IN ("!name!") DO (
+            SETLOCAL DisableDelayedExpansion
+            IF NOT %%I=="%%~nxsI" (
+                REM MOVE cannot rename a directory if the new name only differs
+                REM from old name in letter case. However, REN can do so.
+                REN %%I "%%~nxsI"
+            )
+            ENDLOCAL
+        )
     )
     ECHO Directory "!name!" created.
     (
