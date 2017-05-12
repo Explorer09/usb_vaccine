@@ -709,8 +709,8 @@ IF NOT "!opt_autorun_inf!"=="SKIP" (
         ECHO 我們將移動並把它們重新命名為 "!opt_move_subdir!\_autorun.in0"。
     )
     IF NOT "!opt_attrib!"=="SKIP" (
-        ECHO 同時，對於在根目錄中名為 "autorun.inf" 的資料夾，我們將保留其「隱藏」或「系統」屬
-        ECHO 性（如果有設定的話!BIG5_A15E!。如果您選擇跳過，則資料夾!BIG5_B77C!被解除隱藏而顯示出來。
+        ECHO 同時，對於在根目錄中名為 "autorun.inf" 的資料夾，我們將保留其「隱藏」或「系統」
+        ECHO 屬性（如果有設定的話!BIG5_A15E!。如果您選擇跳過，則資料夾!BIG5_B77C!被解除隱藏而顯示出來。
     )
     CALL :continue_prompt || SET opt_autorun_inf=SKIP
 )
@@ -735,8 +735,8 @@ IF NOT "!opt_desktop_ini!"=="SKIP" (
         ECHO "!opt_move_subdir!\_Desktop.in0"。
     )
     IF NOT "!opt_attrib!"=="SKIP" (
-        ECHO 同時，對於在根目錄中名為 "Desktop.ini" 的資料夾，我們將保留其「隱藏」或「系統」屬
-        ECHO 性（如果有設定的話!BIG5_A15E!。如果您選擇跳過，則資料夾!BIG5_B77C!被解除隱藏而顯示出來。
+        ECHO 同時，對於在根目錄中名為 "Desktop.ini" 的資料夾，我們將保留其「隱藏」或「系統」
+        ECHO 屬性（如果有設定的話!BIG5_A15E!。如果您選擇跳過，則資料夾!BIG5_B77C!被解除隱藏而顯示出來。
     )
     CALL :continue_prompt || SET opt_desktop_ini=SKIP
 )
