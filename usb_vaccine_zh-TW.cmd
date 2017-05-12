@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-05-12)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-05-13)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -708,6 +708,10 @@ IF NOT "!opt_autorun_inf!"=="SKIP" (
     ) ELSE (
         ECHO 我們將移動並把它們重新命名為 "!opt_move_subdir!\_autorun.in0"。
     )
+    IF NOT "!opt_attrib!"=="SKIP" (
+        ECHO 同時，對於在根目錄中名為 "autorun.inf" 的資料夾，我們將保留其「隱藏」或「系統」屬
+        ECHO 性（如果有設定的話!BIG5_A15E!。如果您選擇跳過，則資料夾!BIG5_B77C!被解除隱藏而顯示出來。
+    )
     CALL :continue_prompt || SET opt_autorun_inf=SKIP
 )
 REM We won't deal with Folder.htt, because technically it could be any name in
@@ -729,6 +733,10 @@ IF NOT "!opt_desktop_ini!"=="SKIP" (
     ) ELSE (
         ECHO 我們將從根目錄中移走 "Desktop.ini" 檔案，並把它們重新命名為
         ECHO "!opt_move_subdir!\_Desktop.in0"。
+    )
+    IF NOT "!opt_attrib!"=="SKIP" (
+        ECHO 同時，對於在根目錄中名為 "Desktop.ini" 的資料夾，我們將保留其「隱藏」或「系統」屬
+        ECHO 性（如果有設定的話!BIG5_A15E!。如果您選擇跳過，則資料夾!BIG5_B77C!被解除隱藏而顯示出來。
     )
     CALL :continue_prompt || SET opt_desktop_ini=SKIP
 )
@@ -1202,6 +1210,13 @@ REM @return 0 (true) if the file should be skipped
     REM Special case for "WINLFN<hex>.INI"
     IF "%~1!attr_d!"=="HS_ATTRIB0" (
         CALL :is_winlfn_name && EXIT /B 0
+    )
+    REM Don't clear attributes of what :make_dummy_dir creates.
+    IF /I "!attr_d!!name!"=="1autorun.inf" (
+        IF NOT "!opt_autorun_inf!"=="SKIP" EXIT /B 0
+    )
+    IF /I "!attr_d!!name!"=="1Desktop.ini" (
+        IF NOT "!opt_desktop_ini!"=="SKIP" EXIT /B 0
     )
 EXIT /B 1
 

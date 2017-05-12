@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-05-12)
+REM 'usb_vaccine.cmd' version 3 beta (2017-05-13)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -734,6 +734,11 @@ IF NOT "!opt_autorun_inf!"=="SKIP" (
     ) ELSE (
         ECHO We will move and rename them to "!opt_move_subdir!\_autorun.in0".
     )
+    IF NOT "!opt_attrib!"=="SKIP" (
+        ECHO Also, for folders named "autorun.inf" in the root directories, we will retain
+        ECHO their "Hidden" or "System" attributes, if set, so the folders remain hidden.
+        ECHO If you choose to 'skip', they will be revealed instead.
+    )
     CALL :continue_prompt || SET opt_autorun_inf=SKIP
 )
 REM We won't deal with Folder.htt, because technically it could be any name in
@@ -758,6 +763,11 @@ IF NOT "!opt_desktop_ini!"=="SKIP" (
     ) ELSE (
         ECHO We will move away and rename the "Desktop.ini" files from the root directories,
         ECHO to "!opt_move_subdir!\_Desktop.in0".
+    )
+    IF NOT "!opt_attrib!"=="SKIP" (
+        ECHO Also, for folders named "Desktop.ini" in the root directories, we will retain
+        ECHO their "Hidden" or "System" attributes, if set, so the folders remain hidden.
+        ECHO If you choose to 'skip', they will be revealed instead.
     )
     CALL :continue_prompt || SET opt_desktop_ini=SKIP
 )
@@ -1236,6 +1246,13 @@ REM @return 0 (true) if the file should be skipped
     REM Special case for "WINLFN<hex>.INI"
     IF "%~1!attr_d!"=="HS_ATTRIB0" (
         CALL :is_winlfn_name && EXIT /B 0
+    )
+    REM Don't clear attributes of what :make_dummy_dir creates.
+    IF /I "!attr_d!!name!"=="1autorun.inf" (
+        IF NOT "!opt_autorun_inf!"=="SKIP" EXIT /B 0
+    )
+    IF /I "!attr_d!!name!"=="1Desktop.ini" (
+        IF NOT "!opt_desktop_ini!"=="SKIP" EXIT /B 0
     )
 EXIT /B 1
 
