@@ -683,12 +683,13 @@ IF NOT "!opt_attrib!"=="SKIP" (
     ECHO With the "Hidden" or "System" attribute set on files, they will no longer be
     ECHO visible by default in Windows Explorer or 'DIR' command. Some malware will hide
     ECHO the files and generate executable files ^(or shortcuts to executables^) with the
-    ECHO same name, tricking users into opening them. ^(No malware will actually delete
-    ECHO the files, otherwise the disk space freed through deletion might draw attention
+    ECHO same name, tricking users into opening them. ^(Few malware will actually delete
+    ECHO the files, otherwise the disk space freed through deletion can draw attention
     ECHO of users or anti-virus software.^)
     ECHO Except for real known operating system files, we will clear both "Hidden" and
-    ECHO "System" attributes of all files in the root directories. This restores files
-    ECHO that are hidden by the malware ^(and might reveal the malware file itself^).
+    ECHO "System" attributes of all files and folders in the root directories. This
+    ECHO restores files that are hidden by the malware ^(and might also reveal malware
+    ECHO files themselves^).
     CALL :continue_prompt || SET opt_attrib=SKIP
 )
 IF NOT "!opt_shortcuts!"=="SKIP" (
