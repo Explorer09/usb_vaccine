@@ -962,7 +962,9 @@ REM Creates and initializes "Vacc_reg.bak"
     ECHO.
     ECHO 您的登錄將!BIG5_B77C!備份在此檔案裡：
     FOR %%i IN (Vacc_reg.bak) DO (
+        SETLOCAL DisableDelayedExpansion
         ECHO "%%~fi"
+        ENDLOCAL
     )
     PAUSE
 GOTO :EOF

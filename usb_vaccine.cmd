@@ -997,7 +997,9 @@ REM Creates and initializes "Vacc_reg.bak"
     ECHO.
     ECHO Your registry will be backed up in the file named:
     FOR %%i IN (Vacc_reg.bak) DO (
-        ECHO "%%~fi".
+        SETLOCAL DisableDelayedExpansion
+        ECHO "%%~fi"
+        ENDLOCAL
     )
     PAUSE
 GOTO :EOF
