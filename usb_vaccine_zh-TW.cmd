@@ -764,9 +764,6 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         SET g_move_status=
         ECHO.
         ECHO 磁碟 %%d：
-        REM Workaround name collisions caused by forced rename.
-        SET g_no_move_files=_autorun.in0 _Desktop.in0 _README.txt
-        IF NOT "!opt_symlinks!"=="SKIP" CALL :process_symlinks
         IF NOT "!opt_attrib!"=="SKIP" CALL :clear_files_attrib
         IF NOT "!opt_shortcuts!"=="SKIP" CALL :process_shortcuts
         IF NOT "!opt_folder_exe!"=="SKIP" CALL :process_folder_exes
@@ -774,8 +771,6 @@ FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
         IF NOT "!opt_autorun_inf!"=="SKIP" CALL :make_dummy_dir
         SET name=Desktop.ini
         IF NOT "!opt_desktop_ini!"=="SKIP" CALL :make_dummy_dir
-        REM Process the locked files last.
-        SET g_no_move_files=
         IF NOT "!opt_symlinks!"=="SKIP" CALL :process_symlinks
         IF "!g_move_status!"=="OK_EMPTY" (
             DEL "!opt_move_subdir!\README.txt" >NUL:
@@ -1321,9 +1316,6 @@ REM @param name Unquoted name of file to process
         ECHO 偵測到但不!BIG5_B77C!移動!type! "!name!"
         GOTO :EOF
     )
-    FOR %%i IN (!g_no_move_files!) DO (
-        IF /I "!name!"=="%%~i" GOTO :EOF
-    )
     IF NOT "!attr_h!!attr_s!"=="-h-s" (
         ECHO 無法移動!type! "!name!"。（有隱藏或系統屬性!BIG5_A15E!>&2
         GOTO :EOF
@@ -1360,6 +1352,10 @@ REM Moves or deletes all file symlinks in current directory.
     SETLOCAL DisableDelayedExpansion
     REM DIR command in Windows 2000 supports "/A:L", but displays symlinks
     REM (file or directory) as junctions. Undocumented feature.
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:L-D /B README.txt 2^>NUL:') DO (
+        SET "name=%%f"
+        CALL :process_file_NDE SYMLINK "符號連結"
+    )
     FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:L-D /B 2^>NUL:') DO (
         SET "name=%%f"
         CALL :process_file_NDE SYMLINK "符號連結"
