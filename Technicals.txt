@@ -453,17 +453,17 @@ I/O redirection.
 -------------------------------------------------------------------------------
 
 Important notes about commands behaviors:
-- MOVE command exits with 1 when a move error occurs. There's no way to specify
-  "don't overwrite" option for MOVE command.
-- DEL command exits with 1 only when arguments syntax or path is invalid. It's
-  exit code does not distinguish between deletion success and failure.
-- Both MOVE and DEL refuse to process files with Hidden or System (or both)
-  attribute set. (They'll output the "could not find" error.) However since
-  Windows NT, DEL supports '/A' option that can workaround this.
 - 'attrib' utility without '/L' option follows symlinks when reading or
   changing attributes. '/L' is not available before Windows Vista.
 - The %~a1 method will retrieve attributes of the link itself, if the file
   referenced by %1 is a link (junction or symlink).
+- DEL command exits with 1 only when arguments syntax or path is invalid. It's
+  exit code does not distinguish between deletion success and failure.
+- MOVE command exits with 1 when a move error occurs. There's no way to specify
+  "don't overwrite" option for MOVE command.
+- Both DEL and MOVE refuse to process files with Hidden or System (or both)
+  attribute set. (They'll output the "could not find" error.) However since
+  Windows NT, DEL supports '/A' option that can workaround this.
 - If "dirlink" is a directory link (attributes "DL"), "DEL dirlink" deletes all
   files in the target directory (DANGEROUS), while "RMDIR dirlink" (with or
   without '/S') removes the symlink without touching anything in the target

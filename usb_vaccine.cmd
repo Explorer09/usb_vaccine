@@ -1256,6 +1256,63 @@ EXIT /B 1
     CALL :is_file_to_skip %1
 ENDLOCAL & EXIT /B %ERRORLEVEL%
 
+REM Important notes about commands behaviors:
+REM - 'attrib' utility without '/L' option follows symlinks when reading or
+REM   changing attributes. '/L' is not available before Windows Vista.
+REM - The %~a1 method will retrieve attributes of the link itself, if the file
+REM   referenced by %1 is a link (junction or symlink).
+REM - DEL command exits with 1 only when arguments syntax or path is invalid.
+REM   It's exit code does not distinguish between deletion success and failure.
+REM - MOVE command exits with 1 when a move error occurs. There's no way to
+REM   specify "don't overwrite" option for MOVE command.
+REM - Both DEL and MOVE refuse to process files with Hidden or System (or both)
+REM   attribute set. (They'll output the "could not find" error.) However since
+REM   Windows NT, DEL supports '/A' option that can workaround this.
+REM - If "dirlink" is a directory link (attributes "DL"), "DEL dirlink" deletes
+REM   all files in the target directory (DANGEROUS), while "RMDIR dirlink"
+REM   (with or without '/S') removes the symlink without touching anything in
+REM   the target directory (SAFE). MOVE command on links always processes links
+REM   themselves rather than link targets.
+
+REM Clears hidden and system attributes of all files in current directory.
+:clear_files_attrib
+    REM 'attrib' refuses to clear either H or S attribute for files with both
+    REM attributes set. Must clear both simultaneously.
+    REM The exit code of 'attrib' is unreliable.
+    SETLOCAL DisableDelayedExpansion
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:HS-L /B 2^>NUL:') DO (
+        SET "name=%%f"
+        CALL :is_file_to_skip_NDE HS_ATTRIB
+        IF ERRORLEVEL 1 (
+            ECHO Clear Hidden+System attributes of "%%f"
+            attrib -H -S "%%f"
+        ) ELSE (
+            ECHO Skip file "%%f" ^(Hidden+System attributes^) for safety.
+        )
+    )
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:H-S-L /B 2^>NUL:') DO (
+        SET "name=%%f"
+        CALL :is_file_to_skip_NDE H_ATTRIB
+        IF ERRORLEVEL 1 (
+            ECHO Clear Hidden attribute of "%%f"
+            attrib -H "%%f"
+        ) ELSE (
+            ECHO Skip file "%%f" ^(Hidden attribute^) for safety.
+        )
+    )
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:S-H-L /B 2^>NUL:') DO (
+        SET "name=%%f"
+        CALL :is_file_to_skip_NDE S_ATTRIB
+        IF ERRORLEVEL 1 (
+            ECHO Clear System attribute of "%%f"
+            attrib -S "%%f"
+        ) ELSE (
+            ECHO Skip file "%%f" ^(System attribute^) for safety.
+        )
+    )
+    ENDLOCAL
+GOTO :EOF
+
 REM Creates and initializes directory specified by opt_move_subdir.
 :init_move_subdir
     IF /I "!opt_move_subdir!"=="NUL" (
@@ -1286,24 +1343,6 @@ REM Creates and initializes directory specified by opt_move_subdir.
         ECHO ^<https://github.com/Explorer09/usb_vaccine^>
     ) >"!opt_move_subdir!\README.txt"
 GOTO :EOF
-
-REM Important notes about commands behaviors:
-REM - MOVE command exits with 1 when a move error occurs. There's no way to
-REM   specify "don't overwrite" option for MOVE command.
-REM - DEL command exits with 1 only when arguments syntax or path is invalid.
-REM   It's exit code does not distinguish between deletion success and failure.
-REM - Both MOVE and DEL refuse to process files with Hidden or System (or both)
-REM   attribute set. (They'll output the "could not find" error.) However since
-REM   Windows NT, DEL supports '/A' option that can workaround this.
-REM - 'attrib' utility without '/L' option follows symlinks when reading or
-REM   changing attributes. '/L' is not available before Windows Vista.
-REM - The %~a1 method will retrieve attributes of the link itself, if the file
-REM   referenced by %1 is a link (junction or symlink).
-REM - If "dirlink" is a directory link (attributes "DL"), "DEL dirlink" deletes
-REM   all files in the target directory (DANGEROUS), while "RMDIR dirlink"
-REM   (with or without '/S') removes the symlink without touching anything in
-REM   the target directory (SAFE). MOVE command on links always processes links
-REM   themselves rather than link targets.
 
 REM Moves or deletes the file if it's safe to do so.
 REM @param %1 "Files to keep" list category
@@ -1381,65 +1420,6 @@ GOTO :EOF
         SET g_move_status=%g_move_status%
         SET g_files_moved=%g_files_moved%
 EXIT /B %ERRORLEVEL% )
-
-REM Moves or deletes all file symlinks in current directory.
-:process_symlinks
-    REM Directory symlinks/junctions are harmless. Leave them alone.
-    SETLOCAL DisableDelayedExpansion
-    REM DIR command in Windows 2000 supports "/A:L", but displays symlinks
-    REM (file or directory) as junctions. Undocumented feature.
-    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:L-D /B README.txt 2^>NUL:') DO (
-        SET "name=%%f"
-        CALL :process_file_NDE SYMLINK "symbolic link"
-    )
-    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:L-D /B 2^>NUL:') DO (
-        SET "name=%%f"
-        CALL :process_file_NDE SYMLINK "symbolic link"
-    )
-    ENDLOCAL & (
-        SET g_move_status=%g_move_status%
-        SET g_files_moved=%g_files_moved%
-    )
-GOTO :EOF
-
-REM Clears hidden and system attributes of all files in current directory.
-:clear_files_attrib
-    REM 'attrib' refuses to clear either H or S attribute for files with both
-    REM attributes set. Must clear both simultaneously.
-    REM The exit code of 'attrib' is unreliable.
-    SETLOCAL DisableDelayedExpansion
-    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:HS-L /B 2^>NUL:') DO (
-        SET "name=%%f"
-        CALL :is_file_to_skip_NDE HS_ATTRIB
-        IF ERRORLEVEL 1 (
-            ECHO Clear Hidden+System attributes of "%%f"
-            attrib -H -S "%%f"
-        ) ELSE (
-            ECHO Skip file "%%f" ^(Hidden+System attributes^) for safety.
-        )
-    )
-    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:H-S-L /B 2^>NUL:') DO (
-        SET "name=%%f"
-        CALL :is_file_to_skip_NDE H_ATTRIB
-        IF ERRORLEVEL 1 (
-            ECHO Clear Hidden attribute of "%%f"
-            attrib -H "%%f"
-        ) ELSE (
-            ECHO Skip file "%%f" ^(Hidden attribute^) for safety.
-        )
-    )
-    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:S-H-L /B 2^>NUL:') DO (
-        SET "name=%%f"
-        CALL :is_file_to_skip_NDE S_ATTRIB
-        IF ERRORLEVEL 1 (
-            ECHO Clear System attribute of "%%f"
-            attrib -S "%%f"
-        ) ELSE (
-            ECHO Skip file "%%f" ^(System attribute^) for safety.
-        )
-    )
-    ENDLOCAL
-GOTO :EOF
 
 REM Moves or deletes shortcut files in current directory.
 :process_shortcuts
@@ -1528,6 +1508,26 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
     attrib +R +H +S "!name!\dummy"
     attrib +R +H +S "!name!"
 EXIT /B 0
+
+REM Moves or deletes all file symlinks in current directory.
+:process_symlinks
+    REM Directory symlinks/junctions are harmless. Leave them alone.
+    SETLOCAL DisableDelayedExpansion
+    REM DIR command in Windows 2000 supports "/A:L", but displays symlinks
+    REM (file or directory) as junctions. Undocumented feature.
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:L-D /B README.txt 2^>NUL:') DO (
+        SET "name=%%f"
+        CALL :process_file_NDE SYMLINK "symbolic link"
+    )
+    FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:L-D /B 2^>NUL:') DO (
+        SET "name=%%f"
+        CALL :process_file_NDE SYMLINK "symbolic link"
+    )
+    ENDLOCAL & (
+        SET g_move_status=%g_move_status%
+        SET g_files_moved=%g_files_moved%
+    )
+GOTO :EOF
 
 REM ---------------------------------------------------------------------------
 :EOF
