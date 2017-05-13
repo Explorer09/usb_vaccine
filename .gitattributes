@@ -19,4 +19,5 @@
 *.sh text eol=lf
 
 # Enconding used in non-English versions of usb_vaccine.cmd.
+README.md encoding=UTF-8
 usb_vaccine_zh-TW.cmd encoding=Big5
