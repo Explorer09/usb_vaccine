@@ -200,6 +200,7 @@ REM unsupported syntax, and (b) we need to disable Command Processor AutoRun.
 SET g_cmdfor_unquoted_opts=0
 SET "a=FOR /F tokens^=1-2^ delims^=^"
 SET b="^ eol^= %%i IN (" ;""x") DO IF NOT "%%i.%%j"==" ;.x^" EXIT /B 1
+REM ^"
 %ComSpec% /q /d /e:on /c "!a!!b!" >NUL: 2>NUL: && SET g_cmdfor_unquoted_opts=1
 REM No delayed expansion is allowed in "FOR /F" option field.
 IF "!g_cmdfor_unquoted_opts!"=="1" (
