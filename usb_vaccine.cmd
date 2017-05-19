@@ -943,13 +943,14 @@ REM @param name Unquoted file name
 REM @return 0 (true) if names contain any of the characters in %1
 :has_path_char
     FOR /F "tokens=2 eol=/ delims=%~1" %%t IN ("x!name!x") DO (
+        REM It won't enter loop body if token 2 is empty, but for safety...
         SETLOCAL DisableDelayedExpansion
-        IF "%%t"=="" (
-            ENDLOCAL & EXIT /B 1
+        IF NOT "%%t"=="" (
+            ENDLOCAL & EXIT /B 0
         )
         ENDLOCAL
     )
-EXIT /B 0
+EXIT /B 1
 
 REM Prompts user to continue or skip.
 REM @return 0 if user says to continue, or 1 if says to skip
@@ -1147,12 +1148,12 @@ REM @return 0 (true) if file name contains all valid characters
     REM validity of "short names" are out of this function's scope.
     REM "FOR /F" should have skipped empty lines, but for safety...
     IF "!name!"=="" EXIT /B 1
-    REM "FOR /F delims" is faster than :has_ci_substr
-    SET "FOR_OPTS=/F tokens^=2^ eol^=/^ delims^=\/:*?^<^>^|^"
+    REM Token 1 (%%s) is to ensure loop body is always entered.
+    SET "FOR_OPTS=/F tokens^=1-2^ eol^=/^ delims^=\/:*?^<^>^|^"
     SET FOR_OPTS=!FOR_OPTS!^"
     REM ^"
     IF "!g_cmdfor_unquoted_opts!"=="1" (
-        FOR %FOR_OPTS% %%t IN ("x!name!x") DO (
+        FOR %FOR_OPTS% %%s IN ("x!name!x") DO (
             SETLOCAL DisableDelayedExpansion
             IF "%%t"=="" (
                 ENDLOCAL & EXIT /B 0
