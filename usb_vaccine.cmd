@@ -879,8 +879,8 @@ FOR %%I IN ("%WinDir%\Sysnative") DO (
     REM "%%~aI" redirects.
     CALL :has_ci_substr "%%~aI" "d" && (
         CALL :has_ci_substr "%%~aI" "h" || (
-            IF NOT EXIST %%i (
-                %%i\cmd /d /c "%0 --no-restart !args!" && GOTO :main_end
+            IF NOT EXIST %%I (
+                %%I\cmd /d /c "%0 --no-restart !args!" && GOTO :main_end
                 SET status=!ERRORLEVEL!
             )
         )
