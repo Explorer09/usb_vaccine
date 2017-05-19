@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-05-13)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-05-19)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -188,17 +188,9 @@ REM actually 'mkdir' with it, but we may filter out common path attacks.
 IF "!opt_move_subdir:~0,2!"=="\\" GOTO main_invalid_path
 REM Windows 9x allows "\...\", "\....\" and so on for grandparent or any
 REM ancestor directory. Thankfully it doesn't work anymore in NT.
-CALL :has_ci_substr "\!opt_move_subdir!\" "\..\" && GOTO main_invalid_path
-FOR /F "eol=/ delims=" %%s IN ("x!opt_move_subdir!") DO (
-    FOR /F "tokens=1 eol=/ delims=:*?<>|" %%t IN ("x!opt_move_subdir!") DO (
-        SETLOCAL DisableDelayedExpansion
-        IF NOT "%%s"=="%%t" (
-            ENDLOCAL
-            GOTO main_invalid_path
-        )
-        ENDLOCAL
-    )
-)
+SET "name=\!opt_move_subdir!\"
+IF NOT "!name!"=="!name:*\..\=!" GOTO main_invalid_path
+CALL :has_path_char ":*?<>|" && GOTO main_invalid_path
 
 REM Check if "FOR /F" supports unquoted options and 'eol' being null.
 REM Check this in a subshell because (a) it won't halt our script in case of
@@ -910,6 +902,20 @@ GOTO has_ci_substr_loop_
     SHIFT /1
 GOTO has_ci_substr_loop_
 
+REM Checks if path or file name contains any character in the set.
+REM @param %1 Quoted string containing set of characters to be checked.
+REM @param name Unquoted file name
+REM @return 0 (true) if names contain any of the characters in %1
+:has_path_char
+    FOR /F "tokens=2 eol=/ delims=%~1" %%t IN ("x!name!x") DO (
+        SETLOCAL DisableDelayedExpansion
+        IF "%%t"=="" (
+            ENDLOCAL & EXIT /B 1
+        )
+        ENDLOCAL
+    )
+EXIT /B 0
+
 REM Prompts user to continue or skip.
 REM @return 0 if user says to continue, or 1 if says to skip
 :continue_prompt
@@ -1107,16 +1113,14 @@ REM @return 0 (true) if file name contains all valid characters
     REM "FOR /F" should have skipped empty lines, but for safety...
     IF "!name!"=="" EXIT /B 1
     REM "FOR /F delims" is faster than :has_ci_substr
-    SET "FOR_OPTS=/F tokens^=1^ eol^=/^ delims^=\/:*?^<^>^|^"
+    SET "FOR_OPTS=/F tokens^=2^ eol^=/^ delims^=\/:*?^<^>^|^"
     SET FOR_OPTS=!FOR_OPTS!^"
     REM ^"
     IF "!g_cmdfor_unquoted_opts!"=="1" (
-        FOR %FOR_OPTS_FOR_DIR_B% %%s IN ("x!name!") DO (
+        FOR %FOR_OPTS% %%t IN ("x!name!x") DO (
             SETLOCAL DisableDelayedExpansion
-            FOR %FOR_OPTS% %%t IN ("%%s") DO (
-                IF "%%s"=="%%t" (
-                    ENDLOCAL & EXIT /B 0
-                )
+            IF "%%t"=="" (
+                ENDLOCAL & EXIT /B 0
             )
             ENDLOCAL
         )
@@ -1126,31 +1130,19 @@ REM @return 0 (true) if file name contains all valid characters
         ECHO 警告：檔案名稱包含無效字元。檔案系統可能已損壞。>&2
         EXIT /B 1
     )
-    FOR %FOR_OPTS_FOR_DIR_B% %%s IN ("x!name!") DO (
-        IF "!g_cmdfor_unquoted_opts!"=="0" (
-            SETLOCAL DisableDelayedExpansion
-            FOR /F "tokens=1 eol=/ delims=\/:*?<>|" %%t IN ("%%s") DO (
-                IF "%%s"=="%%t" (
-                    ENDLOCAL & EXIT /B 0
-                )
-            )
-            ENDLOCAL
-        )
-        SETLOCAL DisableDelayedExpansion
-        FOR /F "tokens=1 eol=/ delims=/:*" %%t IN ("%%s") DO (
-            IF NOT "%%s"=="%%t" (
-                ECHO 警告：檔案名稱包含無效字元。檔案系統可能已損壞。>&2
-                ENDLOCAL & EXIT /B 1
-            )
-        )
-        ENDLOCAL
+    IF "!g_cmdfor_unquoted_opts!"=="0" (
+        CALL :has_path_char "\/:*?<>|" || EXIT /B 0
     )
-    CALL :has_ci_substr "!name!" "<" ">" && (
+    CALL :has_path_char "/:*" && (
+        ECHO 警告：檔案名稱包含無效字元。檔案系統可能已損壞。>&2
+        EXIT /B 1
+    )
+    CALL :has_path_char "<>" && (
         ECHO 警告：檔案名稱包含無效字元「^<」或「^>」。檔案系統已損壞或與 DOS 2 或更新版本或>&2
         ECHO Windows 不相容。>&2
         EXIT /B 1
     )
-    CALL :has_ci_substr "!name!" "?" && (
+    CALL :has_path_char "?" && (
         ECHO 警告：檔案名稱包含無效字元「?」。此檔案名稱可能使用了您目前系統地區設定中不支援>&2
         ECHO 的編碼。>&2
         EXIT /B 1
