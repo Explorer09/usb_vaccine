@@ -41,14 +41,14 @@ SET CD=
 SET ERRORLEVEL=
 
 SET HKLM_SFT=HKLM\SOFTWARE
-SET HKLM_CLS=%HKLM_SFT%\Classes
-SET HKLM_SFT_WOW=%HKLM_SFT%\Wow6432Node
+SET HKLM_CLS=!HKLM_SFT!\Classes
+SET HKLM_SFT_WOW=!HKLM_SFT!\Wow6432Node
 
 SET "CMD_SUBKEY=Microsoft\Command Processor"
 SET "INF_MAP_SUBKEY=Microsoft\Windows NT\CurrentVersion\IniFileMapping\autorun.inf"
 SET "EXPLORER_SUBKEY=Microsoft\Windows\CurrentVersion\Explorer"
-SET "ADVANCED_SUBKEY=%EXPLORER_SUBKEY%\Advanced"
-SET "SHELL_ICON_SUBKEY=%EXPLORER_SUBKEY%\Shell Icons"
+SET "ADVANCED_SUBKEY=!EXPLORER_SUBKEY!\Advanced"
+SET "SHELL_ICON_SUBKEY=!EXPLORER_SUBKEY!\Shell Icons"
 
 REM Files to keep. The whitelist.
 SET KEEP_SYMLINK_FILES=
@@ -227,25 +227,25 @@ reg query "HKCU" >NUL: 2>NUL: || (
 )
 
 SET has_wow64=0
-reg query "%HKLM_SFT_WOW%" >NUL: 2>NUL: && SET has_wow64=1
+reg query "!HKLM_SFT_WOW!" >NUL: 2>NUL: && SET has_wow64=1
 
 :main_cmd_autorun
 REM The Command Processor AutoRun will execute every time we do command
 REM substitution (via "FOR /F") and may pollute output of our every command.
 SET has_cmd_autorun=0
-FOR %%k IN (%HKLM_SFT_WOW% %HKLM_SFT% HKCU\Software) DO (
+FOR %%k IN (!HKLM_SFT_WOW! !HKLM_SFT! HKCU\Software) DO (
     REM "reg query" outputs header lines even if key or value doesn't exist.
-    reg query "%%k\%CMD_SUBKEY%" /v "AutoRun" >NUL: 2>NUL: && (
+    reg query "%%k\!CMD_SUBKEY!" /v "AutoRun" >NUL: 2>NUL: && (
         IF NOT "!opt_restart!"=="SKIP" GOTO main_restart
         SET has_cmd_autorun=1
         REM Show user the AutoRun values along with error message below.
         REM Key name included in "reg query" output.
-        IF "!g_is_wow64!!has_wow64!%%k"=="10%HKLM_SFT%" (
+        IF "!g_is_wow64!!has_wow64!%%k"=="10!HKLM_SFT!" (
             ECHO ^(The key below is a WoW64 redirected key. Its actual name is>&2
-            ECHO  "%HKLM_SFT_WOW%\%CMD_SUBKEY%"^)>&2
+            ECHO  "!HKLM_SFT_WOW!\!CMD_SUBKEY!"^)>&2
         )
-        IF NOT "!g_is_wow64!!has_wow64!%%k"=="11%HKLM_SFT%" (
-            reg query "%%k\%CMD_SUBKEY%" /v "AutoRun" >&2
+        IF NOT "!g_is_wow64!!has_wow64!%%k"=="11!HKLM_SFT!" (
+            reg query "%%k\!CMD_SUBKEY!" /v "AutoRun" >&2
         )
     )
 )
@@ -263,21 +263,21 @@ IF "!has_cmd_autorun!"=="1" (
         ECHO users' settings, please specify '--all-users-cmd-autorun' option.^)
         CALL :continue_prompt || GOTO main_inf_mapping
     )
-    FOR %%k IN (%HKLM_SFT_WOW% %HKLM_SFT% HKCU\Software) DO (
-        CALL :delete_reg_value "%%k" "%CMD_SUBKEY%" "AutoRun" "Command Processor /v AutoRun"
+    FOR %%k IN (!HKLM_SFT_WOW! !HKLM_SFT! HKCU\Software) DO (
+        CALL :delete_reg_value "%%k" "!CMD_SUBKEY!" "AutoRun" "Command Processor /v AutoRun"
     )
 )
 IF "!opt_cmd_autorun!"=="ALL_USERS" (
     CALL :prepare_sids
     FOR %%i IN (!g_sids!) DO (
         ECHO SID %%~i
-        CALL :delete_reg_value "HKU\%%~i\Software" "%CMD_SUBKEY%" "AutoRun" "Command Processor /v AutoRun"
+        CALL :delete_reg_value "HKU\%%~i\Software" "!CMD_SUBKEY!" "AutoRun" "Command Processor /v AutoRun"
     )
 )
 
 :main_inf_mapping
 SET has_inf_mapping=1
-reg query "%HKLM_SFT%\%INF_MAP_SUBKEY%" /ve 2>NUL: | find /I "@" >NUL: || (
+reg query "!HKLM_SFT!\!INF_MAP_SUBKEY!" /ve 2>NUL: | find /I "@" >NUL: || (
     SET has_inf_mapping=0
     ECHO.>&2
     ECHO *** NOTICE: Your computer is vulnerable to the AutoRun malware^^!>&2
@@ -316,20 +316,20 @@ ECHO disc, you will have to manually open the Setup.exe inside. This doesn't aff
 ECHO the AutoPlay feature of music, video discs, or USB devices.
 ECHO ^(This is a machine setting.^)
 CALL :continue_prompt || GOTO main_mountpoints
-CALL :backup_reg "%HKLM_SFT%" "%INF_MAP_SUBKEY%" /ve
-reg add "%HKLM_SFT%\%INF_MAP_SUBKEY%" /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >NUL:
+CALL :backup_reg "!HKLM_SFT!" "!INF_MAP_SUBKEY!" /ve
+reg add "!HKLM_SFT!\!INF_MAP_SUBKEY!" /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >NUL:
 IF ERRORLEVEL 1 (
     CALL :show_reg_write_error "IniFileMapping\autorun.inf"
 ) ELSE (
-    CALL :delete_reg_key "%HKLM_SFT%" "DoesNotExist" "%HKLM_SFT%\DoesNotExist"
+    CALL :delete_reg_key "!HKLM_SFT!" "DoesNotExist" "!HKLM_SFT!\DoesNotExist"
 )
 IF "!has_wow64!"=="1" (
-    CALL :backup_reg "%HKLM_SFT_WOW%" "%INF_MAP_SUBKEY%" /ve
-    reg add "%HKLM_SFT_WOW%\%INF_MAP_SUBKEY%" /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >NUL:
+    CALL :backup_reg "!HKLM_SFT_WOW!" "!INF_MAP_SUBKEY!" /ve
+    reg add "!HKLM_SFT_WOW!\!INF_MAP_SUBKEY!" /ve /t REG_SZ /d "@SYS:DoesNotExist" /f >NUL:
     IF ERRORLEVEL 1 (
         CALL :show_reg_write_error "(WoW64) IniFileMapping\autorun.inf"
     ) ELSE (
-        CALL :delete_reg_key "%HKLM_SFT_WOW%" "DoesNotExist" "(WoW64) %HKLM_SFT%\DoesNotExist"
+        CALL :delete_reg_key "!HKLM_SFT_WOW!" "DoesNotExist" "(WoW64) !HKLM_SFT!\DoesNotExist"
     )
 )
 
@@ -347,15 +347,15 @@ CALL :prepare_sids
 FOR %%i IN (!g_sids!) DO (
     ECHO SID %%~i
     FOR %%k IN (MountPoints MountPoints2) DO (
-        CALL :clean_reg_key "HKU\%%~i\Software" "%EXPLORER_SUBKEY%\%%k" "Explorer\%%k"
+        CALL :clean_reg_key "HKU\%%~i\Software" "!EXPLORER_SUBKEY!\%%k" "Explorer\%%k"
     )
 )
 
 :main_known_ext
 IF "!opt_known_ext!"=="SKIP" GOTO main_exe_ext
 REM The value shouldn't exist in HKLM and doesn't work there. Silently delete.
-FOR %%k IN (%HKLM_SFT% %HKLM_SFT_WOW%) DO (
-    reg delete "%%k\%ADVANCED_SUBKEY%" /v "HideFileExt" /f >NUL: 2>NUL:
+FOR %%k IN (!HKLM_SFT! !HKLM_SFT_WOW!) DO (
+    reg delete "%%k\!ADVANCED_SUBKEY!" /v "HideFileExt" /f >NUL: 2>NUL:
 )
 IF NOT "!opt_known_ext!"=="ALL_USERS" (
     ECHO.
@@ -376,14 +376,14 @@ IF NOT "!opt_known_ext!"=="ALL_USERS" (
     CALL :continue_prompt || GOTO main_exe_ext
 )
 REM "HideFileExt" is enabled (0x1) if value does not exist.
-reg add "HKCU\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >NUL: || (
+reg add "HKCU\Software\!ADVANCED_SUBKEY!" /v "HideFileExt" /t REG_DWORD /d 0 /f >NUL: || (
     CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
 )
 IF "!opt_known_ext!"=="ALL_USERS" (
     CALL :prepare_sids
     FOR %%i IN (!g_sids!) DO (
         ECHO SID %%~i
-        reg add "HKU\%%~i\Software\%ADVANCED_SUBKEY%" /v "HideFileExt" /t REG_DWORD /d 0 /f >NUL: || (
+        reg add "HKU\%%~i\Software\!ADVANCED_SUBKEY!" /v "HideFileExt" /t REG_DWORD /d 0 /f >NUL: || (
             CALL :show_reg_write_error "Explorer\Advanced /v HideFileExt"
         )
     )
@@ -392,7 +392,7 @@ IF "!opt_known_ext!"=="ALL_USERS" (
 :main_exe_ext
 IF "!opt_exe_ext!"=="ALWAYS" (
     FOR %%k IN (exefile scrfile) DO (
-        reg add "%HKLM_CLS%\%%k" /v "AlwaysShowExt" /t REG_SZ /f >NUL: || (
+        reg add "!HKLM_CLS!\%%k" /v "AlwaysShowExt" /t REG_SZ /f >NUL: || (
             CALL :show_reg_write_error "HKCR\%%k /v AlwaysShowExt"
         )
     )
@@ -400,7 +400,7 @@ IF "!opt_exe_ext!"=="ALWAYS" (
 )
 IF NOT "!opt_exe_ext!"=="FIX" GOTO main_pif_ext
 FOR %%e IN (com exe bat scr cmd) DO (
-    CALL :delete_reg_value "%HKLM_CLS%" "%%efile" "NeverShowExt" "HKCR\%%efile /v NeverShowExt"
+    CALL :delete_reg_value "!HKLM_CLS!" "%%efile" "NeverShowExt" "HKCR\%%efile /v NeverShowExt"
 )
 SET list="com=comfile" "exe=exefile" "bat=batfile" "scr=scrfile" "cmd=cmdfile"
 CALL :reassoc_file_types !list!
@@ -411,7 +411,7 @@ IF "!opt_reassoc!"=="ALL_USERS" SET "user_msg=ALL USERS"
 
 IF "!opt_pif_ext!"=="SKIP" GOTO main_scf_icon
 REM .pif files already have shortcut arrows; no need to suggest AlwaysShowExt.
-reg query "%HKLM_CLS%\piffile" /v "NeverShowExt" >NUL: 2>NUL: || (
+reg query "!HKLM_CLS!\piffile" /v "NeverShowExt" >NUL: 2>NUL: || (
     GOTO main_scf_icon
 )
 REM Thankfully cmd.exe handles .pif right. Only Windows Explorer has this flaw.
@@ -430,13 +430,13 @@ ECHO This increases awareness.
 ECHO ^(This is a machine setting. In addition, the associations for this file type
 ECHO for !user_msg! will be reset, which cannot be undone.^)
 CALL :continue_prompt || GOTO main_scf_icon
-CALL :delete_reg_value "%HKLM_CLS%" "piffile" "NeverShowExt" "HKCR\piffile /v NeverShowExt"
+CALL :delete_reg_value "!HKLM_CLS!" "piffile" "NeverShowExt" "HKCR\piffile /v NeverShowExt"
 CALL :reassoc_file_types "pif=piffile"
 
 :main_scf_icon
 IF "!opt_scf_icon!"=="SKIP" GOTO main_scrap_ext
-reg query "%HKLM_CLS%\SHCmdFile" >NUL: 2>NUL: || GOTO main_scrap_ext
-reg query "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" >NUL: 2>NUL: && (
+reg query "!HKLM_CLS!\SHCmdFile" >NUL: 2>NUL: || GOTO main_scrap_ext
+reg query "!HKLM_CLS!\SHCmdFile" /v "IsShortcut" >NUL: 2>NUL: && (
     GOTO main_scrap_ext
 )
 ECHO.
@@ -451,7 +451,7 @@ ECHO users.
 ECHO ^(This is a machine setting. In addition, the associations for this file type
 ECHO for !user_msg! will be reset, which cannot be undone.^)
 CALL :continue_prompt || GOTO main_scrap_ext
-reg add "%HKLM_CLS%\SHCmdFile" /v "IsShortcut" /t REG_SZ /f >NUL: || (
+reg add "!HKLM_CLS!\SHCmdFile" /v "IsShortcut" /t REG_SZ /f >NUL: || (
     CALL :show_reg_write_error "HKCR\SHCmdFile /v IsShortcut"
 )
 CALL :reassoc_file_types "scf=SHCmdFile"
@@ -467,7 +467,7 @@ IF "!opt_scrap_ext!"=="SKIP" GOTO main_symlink_ext
 REM Scrap files already have static icon; no need to suggest AlwaysShowExt.
 SET scrap_ext_keys=
 FOR %%k IN (ShellScrap DocShortcut) DO (
-    reg query "%HKLM_CLS%\%%k" /v "NeverShowExt" >NUL: 2>NUL: && (
+    reg query "!HKLM_CLS!\%%k" /v "NeverShowExt" >NUL: 2>NUL: && (
         SET scrap_ext_keys=!scrap_ext_keys! %%k
     )
 )
@@ -486,7 +486,7 @@ ECHO ^(This is a machine setting. In addition, the associations for these file t
 ECHO for !user_msg! will be reset, which cannot be undone.^)
 CALL :continue_prompt || GOTO main_symlink_ext
 FOR %%k IN (!scrap_ext_keys!) DO (
-    CALL :delete_reg_value "%HKLM_CLS%" "%%k" "NeverShowExt" "HKCR\%%k /v NeverShowExt"
+    CALL :delete_reg_value "!HKLM_CLS!" "%%k" "NeverShowExt" "HKCR\%%k /v NeverShowExt"
 )
 CALL :reassoc_file_types "shs=ShellScrap" "shb=DocShortcut"
 
@@ -496,9 +496,9 @@ REM Windows 7 SP1 with KB3009980 hotfix. This requires shell32.dll's support.
 IF "!opt_symlink_ext!"=="SKIP" GOTO main_shortcut_icon
 REM If symlinks are not "known" (i.e. there's no "HKCR\.symlink" entry), then
 REM the extensions will be always shown. Don't bother then.
-reg query "%HKLM_CLS%\.symlink" >NUL: 2>NUL: || GOTO main_shortcut_icon
-reg query "%HKLM_CLS%\.symlink" /v "AlwaysShowExt" >NUL: 2>NUL: && (
-    reg query "%HKLM_CLS%\.symlink" /v "NeverShowExt" >NUL: 2>NUL: || (
+reg query "!HKLM_CLS!\.symlink" >NUL: 2>NUL: || GOTO main_shortcut_icon
+reg query "!HKLM_CLS!\.symlink" /v "AlwaysShowExt" >NUL: 2>NUL: && (
+    reg query "!HKLM_CLS!\.symlink" /v "NeverShowExt" >NUL: 2>NUL: || (
         GOTO main_shortcut_icon
     )
 )
@@ -516,34 +516,34 @@ ECHO of users' "Hide extensions for known file types" option.
 ECHO ^(This is a machine setting. In addition, the associations for this file type
 ECHO for !user_msg! will be reset, which cannot be undone.^)
 CALL :continue_prompt || GOTO main_shortcut_icon
-reg add "%HKLM_CLS%\.symlink" /v "AlwaysShowExt" /t REG_SZ /f >NUL: || (
+reg add "!HKLM_CLS!\.symlink" /v "AlwaysShowExt" /t REG_SZ /f >NUL: || (
     CALL :show_reg_write_error "HKCR\.symlink /v AlwaysShowExt"
 )
-CALL :delete_reg_value "%HKLM_CLS%" ".symlink" "NeverShowExt" "HKCR\.symlink /v NeverShowExt"
+CALL :delete_reg_value "!HKLM_CLS!" ".symlink" "NeverShowExt" "HKCR\.symlink /v NeverShowExt"
 CALL :reassoc_file_types "symlink=.symlink"
 
 :main_shortcut_icon
 IF NOT "!opt_shortcut_icon!"=="FIX" GOTO main_file_icon
 FOR %%k IN (piffile lnkfile DocShortcut InternetShortcut) DO (
-    reg query "%HKLM_CLS%\%%k" >NUL: 2>NUL: && (
-        reg add "%HKLM_CLS%\%%k" /v "IsShortcut" /t REG_SZ /f >NUL: || (
+    reg query "!HKLM_CLS!\%%k" >NUL: 2>NUL: && (
+        reg add "!HKLM_CLS!\%%k" /v "IsShortcut" /t REG_SZ /f >NUL: || (
             CALL :show_reg_write_error "HKCR\%%k /v IsShortcut"
         )
     )
 )
-reg query "%HKLM_CLS%\Application.Reference" >NUL: 2>NUL: && (
-    reg add "%HKLM_CLS%\Application.Reference" /v "IsShortcut" /t REG_SZ /f >NUL: || (
+reg query "!HKLM_CLS!\Application.Reference" >NUL: 2>NUL: && (
+    reg add "!HKLM_CLS!\Application.Reference" /v "IsShortcut" /t REG_SZ /f >NUL: || (
         CALL :show_reg_write_error "Application.Reference /v IsShortcut"
     )
 )
 REM The data string "NULL" is in the original entry, in both Groove 2007 and
 REM SharePoint Workspace 2010.
-reg query "%HKLM_CLS%\GrooveLinkFile" >NUL: 2>NUL: && (
-    reg add "%HKLM_CLS%\GrooveLinkFile" /v "IsShortcut" /t REG_SZ /d "NULL" /f >NUL: || (
+reg query "!HKLM_CLS!\GrooveLinkFile" >NUL: 2>NUL: && (
+    reg add "!HKLM_CLS!\GrooveLinkFile" /v "IsShortcut" /t REG_SZ /d "NULL" /f >NUL: || (
         CALL :show_reg_write_error "HKCR\GrooveLinkFile /v IsShortcut"
     )
 )
-CALL :delete_reg_value "%HKLM_SFT%" "%SHELL_ICON_SUBKEY%" "29" "Explorer\Shell Icons /v 29"
+CALL :delete_reg_value "!HKLM_SFT!" "!SHELL_ICON_SUBKEY!" "29" "Explorer\Shell Icons /v 29"
 IF NOT "!opt_file_icon!"=="FIX" (
     SET list="pif=piffile" "lnk=lnkfile" "shb=DocShortcut" "url=InternetShortcut"
     SET list=!list! "appref-ms=Application.Reference" "glk=GrooveLinkFile"
@@ -554,73 +554,73 @@ IF NOT "!opt_file_icon!"=="FIX" (
 IF NOT "!opt_file_icon!"=="FIX" GOTO main_all_drives
 REM "DefaultIcon" for "Unknown" is configurable since Windows Vista.
 SET key=Unknown\DefaultIcon
-CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
+CALL :backup_reg "!HKLM_CLS!" "!key!" /ve
 IF NOT "!ERRORLEVEL!"=="1" (
-    reg add "%HKLM_CLS%\!key!" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,0" /f >NUL: || (
+    reg add "!HKLM_CLS!\!key!" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,0" /f >NUL: || (
         CALL :show_reg_write_error "HKCR\!key!"
     )
 )
 SET key=comfile\DefaultIcon
-CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
-reg add "%HKLM_CLS%\!key!" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,2" /f >NUL: || (
+CALL :backup_reg "!HKLM_CLS!" "!key!" /ve
+reg add "!HKLM_CLS!\!key!" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shell32.dll,2" /f >NUL: || (
     CALL :show_reg_write_error "HKCR\!key!"
 )
 SET key=comfile\shellex\IconHandler
-CALL :delete_reg_key "%HKLM_CLS%" "!key!" "HKCR\!key!"
+CALL :delete_reg_key "!HKLM_CLS!" "!key!" "HKCR\!key!"
 REM Two vulnerabilities exist in the .lnk and .pif IconHandler:
 REM MS10-046 (CVE-2010-2568), MS15-020 (CVE-2015-0096)
 REM Windows 2000 has no patch for either. XP has only patch for MS10-046.
 REM Expect that user disables the IconHandler as the workaround.
 FOR %%k IN (piffile lnkfile) DO (
-    CALL :delete_reg_key "%HKLM_CLS%" "%%k\DefaultIcon" "HKCR\%%k\DefaultIcon"
+    CALL :delete_reg_key "!HKLM_CLS!" "%%k\DefaultIcon" "HKCR\%%k\DefaultIcon"
     SET key=%%k\shellex\IconHandler
-    CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
-    reg add "%HKLM_CLS%\!key!" /ve /t REG_SZ /d "{00021401-0000-0000-C000-000000000046}" /f >NUL: || (
+    CALL :backup_reg "!HKLM_CLS!" "!key!" /ve
+    reg add "!HKLM_CLS!\!key!" /ve /t REG_SZ /d "{00021401-0000-0000-C000-000000000046}" /f >NUL: || (
         CALL :show_reg_write_error "HKCR\!key!"
     )
 )
 REM Scrap file types. Guaranteed to work (and only) in Windows 2000 and XP.
 FOR %%k IN (ShellScrap DocShortcut) DO (
-    reg query "%HKLM_CLS%\%%k" >NUL: 2>NUL: && (
-        CALL :backup_reg "%HKLM_CLS%" "%%k\DefaultIcon" /ve
-        reg add "%HKLM_CLS%\%%k\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shscrap.dll,-100" /f >NUL: || (
+    reg query "!HKLM_CLS!\%%k" >NUL: 2>NUL: && (
+        CALL :backup_reg "!HKLM_CLS!" "%%k\DefaultIcon" /ve
+        reg add "!HKLM_CLS!\%%k\DefaultIcon" /ve /t REG_EXPAND_SZ /d "%%SystemRoot%%\System32\shscrap.dll,-100" /f >NUL: || (
             CALL :show_reg_write_error "HKCR\%%k\DefaultIcon"
         )
-        CALL :delete_reg_key "%HKLM_CLS%" "%%k\shellex\IconHandler" "%%k\shellex\IconHandler"
+        CALL :delete_reg_key "!HKLM_CLS!" "%%k\shellex\IconHandler" "%%k\shellex\IconHandler"
     )
 )
 REM The "InternetShortcut" key has "DefaultIcon" subkey whose Default value
 REM differs among IE versions.
-reg query "%HKLM_CLS%\InternetShortcut" >NUL: 2>NUL: && (
+reg query "!HKLM_CLS!\InternetShortcut" >NUL: 2>NUL: && (
     SET key=InternetShortcut\shellex\IconHandler
-    CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
-    reg add "%HKLM_CLS%\!key!" /ve /t REG_SZ /d "{FBF23B40-E3F0-101B-8488-00AA003E56F8}" /f >NUL: || (
+    CALL :backup_reg "!HKLM_CLS!" "!key!" /ve
+    reg add "!HKLM_CLS!\!key!" /ve /t REG_SZ /d "{FBF23B40-E3F0-101B-8488-00AA003E56F8}" /f >NUL: || (
         CALL :show_reg_write_error "InternetShortcut IconHandler"
     )
 )
-reg query "%HKLM_CLS%\SHCmdFile" >NUL: 2>NUL: && (
-    CALL :delete_reg_key "%HKLM_CLS%" "SHCmdFile\DefaultIcon" "HKCR\SHCmdFile\DefaultIcon"
+reg query "!HKLM_CLS!\SHCmdFile" >NUL: 2>NUL: && (
+    CALL :delete_reg_key "!HKLM_CLS!" "SHCmdFile\DefaultIcon" "HKCR\SHCmdFile\DefaultIcon"
     SET key=SHCmdFile\shellex\IconHandler
-    CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
-    reg add "%HKLM_CLS%\!key!" /ve /t REG_SZ /d "{57651662-CE3E-11D0-8D77-00C04FC99D61}" /f >NUL: || (
+    CALL :backup_reg "!HKLM_CLS!" "!key!" /ve
+    reg add "!HKLM_CLS!\!key!" /ve /t REG_SZ /d "{57651662-CE3E-11D0-8D77-00C04FC99D61}" /f >NUL: || (
         CALL :show_reg_write_error "HKCR\!key!"
     )
 )
-reg query "%HKLM_CLS%\Application.Reference" >NUL: 2>NUL: && (
+reg query "!HKLM_CLS!\Application.Reference" >NUL: 2>NUL: && (
     SET key=Application.Reference\DefaultIcon
-    CALL :delete_reg_key "%HKLM_CLS%" "!key!" "!key!"
+    CALL :delete_reg_key "!HKLM_CLS!" "!key!" "!key!"
     SET key=Application.Reference\shellex\IconHandler
-    CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
-    reg add "%HKLM_CLS%\!key!" /ve /t REG_SZ /d "{E37E2028-CE1A-4f42-AF05-6CEABC4E5D75}" /f >NUL: || (
+    CALL :backup_reg "!HKLM_CLS!" "!key!" /ve
+    reg add "!HKLM_CLS!\!key!" /ve /t REG_SZ /d "{E37E2028-CE1A-4f42-AF05-6CEABC4E5D75}" /f >NUL: || (
         CALL :show_reg_write_error "Application.Reference IconHandler"
     )
 )
 REM The "GrooveLinkFile" key has "DefaultIcon" value (data: "%1") and no
 REM "DefaultIcon" subkey.
-reg query "%HKLM_CLS%\GrooveLinkFile" >NUL: 2>NUL: && (
+reg query "!HKLM_CLS!\GrooveLinkFile" >NUL: 2>NUL: && (
     SET key=GrooveLinkFile\ShellEx\IconHandler
-    CALL :backup_reg "%HKLM_CLS%" "!key!" /ve
-    reg add "%HKLM_CLS%\!key!" /ve /t REG_SZ /d "{387E725D-DC16-4D76-B310-2C93ED4752A0}" /f >NUL: || (
+    CALL :backup_reg "!HKLM_CLS!" "!key!" /ve
+    reg add "!HKLM_CLS!\!key!" /ve /t REG_SZ /d "{387E725D-DC16-4D76-B310-2C93ED4752A0}" /f >NUL: || (
         CALL :show_reg_write_error "!key!"
     )
 )
@@ -1026,10 +1026,10 @@ REM @return 0 on success, 1 if key/value doesn't exist, 2 if backup file fails
     reg query "%~1\%~2" !v! %4 >NUL: 2>NUL: || EXIT /B 1
     IF "!g_reg_bak!"=="" CALL :init_reg_bak
     IF "!g_reg_bak!"=="FAIL" EXIT /B 2
-    IF "!g_is_wow64!%~1"=="1%HKLM_SFT%" (
+    IF "!g_is_wow64!%~1"=="1!HKLM_SFT!" (
         REM Don't localize.
         ECHO ; WoW64 redirected key. Actual key name is
-        ECHO ; "%HKLM_SFT_WOW%\%~2"
+        ECHO ; "!HKLM_SFT_WOW!\%~2"
     ) >>"Vacc_reg.bak"
     SET s=
     IF "%~3%~4"=="" SET s=/s
@@ -1104,11 +1104,11 @@ REM @param %1 File extension with "." prefix
 REM @param %2 ProgID
 REM @return 0 on success, 1 if not both %1 and %2 keys exist, or 2 on error
 :safe_assoc
-    reg query "%HKLM_CLS%\%~2" >NUL: 2>NUL: || EXIT /B 1
-    CALL :backup_reg "%HKLM_CLS%" "%~1" /ve
+    reg query "!HKLM_CLS!\%~2" >NUL: 2>NUL: || EXIT /B 1
+    CALL :backup_reg "!HKLM_CLS!" "%~1" /ve
     IF "!ERRORLEVEL!"=="1" EXIT /B 1
-    reg add "%HKLM_CLS%\%~1" /ve /t REG_SZ /d "%~2" /f >NUL: && EXIT /B 0
-    CALL :show_reg_write_error "%HKLM_CLS%\%~1"
+    reg add "!HKLM_CLS!\%~1" /ve /t REG_SZ /d "%~2" /f >NUL: && EXIT /B 0
+    CALL :show_reg_write_error "!HKLM_CLS!\%~1"
 EXIT /B 2
 
 REM Resets file associations for given file types.
