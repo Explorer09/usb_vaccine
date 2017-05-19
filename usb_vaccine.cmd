@@ -193,7 +193,7 @@ SET g_cmdfor_unquoted_opts=0
 SET "a=FOR /F tokens^=1-2^ delims^=^"
 SET b="^ eol^= %%i IN (" ;""x") DO IF NOT "%%i.%%j"==" ;.x^" EXIT /B 1
 REM ^"
-%ComSpec% /q /d /e:on /c "!a!!b!" >NUL: 2>NUL: && SET g_cmdfor_unquoted_opts=1
+!ComSpec! /q /d /e:on /c "!a!!b!" >NUL: 2>NUL: && SET g_cmdfor_unquoted_opts=1
 REM No delayed expansion is allowed in "FOR /F" option field.
 IF "!g_cmdfor_unquoted_opts!"=="1" (
     SET "FOR_OPTS_FOR_DIR_B=/F delims^=^ eol^="
@@ -875,7 +875,7 @@ REM Even with file system redirection in WoW64, the "IF EXIST" construct and
 REM 'attrib' command do not redirect and can be used to check the existence of
 REM real file names on disk. (Better not run cmd.exe inside if we're unsure
 REM that "Sysnative" is a redirected pseudo-directory.)
-FOR %%I IN ("%WinDir%\Sysnative") DO (
+FOR %%I IN ("!WinDir!\Sysnative") DO (
     REM "%%~aI" redirects.
     CALL :has_ci_substr "%%~aI" "d" && (
         CALL :has_ci_substr "%%~aI" "h" || (
