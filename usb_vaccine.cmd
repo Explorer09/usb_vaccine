@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-05-19)
+REM 'usb_vaccine.cmd' version 3 beta (2017-05-29)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -194,7 +194,7 @@ SET "a=FOR /F tokens^=1-2^ delims^=^"
 SET b="^ eol^= %%i IN (" ;""x") DO IF NOT "%%i.%%j"==" ;.x^" EXIT /B 1
 REM ^"
 !ComSpec! /q /d /e:on /c "!a!!b!" >NUL: 2>NUL: && SET g_cmdfor_unquoted_opts=1
-REM No delayed expansion is allowed in "FOR /F" option field.
+REM Delayed expansion is not performed in FOR options field.
 IF "!g_cmdfor_unquoted_opts!"=="1" (
     SET "FOR_OPTS_FOR_DIR_B=/F delims^=^ eol^="
 ) ELSE (
