@@ -25,7 +25,7 @@
 # DOS kernel files
 # ----------------
 # IBM PC DOS is the oldest that we can list here, which is the time that FAT
-# filesystems and PC architectures are introduced. Anything older (CP/M or
+# file systems and PC architectures are introduced. Anything older (CP/M or
 # 86-DOS) is incompatible with modern systems and so is out of our concern.
 
 HS, "ibmbio.com", PCDOS1, DOS kernel/initializer
@@ -39,12 +39,12 @@ H, "ibmdos.com", OS2v1.0, DOS kernel (attribute on some floppies)
 # For FreeDOS the equivalent file is KERNEL.SYS.
 # All of the files in above comments have no Hidden or System attributes.
 
-# TODO: attributes 
+# TODO: attributes
 # "IBMBIO.COM" PCDOS2.x:RHS; PCDOS3:RHS; PCDOS4:RHS; PCDOS6: RHS; DRDOS6: RHS ; NWDOS7: RHS
 # OS2v1.0 floppy: H
 
 # http://www.os2museum.com/wp/dos/dos-4-0/
-# checked: 
+# checked:
 # PCDOS 1.0 1.1 2.0 2.1 3.0 3.1 3.2 3.3 4.0x 6.10 6.30
 # DRDOS 6.0
 # MSDOS 3.30a 5.0
@@ -55,7 +55,7 @@ HS, "IO.SYS", MSDOS1, MS-DOS kernel/initializer
 RHS, "IO.SYS", MSDOS2+ NT3 95 NT4 98 2000 Me XP, MS-DOS kernel/initializer / Win9x kernel
 RHS, "IO.DOS", 95 98 Me, IO.SYS backup during upgrade
 RHS, "WINBOOT.SYS", 95, Win9x IO.SYS temporary rename when running "Previous version of MS-DOS"
-RHS, "JO.SYS", 98, Win9x IO.SYS temporary rename when running "Previous version of MS-DOS" 
+RHS, "JO.SYS", 98, Win9x IO.SYS temporary rename when running "Previous version of MS-DOS"
 HS, "MSDOS.SYS", MSDOS1, MS-DOS kernel
 RHS, "MSDOS.SYS", MSDOS2+ NT3 95 NT4 98 2000 Me XP, MS-DOS kernel / Win9x boot configuration
 RHS, "MSDOS.DOS", 95 98 Me, MSDOS.SYS (as kernel) backup during upgrade
@@ -291,11 +291,11 @@ HS, "system.1st", Me, Registry hive (HKLM except SOFTWARE\CLASSES) copy during s
 RHS, "UNINSTAL.INI", NWDOS7, Uninstall information (backup during upgrade)
 
 # NWDOS7 INSTALL program will rename (as backup) every file that will be
-# replaced during upgrade, except for the "@*.UI" files noted elsewhere in
-# this list, all other files are renamed by this rule: (1) If the base name
-# consists of 8 characters, remove the last one. (2) Prefix the base name with
-# an '@' character. Examples: "SECURITY.BIN"->"@SECURIT.BIN"; "NWDOS.386"->
-# "@NWDOS.386" (both example files reside in root directory)
+# replaced during upgrade. Except for the "@*.UI" files noted elsewhere in this
+# list, all other files are renamed by this rule: (1) If the base name consists
+# of 8 characters, remove the last one. (2) Prefix the base name with an '@'
+# character. Examples: "SECURITY.BIN" -> "@SECURIT.BIN";
+# "NWDOS.386" -> "@NWDOS.386" (both example files reside in root directory)
 # 'usb_vaccine.cmd' is not going to whitelist any of these backup files except
 # the "@*.UI" files (which are core system files).
 
