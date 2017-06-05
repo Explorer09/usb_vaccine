@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-05-29)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-06-05)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -59,6 +59,7 @@ SET "BIG5_B77C=·|"
 REM Files to keep. The whitelist.
 SET KEEP_SYMLINK_FILES=
 FOR %%i IN (
+"vmlinux" "vmlinuz"
 ) DO (
     SET KEEP_SYMLINK_FILES=!KEEP_SYMLINK_FILES! %%i
 )
