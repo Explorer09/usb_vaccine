@@ -250,6 +250,35 @@ RS, "BOOTSECT.BAK", Vista, Boot sector backup (generated during setup)
 RHS, "BOOTSECT.BAK", W7 W8 W10, Boot sector backup (generated during setup)
 RHS, "BOOTTGT", W8 W10, [Empty] Exists when Windows To Go startup options are enabled.
 
+# Unix / Linux kernel files
+# -------------------------
+
+# Although 'usb_vaccine.cmd' only concerns about DOS and Windows systems, we
+# saw the possibility of user mounting a Unix or Linux file system onto Windows
+# (with specialized driver that reads and writes Unix file system, for example
+# Ext2Fsd), and in rare cases we need to whitelist some of Unix files.
+
+# Because there are endless ways to organize files and directories for a Unix-
+# like system, we can only whitelist names that are documented in a standard,
+# and leave out distributions that diverge from the documented standards.
+
+# For now only file names that could possibly be file symlinks are what we need
+# to concern about.
+
+# Filesystem Hierarchy Standard <https://wiki.linuxfoundation.org/en/FHS>
+, "vmlinux", Linux, Linux kernel image (recommended name by FHS)
+L, "vmlinux", Linux, Symlink to latest Linux kernel image (recommended name by FHS)
+, "vmlinuz", Linux, Linux kernel image (recommended name by FHS)
+L, "vmlinuz", Linux, Symlink to latest Linux kernel image (recommended name by FHS)
+
+# Some distributions may create a symlink to initrd in parallel with the
+# "vmlinuz" symlink. However there's no standard name for initrd that we can
+# whitelist. Possible names for initrd are "initrd.img", "initrd.gz", "initrd",
+# "initramfs" and others.
+
+# Don't whitelist "/linuxrc" or "/init" as these should be present only within
+# the initial root file system (initrd or initramfs, respectively).
+
 # System logs
 # -----------
 
