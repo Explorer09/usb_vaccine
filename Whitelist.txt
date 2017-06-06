@@ -274,7 +274,7 @@ L, "vmlinuz", Linux, Symlink to latest Linux kernel image (recommended name by F
 # Some distributions may create a symlink to initrd in parallel with the
 # "vmlinuz" symlink. However there's no standard name for initrd that we can
 # whitelist. Possible names for initrd are "initrd.img", "initrd.gz", "initrd",
-# "initramfs" and others.
+# "initramfs.img", "initramfs" and others.
 
 # Don't whitelist "/linuxrc" or "/init" as these should be present only within
 # the initial root file system (initrd or initramfs, respectively).
