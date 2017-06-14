@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-06-05)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-06-14)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -745,15 +745,23 @@ IF NOT "!opt_mkdir!"=="SKIP" (
 )
 
 SET g_files_moved=0
-REM The "Windows - No Disk" error dialog is right on USB drives that are not
-REM "safely removed", but is a bug to pop up on floppy drives. Guides on the
-REM web mostly refer this to malware, or suggest suppressing it. Both are
-REM wrong. Instead we just inform the user about the error dialog here.
-ECHO.
-ECHO 如果在存取磁碟機代號時，出現錯誤交談窗「Windows - 沒有磁片。Exception
-ECHO Processing Message c0000013」，請按「取消」。（這在空軟碟機上發生時是正常的!BIG5_A15E!
+REM In Windows NT versions before Vista, when accessing A:\ or B:\ without a
+REM floppy inserted into the respective drive, a graphical (!) error dialog
+REM "Windows - No Disk" will pop up, blocking script execution.
+REM Only DIR command (in NT 4 or later) on A: or B: shows non-blocking and no-
+REM pop-up behavior.
+REM The text of this dialog is usually:
+REM "There is no disk in the drive. Please insert a disk into drive A:."
+REM "[>Cancel<] [&Try Again] [&Continue]"
+REM But due to a bug in Windows XP, it may instead show:
+REM "Exception Processing Message c0000013 Parameters <address> 4 <address>
+REM <address>" (<address> varied among OS language releases)
+REM Beware that it's a really bad idea to supress such error dialogs! Don't
+REM follow what the Web suggests and set the "ErrorMode" value in
+REM "HKLM\SYSTEM\CurrentControlSet\Control\Windows" to 2! It could make real
+REM serious errors to go unnoticed in your system.
 FOR %%d IN (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) DO (
-    IF EXIST %%d:\ (
+    DIR /B %%d:\ >NUL: 2>NUL: && (
         CD /D %%d:\
         SET g_move_status=
         ECHO.
