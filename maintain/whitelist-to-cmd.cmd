@@ -17,7 +17,7 @@ REM Generates the whitelist (files to keep) code from "..\Whitelist.txt" for
 REM use in 'usb_vaccine.cmd'. This script is intended for maintainer only.
 
 REM ---------------------------------------------------------------------------
-REM Copyright (C) 2015-2016 Kang-Che Sung <explorer09 @ gmail.com>
+REM Copyright (C) 2015-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
 REM modify it under the terms of the GNU Lesser General Public
@@ -34,19 +34,20 @@ REM License along with this program. If not, see
 REM <http://www.gnu.org/licenses/>.
 REM ---------------------------------------------------------------------------
 
-IF EXIST temp.txt EXIT /B 1
-
 REM 'findstr' has a weird collation sequence, not ASCII as people expect.
 REM <http://stackoverflow.com/questions/2635740>
-
+REM Avoid character ranges because of this.
 SET alphabet=ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
 REM KEEP_SYMLINK_FILES
 REM File symlinks only; no directory symlinks or junctions.
 SET chars=!alphabet:D=!
-TYPE ..\Whitelist.txt | findstr /r "^^[!chars!]*L[!chars!]*,[^^,\\]*," >temp.txt
 SET g_list=
-FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
+REM 'findstr' bug: If File doesn't end with a newline, 'findstr "x" <File' may
+REM hang. Use 'findstr "x" File' instead.
+FOR /F "tokens=2 delims=," %%i IN (
+    'findstr /r "^^[!chars!]*L[!chars!]*,[^^,\\]*," ..\Whitelist.txt'
+) DO (
     SET g_list=!g_list! %%i
 )
 CALL :trim_list
@@ -65,9 +66,10 @@ REM KEEP_HS_ATTRIB_FILES
 REM No symlinks (they can't be processed by 'attrib' without '/L', and '/L' is
 REM not available until Windows Vista).
 SET chars=!alphabet:L=!
-TYPE ..\Whitelist.txt | findstr /r "^^[!chars!]*HS[!chars!]*," >temp.txt
 SET g_list=
-FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
+FOR /F "tokens=2 delims=," %%i IN (
+    'findstr /r "^^[!chars!]*HS[!chars!]*," ..\Whitelist.txt'
+) DO (
     SET g_list=!g_list! %%i
 )
 CALL :trim_list
@@ -86,9 +88,10 @@ REM KEEP_H_ATTRIB_FILES
 REM No System attribute and no symlinks.
 SET chars=!alphabet:S=!
 SET chars=!chars:L=!
-TYPE ..\Whitelist.txt | findstr /r "^^[!chars!]*H[!chars!]*," >temp.txt
 SET g_list=
-FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
+FOR /F "tokens=2 delims=," %%i IN (
+    'findstr /r "^^[!chars!]*H[!chars!]*," ..\Whitelist.txt'
+) DO (
     SET g_list=!g_list! %%i
 )
 CALL :trim_list
@@ -107,9 +110,10 @@ REM KEEP_S_ATTRIB_FILES
 REM No Hidden attribute and no symlinks.
 SET chars=!alphabet:H=!
 SET chars=!chars:L=!
-TYPE ..\Whitelist.txt | findstr /r "^^[!chars!]*S[!chars!]*," >temp.txt
 SET g_list=
-FOR /F "usebackq tokens=2 delims=," %%i IN ("temp.txt") DO (
+FOR /F "tokens=2 delims=," %%i IN (
+    'findstr /r "^^[!chars!]*S[!chars!]*," ..\Whitelist.txt'
+) DO (
     SET g_list=!g_list! %%i
 )
 CALL :trim_list
@@ -125,9 +129,10 @@ CALL :print_wrapped
 ) >>whitelist-cmd.txt
 
 REM KEEP_EXECUTE_FILES
-TYPE ..\Whitelist.txt | findstr /r "^^[!alphabet!]*,[^^,]*\." >temp.txt
 SET g_list=
-FOR /F "usebackq tokens=1,2 delims=," %%i IN ("temp.txt") DO (
+FOR /F "tokens=1,2 delims=," %%i IN (
+    'findstr /r "^^[!alphabet!]*,[^^,]*\." ..\Whitelist.txt'
+) DO (
     ECHO.%%i | findstr /r "[\""\.\\]" >NUL:
     IF ERRORLEVEL 1 (
         SET g_list=!g_list! %%j
@@ -158,13 +163,13 @@ CALL :print_wrapped
     ECHO ^)
 ) >>whitelist-cmd.txt
 
-DEL temp.txt
 ENDLOCAL
 EXIT /B 0
 
 REM ---------------------------------------------------------------------------
 REM SUBROUTINES
 
+REM Removes adjacent, duplicated entries from g_list variable.
 :trim_list
     SET trimmed_list=
     SET prev=
