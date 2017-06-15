@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-06-14)
+REM 'usb_vaccine.cmd' version 3 beta (2017-06-15)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1260,6 +1260,37 @@ EXIT /B 1
     CALL :is_file_to_skip %1
 ENDLOCAL & EXIT /B %ERRORLEVEL%
 
+REM Creates and initializes directory specified by opt_move_subdir.
+:init_move_subdir
+    IF /I "!opt_move_subdir!"=="NUL" (
+        SET g_move_status=DEL
+        GOTO :EOF
+    )
+    MKDIR "!opt_move_subdir!" || (
+        REM We default not to touch the files if move_subdir can't be created.
+        REM Change this value to DEL if you want to delete files instead.
+        SET g_move_status=DONT
+        ECHO ERROR: Can't create directory "!opt_move_subdir!" on drive !CD:~0,2!>&2
+        ECHO Either a file of same name exists, or the drive is read-only.>&2
+        GOTO :EOF
+    )
+    SET g_move_status=OK_EMPTY
+    (
+        ECHO All files that are considered suspicious by the script 'usb_vaccine.cmd' are
+        ECHO moved to this directory. As 'usb_vaccine.cmd' is not anti-virus software, there
+        ECHO may be false positives. Please review every file in this directory to make sure
+        ECHO you have no data you wish to keep.
+        ECHO.
+        ECHO If you want to keep a file, just move it back to the root directory of the
+        ECHO drive, where the file originally resides.
+        ECHO.
+        ECHO When you have finished, delete this directory.
+        ECHO.
+        ECHO 'usb_vaccine.cmd' project website:
+        ECHO ^<https://github.com/Explorer09/usb_vaccine^>
+    ) >"!opt_move_subdir!\README.txt"
+GOTO :EOF
+
 REM Important notes about commands behaviors:
 REM - 'attrib' utility without '/L' option follows symlinks when reading or
 REM   changing attributes. '/L' is not available before Windows Vista.
@@ -1315,37 +1346,6 @@ REM Clears hidden and system attributes of all files in current directory.
         )
     )
     ENDLOCAL
-GOTO :EOF
-
-REM Creates and initializes directory specified by opt_move_subdir.
-:init_move_subdir
-    IF /I "!opt_move_subdir!"=="NUL" (
-        SET g_move_status=DEL
-        GOTO :EOF
-    )
-    MKDIR "!opt_move_subdir!" || (
-        REM We default not to touch the files if move_subdir can't be created.
-        REM Change this value to DEL if you want to delete files instead.
-        SET g_move_status=DONT
-        ECHO ERROR: Can't create directory "!opt_move_subdir!" on drive !CD:~0,2!>&2
-        ECHO Either a file of same name exists, or the drive is read-only.>&2
-        GOTO :EOF
-    )
-    SET g_move_status=OK_EMPTY
-    (
-        ECHO All files that are considered suspicious by the script 'usb_vaccine.cmd' are
-        ECHO moved to this directory. As 'usb_vaccine.cmd' is not anti-virus software, there
-        ECHO may be false positives. Please review every file in this directory to make sure
-        ECHO you have no data you wish to keep.
-        ECHO.
-        ECHO If you want to keep a file, just move it back to the root directory of the
-        ECHO drive, where the file originally resides.
-        ECHO.
-        ECHO When you have finished, delete this directory.
-        ECHO.
-        ECHO 'usb_vaccine.cmd' project website:
-        ECHO ^<https://github.com/Explorer09/usb_vaccine^>
-    ) >"!opt_move_subdir!\README.txt"
 GOTO :EOF
 
 REM Moves or deletes the file if it's safe to do so.

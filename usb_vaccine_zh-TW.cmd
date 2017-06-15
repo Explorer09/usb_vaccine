@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-06-14)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-06-15)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1225,6 +1225,37 @@ EXIT /B 1
     CALL :is_file_to_skip %1
 ENDLOCAL & EXIT /B %ERRORLEVEL%
 
+REM Creates and initializes directory specified by opt_move_subdir.
+:init_move_subdir
+    IF /I "!opt_move_subdir!"=="NUL" (
+        SET g_move_status=DEL
+        GOTO :EOF
+    )
+    MKDIR "!opt_move_subdir!" || (
+        REM We default not to touch the files if move_subdir can't be created.
+        REM Change this value to DEL if you want to delete files instead.
+        SET g_move_status=DONT
+        ECHO 錯誤：無法在磁碟機 !CD:~0,2! 上建立目錄 "!opt_move_subdir!"。>&2
+        ECHO 磁碟中可能已經存在相同名稱的檔案，或是磁碟機是唯讀的。>&2
+        GOTO :EOF
+    )
+    SET g_move_status=OK_EMPTY
+    (
+        ECHO ^(zh-TW.Big5^)
+        ECHO.
+        ECHO 所有被腳本 'usb_vaccine.cmd' 判定為可疑的檔案皆被移動到此目錄裡了，但是由於
+        ECHO 'usb_vaccine.cmd' 並不是防毒軟體，它可能!BIG5_B77C!有錯誤的判斷。請檢查此目錄裡的每個檔
+        ECHO 案，確認其中您沒有想要保留的資料。
+        ECHO.
+        ECHO 如果您要保留檔案，直接將它移!BIG5_A65E!磁碟的根目錄即可。這裡的檔案原本都存放在根目錄。
+        ECHO.
+        ECHO 當您完成了之後，請刪除此目錄。
+        ECHO.
+        ECHO 'usb_vaccine.cmd' 專案網站：
+        ECHO ^<https://github.com/Explorer09/usb_vaccine^>
+    ) >"!opt_move_subdir!\README.txt"
+GOTO :EOF
+
 REM Important notes about commands behaviors:
 REM - 'attrib' utility without '/L' option follows symlinks when reading or
 REM   changing attributes. '/L' is not available before Windows Vista.
@@ -1280,37 +1311,6 @@ REM Clears hidden and system attributes of all files in current directory.
         )
     )
     ENDLOCAL
-GOTO :EOF
-
-REM Creates and initializes directory specified by opt_move_subdir.
-:init_move_subdir
-    IF /I "!opt_move_subdir!"=="NUL" (
-        SET g_move_status=DEL
-        GOTO :EOF
-    )
-    MKDIR "!opt_move_subdir!" || (
-        REM We default not to touch the files if move_subdir can't be created.
-        REM Change this value to DEL if you want to delete files instead.
-        SET g_move_status=DONT
-        ECHO 錯誤：無法在磁碟機 !CD:~0,2! 上建立目錄 "!opt_move_subdir!"。>&2
-        ECHO 磁碟中可能已經存在相同名稱的檔案，或是磁碟機是唯讀的。>&2
-        GOTO :EOF
-    )
-    SET g_move_status=OK_EMPTY
-    (
-        ECHO ^(zh-TW.Big5^)
-        ECHO.
-        ECHO 所有被腳本 'usb_vaccine.cmd' 判定為可疑的檔案皆被移動到此目錄裡了，但是由於
-        ECHO 'usb_vaccine.cmd' 並不是防毒軟體，它可能!BIG5_B77C!有錯誤的判斷。請檢查此目錄裡的每個檔
-        ECHO 案，確認其中您沒有想要保留的資料。
-        ECHO.
-        ECHO 如果您要保留檔案，直接將它移!BIG5_A65E!磁碟的根目錄即可。這裡的檔案原本都存放在根目錄。
-        ECHO.
-        ECHO 當您完成了之後，請刪除此目錄。
-        ECHO.
-        ECHO 'usb_vaccine.cmd' 專案網站：
-        ECHO ^<https://github.com/Explorer09/usb_vaccine^>
-    ) >"!opt_move_subdir!\README.txt"
 GOTO :EOF
 
 REM Moves or deletes the file if it's safe to do so.
