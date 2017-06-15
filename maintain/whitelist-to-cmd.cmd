@@ -41,12 +41,12 @@ SET alphabet=ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
 REM KEEP_SYMLINK_FILES
 REM File symlinks only; no directory symlinks or junctions.
-SET chars=!alphabet:D=!
+SET ch=!alphabet:D=!
 SET g_list=
 REM 'findstr' bug: If File doesn't end with a newline, 'findstr "x" <File' may
 REM hang. Use 'findstr "x" File' instead.
 FOR /F "tokens=2 delims=," %%i IN (
-    'findstr /r "^^[!chars!]*L[!chars!]*,[^^,\\]*," ..\Whitelist.txt'
+    'findstr /r "^^[!ch!]*L[!ch!]*,[^^,\\]*," ..\Whitelist.txt'
 ) DO (
     SET g_list=!g_list! %%i
 )
@@ -63,12 +63,17 @@ CALL :print_wrapped
 ) >>whitelist-cmd.txt
 
 REM KEEP_HS_ATTRIB_FILES
-REM No symlinks (they can't be processed by 'attrib' without '/L', and '/L' is
-REM not available until Windows Vista).
-SET chars=!alphabet:L=!
+REM Include symlinks but not directory links.
+SET findstr_opts=/r
+SET ch=!alphabet:L=!
+SET findstr_opts=!findstr_opts! /c:"^^[!ch!]*H[!ch!]*S[!ch!]*,"
+SET findstr_opts=!findstr_opts! /c:"^^[!ch!]*S[!ch!]*H[!ch!]*,"
+SET ch=!alphabet:D=!
+SET findstr_opts=!findstr_opts! /c:"^^[!ch!]*H[!ch!]*S[!ch!]*,[^^,\\]*,"
+SET findstr_opts=!findstr_opts! /c:"^^[!ch!]*S[!ch!]*H[!ch!]*,[^^,\\]*,"
 SET g_list=
 FOR /F "tokens=2 delims=," %%i IN (
-    'findstr /r "^^[!chars!]*HS[!chars!]*," ..\Whitelist.txt'
+    'findstr !findstr_opts! ..\Whitelist.txt'
 ) DO (
     SET g_list=!g_list! %%i
 )
@@ -85,12 +90,14 @@ CALL :print_wrapped
 ) >>whitelist-cmd.txt
 
 REM KEEP_H_ATTRIB_FILES
-REM No System attribute and no symlinks.
-SET chars=!alphabet:S=!
-SET chars=!chars:L=!
+REM No System attribute; include symlinks but not directory links.
+SET findstr_opts=/r
+SET ch=!alphabet:S=!
+SET findstr_opts=!findstr_opts! /c:"^^[!ch:L=!]*H[!ch:L=!]*,"
+SET findstr_opts=!findstr_opts! /c:"^^[!ch:D=!]*H[!ch:D=!]*,[^^,\\]*,"
 SET g_list=
 FOR /F "tokens=2 delims=," %%i IN (
-    'findstr /r "^^[!chars!]*H[!chars!]*," ..\Whitelist.txt'
+    'findstr !findstr_opts! ..\Whitelist.txt'
 ) DO (
     SET g_list=!g_list! %%i
 )
@@ -107,12 +114,14 @@ CALL :print_wrapped
 ) >>whitelist-cmd.txt
 
 REM KEEP_S_ATTRIB_FILES
-REM No Hidden attribute and no symlinks.
-SET chars=!alphabet:H=!
-SET chars=!chars:L=!
+REM No Hidden attribute; include symlinks but not directory links.
+SET findstr_opts=/r
+SET ch=!alphabet:H=!
+SET findstr_opts=!findstr_opts! /c:"^^[!ch:L=!]*S[!ch:L=!]*,"
+SET findstr_opts=!findstr_opts! /c:"^^[!ch:D=!]*S[!ch:D=!]*,[^^,\\]*,"
 SET g_list=
 FOR /F "tokens=2 delims=," %%i IN (
-    'findstr /r "^^[!chars!]*S[!chars!]*," ..\Whitelist.txt'
+    'findstr !findstr_opts! ..\Whitelist.txt'
 ) DO (
     SET g_list=!g_list! %%i
 )
@@ -131,7 +140,7 @@ CALL :print_wrapped
 REM KEEP_EXECUTE_FILES
 SET g_list=
 FOR /F "tokens=1,2 delims=," %%i IN (
-    'findstr /r "^^[!alphabet!]*,[^^,]*\." ..\Whitelist.txt'
+    'findstr /r /c:"^^[!alphabet!]*,[^^,]*\." ..\Whitelist.txt'
 ) DO (
     ECHO.%%i | findstr /r "[\""\.\\]" >NUL:
     IF ERRORLEVEL 1 (
