@@ -453,8 +453,14 @@ I/O redirection.
 -------------------------------------------------------------------------------
 
 Important notes about commands behaviors:
-- 'attrib' utility without '/L' option follows symlinks when reading or
-  changing attributes. '/L' is not available before Windows Vista.
+- 'attrib' utility refuses to change attributes for Hidden or System files if
+  the respective '+H'/'-H' or '+S'/'-S' option are not also specified on the
+  command line. For files with both Hidden and System attributes set, 'attrib'
+  would require both H and S options specified.
+- 'attrib' without '/L' option follows symlinks when reading or changing
+  attributes. '/L' is not available before Windows Vista.
+- 'attrib' seems to always exit with status 0 despite any error, and it seems
+  to output every message, including error messages, to stdout.
 - The %~a1 method will retrieve attributes of the link itself, if the file
   referenced by %1 is a link (junction or symlink).
 - DEL command exits with 1 only when arguments syntax or path is invalid. It's

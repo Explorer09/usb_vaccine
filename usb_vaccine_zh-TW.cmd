@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-06-15)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-06-30)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1257,8 +1257,14 @@ REM Creates and initializes directory specified by opt_move_subdir.
 GOTO :EOF
 
 REM Important notes about commands behaviors:
-REM - 'attrib' utility without '/L' option follows symlinks when reading or
-REM   changing attributes. '/L' is not available before Windows Vista.
+REM - 'attrib' utility refuses to change attributes for Hidden or System files
+REM   if the respective '+H'/'-H' or '+S'/'-S' option are not also specified on
+REM   the command line. For files with both Hidden and System attributes set,
+REM   'attrib' would require both H and S options specified.
+REM - 'attrib' without '/L' option follows symlinks when reading or changing
+REM   attributes. '/L' is not available before Windows Vista.
+REM - 'attrib' seems to always exit with status 0 despite any error, and it
+REM   seems to output every message, including error messages, to stdout.
 REM - The %~a1 method will retrieve attributes of the link itself, if the file
 REM   referenced by %1 is a link (junction or symlink).
 REM - DEL command exits with 1 only when arguments syntax or path is invalid.
@@ -1276,9 +1282,6 @@ REM   themselves rather than link targets.
 
 REM Clears hidden and system attributes of all files in current directory.
 :clear_files_attrib
-    REM 'attrib' refuses to clear either H or S attribute for files with both
-    REM attributes set. Must clear both simultaneously.
-    REM The exit code of 'attrib' is unreliable.
     SETLOCAL DisableDelayedExpansion
     FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:HS-L /B 2^>NUL:') DO (
         SET "name=%%f"
