@@ -281,6 +281,126 @@ default value contains "%*". In Windows Vista, the value is
 
 -------------------------------------------------------------------------------
 
+List of various shortcut types in Windows and their properties regarding
+security.
+
+The shortcut types that 'usb_vaccine.cmd' is currently concerned about are:
+.pif, .lnk, .shb, .url, .appref-ms, and .glk
+
+We don't try to fix every shortcut type, but only types that may bring
+vulnerabilities to the user's system.
+
+ Shortcut | Format |  May point to  | Custom | Show  | Handles | Proper-
+   type   |        |   executable   |  icon  | ext.  | default |  ties
+          |        |                |        |       |  verb   |  tab
+----------+--------+----------------+--------+-------+---------+--------
+.pif        Binary   Yes              Yes[1]   Never   No[2]     Yes
+.lnk        Binary   Yes              Yes      Never   Yes       Yes
+.url        INI      Yes (file://)    Yes      Never   Yes       Yes
+.website    INI      Not executed     Yes      Never   No        No
+.glk        XML      Yes(file://)[3]  Yes      Never   No        No
+.appref-ms  CSV+URL  Indirect[4]      Yes      Never   No        No
+Folder      Direc-
+  Shortcut    tory   Not executed     Yes[5]   N/A     No        No
+Symlink[6]  Symlink  Yes              Yes[6]   N/A[6]  Yes[6]    No
+.mcc        ?        ? (Unknown)      Yes      User    No        Yes
+.shb        Binary   Not executed[7]  No       Never   No        No
+.WSH        INI      Not executed     No       User    No        Yes
+.ma?        INI      Not executed     No       Never   No        No
+.cnf        INI      No               No       Never   No        No
+.xnk        Binary   ? (Unknown)      No       Never   No        No
+.ccr        Binary   No               No       User    No        No
+(This list is in no particular order.)
+
+Fields meanings:
+- May point to executable: Whether the shortcut format allows the target to be
+  an executable file and whether it will be executed when user opens the
+  shortcut. "Not executed" means the file format allows pointing to executable,
+  but the handler program will filter out the file type of the target and so
+  it's not executed.
+- Custom icon: Whether the file type is associated with a custom IconHandler.
+- Show ext.: Whether the file extension will be shown for the file type.
+  "Never" means a "NeverShowExt" value is present for the type. "User" means
+  the extension is shown according to user's "HideFileExt" option. "N/A" means
+  technically the shortcut type can have any or no extension.
+- Handles default verb: "Yes" means the type is associated with a
+  ContextMenuHandler which may change the default (open) verb for the file. In
+  other words, the "shell\open\command" subkey is not reliable to determine the
+  default action for that type.
+  (<https://msdn.microsoft.com/en-us/library/windows/desktop/ee453696(v=vs.85).aspx>)
+- Properties tab: Whether the file type is assigned a custom tab in the
+  Properties window.
+
+Notes:
+[1] Custom icon for .pif is no longer shown in Windows Vista or later.
+    (Reported by some users on the Internet. I couldn't find an official
+    document noting this change. This is nothing to do with MS10-046 lnk file
+    vulnerability.)
+[2] The default "open" verb for .pif is handled by Windows Explorer.
+[3] Office Groove 2007 launches the URL directly when user opens the shortcut.
+    SharePoint Workspace 2010 instead pops up a warning before launching.
+    However it's a bad idea to allow pointing to .exe in the first place.
+[4] .appref-ms may point to remote application only (to a .manifest file).
+    However it may still trick users into opening and downloading the app.
+[5] Windows Explorer associates Folder Shortcuts with the
+    "HKCR\CLSID\{0AFACED1-E828-11D1-9187-B532F1E9575D}" registry key, in which
+    there is "shellex\IconHandler" subkey and value.
+[6] Symbolic links ("symlinks") are a kind of special files in NTFS whose file
+    name may be in any or no extension. Since Windows 8.1, Windows Explorer
+    associates file symbolic links with the "HKCR\.symlink" registry key.
+    Windows 7 SP1 systems will also support the "HKCR\.symlink" association if
+    KB3009980 hotfix is installed.
+    In Windows 8.1 or later, or in Windows 7 with the hotfix, the symlink type
+    has an IconHandler that displays the icon of the file the link points to.
+    (Unlike .lnk file, a symlink doesn't allow specification of a custom icon.)
+    The display behavior of the symlink's name extension is determined by
+    "NeverShowExt" or "AlwayShowExt" values in "HKCR\.symlink" key, or, if
+    neither of the values exist (which is the default), user's "HideFileExt"
+    option (which is to hide by default).
+    The symlink type has a ContextMenuHandler that sets the default verb of the
+    symlink, similar to .lnk file. However, for a symlink pointing to a .lnk
+    file, no verbs will be assigned for the symlink (and the symlink will show
+    a generic file icon). It won't resolve .lnk target from a symbolic link
+    pointing to a .lnk file.
+    In Windows Vista, 8 or 7 without the hotfix, a symlink's icon, context
+    menu, default verb and the display of the symlink's name extension are all
+    determined by the file type that the symlink's name extension corresponds
+    to, except that a symlink always shows a shortcut arrow overlay despite the
+    symlink's name extension. The file type or name extension of the symlink's
+    target is not considered. Windows Explorer may resolve a .lnk target from a
+    symlink if the symlink's name is in ".lnk" extension.
+[7] It's possible to have a .shs file renamed to .shb. (The Shell Scrap handler
+    doesn't check whether the file extension matches the format.) .shs files
+    allow embedding executable code (as OLE objects).
+
+-------------------------------------------------------------------------------
+
+Important notes about commands behaviors:
+- 'attrib' utility refuses to change attributes for Hidden or System files if
+  the respective '+H'/'-H' or '+S'/'-S' option are not also specified on the
+  command line. For files with both Hidden and System attributes set, 'attrib'
+  would require both H and S options specified.
+- 'attrib' without '/L' option follows symlinks when reading or changing
+  attributes. '/L' is not available before Windows Vista.
+- 'attrib' seems to always exit with status 0 despite any error, and it seems
+  to output every message, including error messages, to stdout.
+- The %~a1 method will retrieve attributes of the link itself, if the file
+  referenced by %1 is a link (junction or symlink).
+- DEL command exits with 1 only when arguments syntax or path is invalid. It's
+  exit code does not distinguish between deletion success and failure.
+- MOVE command exits with 1 when a move error occurs. There's no way to specify
+  "don't overwrite" option for MOVE command.
+- Both DEL and MOVE refuse to process files with Hidden or System (or both)
+  attribute set. (They'll output the "could not find" error.) However since
+  Windows NT, DEL supports '/A' option that can workaround this.
+- If "dirlink" is a directory link (attributes "DL"), "DEL dirlink" deletes all
+  files in the target directory (DANGEROUS), while "RMDIR dirlink" (with or
+  without '/S') removes the symlink without touching anything in the target
+  directory (SAFE). MOVE command on links always processes links themselves
+  rather than link targets.
+
+-------------------------------------------------------------------------------
+
 The 'ASSOC' command in Windows NT is simply a registry program reading and
 writing default value of "HKLM\SOFTWARE\Classes\<key>", ignoring the
 equivalent key in HKCU. There is an unintentional feature: "ASSOC exefile"
@@ -449,126 +569,6 @@ Forbidden characters in file names in IBM PC DOS / MS-DOS (1.x):
 (71 characters in total)
 Note: \ < > | was allowed in DOS 1.x, before DOS 2 introduces directories and
 I/O redirection.
-
--------------------------------------------------------------------------------
-
-Important notes about commands behaviors:
-- 'attrib' utility refuses to change attributes for Hidden or System files if
-  the respective '+H'/'-H' or '+S'/'-S' option are not also specified on the
-  command line. For files with both Hidden and System attributes set, 'attrib'
-  would require both H and S options specified.
-- 'attrib' without '/L' option follows symlinks when reading or changing
-  attributes. '/L' is not available before Windows Vista.
-- 'attrib' seems to always exit with status 0 despite any error, and it seems
-  to output every message, including error messages, to stdout.
-- The %~a1 method will retrieve attributes of the link itself, if the file
-  referenced by %1 is a link (junction or symlink).
-- DEL command exits with 1 only when arguments syntax or path is invalid. It's
-  exit code does not distinguish between deletion success and failure.
-- MOVE command exits with 1 when a move error occurs. There's no way to specify
-  "don't overwrite" option for MOVE command.
-- Both DEL and MOVE refuse to process files with Hidden or System (or both)
-  attribute set. (They'll output the "could not find" error.) However since
-  Windows NT, DEL supports '/A' option that can workaround this.
-- If "dirlink" is a directory link (attributes "DL"), "DEL dirlink" deletes all
-  files in the target directory (DANGEROUS), while "RMDIR dirlink" (with or
-  without '/S') removes the symlink without touching anything in the target
-  directory (SAFE). MOVE command on links always processes links themselves
-  rather than link targets.
-
--------------------------------------------------------------------------------
-
-List of various shortcut types in Windows and their properties regarding
-security.
-
-The shortcut types that 'usb_vaccine.cmd' is currently concerned about are:
-.pif, .lnk, .shb, .url, .appref-ms, and .glk
-
-We don't try to fix every shortcut type, but only types that may bring
-vulnerabilities to the user's system.
-
- Shortcut | Format |  May point to  | Custom | Show  | Handles | Proper-
-   type   |        |   executable   |  icon  | ext.  | default |  ties
-          |        |                |        |       |  verb   |  tab
-----------+--------+----------------+--------+-------+---------+--------
-.pif        Binary   Yes              Yes[1]   Never   No[2]     Yes
-.lnk        Binary   Yes              Yes      Never   Yes       Yes
-.url        INI      Yes (file://)    Yes      Never   Yes       Yes
-.website    INI      Not executed     Yes      Never   No        No
-.glk        XML      Yes(file://)[3]  Yes      Never   No        No
-.appref-ms  CSV+URL  Indirect[4]      Yes      Never   No        No
-Folder      Direc-
-  Shortcut    tory   Not executed     Yes[5]   N/A     No        No
-Symlink[6]  Symlink  Yes              Yes[6]   N/A[6]  Yes[6]    No
-.mcc        ?        ? (Unknown)      Yes      User    No        Yes
-.shb        Binary   Not executed[7]  No       Never   No        No
-.WSH        INI      Not executed     No       User    No        Yes
-.ma?        INI      Not executed     No       Never   No        No
-.cnf        INI      No               No       Never   No        No
-.xnk        Binary   ? (Unknown)      No       Never   No        No
-.ccr        Binary   No               No       User    No        No
-(This list is in no particular order.)
-
-Fields meanings:
-- May point to executable: Whether the shortcut format allows the target to be
-  an executable file and whether it will be executed when user opens the
-  shortcut. "Not executed" means the file format allows pointing to executable,
-  but the handler program will filter out the file type of the target and so
-  it's not executed.
-- Custom icon: Whether the file type is associated with a custom IconHandler.
-- Show ext.: Whether the file extension will be shown for the file type.
-  "Never" means a "NeverShowExt" value is present for the type. "User" means
-  the extension is shown according to user's "HideFileExt" option. "N/A" means
-  technically the shortcut type can have any or no extension.
-- Handles default verb: "Yes" means the type is associated with a
-  ContextMenuHandler which may change the default (open) verb for the file. In
-  other words, the "shell\open\command" subkey is not reliable to determine the
-  default action for that type.
-  (<https://msdn.microsoft.com/en-us/library/windows/desktop/ee453696(v=vs.85).aspx>)
-- Properties tab: Whether the file type is assigned a custom tab in the
-  Properties window.
-
-Notes:
-[1] Custom icon for .pif is no longer shown in Windows Vista or later.
-    (Reported by some users on the Internet. I couldn't find an official
-    document noting this change. This is nothing to do with MS10-046 lnk file
-    vulnerability.)
-[2] The default "open" verb for .pif is handled by Windows Explorer.
-[3] Office Groove 2007 launches the URL directly when user opens the shortcut.
-    SharePoint Workspace 2010 instead pops up a warning before launching.
-    However it's a bad idea to allow pointing to .exe in the first place.
-[4] .appref-ms may point to remote application only (to a .manifest file).
-    However it may still trick users into opening and downloading the app.
-[5] Windows Explorer associates Folder Shortcuts with the
-    "HKCR\CLSID\{0AFACED1-E828-11D1-9187-B532F1E9575D}" registry key, in which
-    there is "shellex\IconHandler" subkey and value.
-[6] Symbolic links ("symlinks") are a kind of special files in NTFS whose file
-    name may be in any or no extension. Since Windows 8.1, Windows Explorer
-    associates file symbolic links with the "HKCR\.symlink" registry key.
-    Windows 7 SP1 systems will also support the "HKCR\.symlink" association if
-    KB3009980 hotfix is installed.
-    In Windows 8.1 or later, or in Windows 7 with the hotfix, the symlink type
-    has an IconHandler that displays the icon of the file the link points to.
-    (Unlike .lnk file, a symlink doesn't allow specification of a custom icon.)
-    The display behavior of the symlink's name extension is determined by
-    "NeverShowExt" or "AlwayShowExt" values in "HKCR\.symlink" key, or, if
-    neither of the values exist (which is the default), user's "HideFileExt"
-    option (which is to hide by default).
-    The symlink type has a ContextMenuHandler that sets the default verb of the
-    symlink, similar to .lnk file. However, for a symlink pointing to a .lnk
-    file, no verbs will be assigned for the symlink (and the symlink will show
-    a generic file icon). It won't resolve .lnk target from a symbolic link
-    pointing to a .lnk file.
-    In Windows Vista, 8 or 7 without the hotfix, a symlink's icon, context
-    menu, default verb and the display of the symlink's name extension are all
-    determined by the file type that the symlink's name extension corresponds
-    to, except that a symlink always shows a shortcut arrow overlay despite the
-    symlink's name extension. The file type or name extension of the symlink's
-    target is not considered. Windows Explorer may resolve a .lnk target from a
-    symlink if the symlink's name is in ".lnk" extension.
-[7] It's possible to have a .shs file renamed to .shb. (The Shell Scrap handler
-    doesn't check whether the file extension matches the format.) .shs files
-    allow embedding executable code (as OLE objects).
 
 -------------------------------------------------------------------------------
 
