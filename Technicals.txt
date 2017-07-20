@@ -154,6 +154,7 @@ Extension  Software       Class registry key, technically known as ProgID
 .ttc       Win2000-Vista  HKCR\ttcfile
 .ttf       Win2000-Vista  HKCR\ttffile
 
+Software    CLSID registry key
 Win95 only  HKCR\CLSID\{00028B05-0000-0000-C000-000000000046}
                 ("Shortcut to The Microsoft Network")
 
@@ -170,6 +171,7 @@ provides the icon for those fonts (depending on format, e.g. TrueType or
 -------------------------------------------------------------------------------
 
 File types that contain "IsShortcut" and "NeverShowExt" registry values:
+
 Extension   Software      Class registry key a.k.a. ProgID
 .appref-ms  .NET2.0+      HKCR\Application.Reference
 .cnf        WinXP-        HKCR\ConferenceLink (NetMeeting "SpeedDial")
@@ -195,6 +197,7 @@ Extension   Software      Class registry key a.k.a. ProgID
 .xnk        Office2003-   HKCR\xnkfile ("Exchange Shortcut", used in Outlook)
 
 File types that contain "IsShortcut" registry values but not "NeverShowExt":
+
 Extension   Software      Class registry key a.k.a. ProgID
 .mcc        Win95 only    HKCR\Dialer10CallingCard
                               ("Shortcut to The Microsoft Network")
@@ -210,6 +213,7 @@ appear in Windows components or Microsoft Office.)
 
 File types and CLSIDs that contain "NeverShowExt" registry values but not
 "IsShortcut":
+
 Extension            Software   Class registry key a.k.a. ProgID
 .accountpicture-ms   Win8+      HKCR\accountpicturefile
 .appcontent-ms       Win8.1+    HKCR\ApplicationContent
@@ -220,6 +224,7 @@ Extension            Software   Class registry key a.k.a. ProgID
 .scf                 IE4+       HKCR\SHCmdFile ("Windows Explorer Command")
 .shs                 WinXP-     HKCR\ShellScrap ("Scrap object")
 
+Software    CLSID registry key
 Win98 only  HKCR\CLSID\{450D8FBA-AD25-11D0-98A8-0800361B1103} ("My Documents")
 WinME+      HKCR\CLSID\{888DCA60-FC0A-11CF-8F0F-00C04FD7D062}
                 ("Compressed (zipped) Folder SendTo Target")
@@ -239,9 +244,8 @@ For these extensions, the "NeverShowExt" value in their class keys should never
 be created. It is possible to have a PE executable in one of these extensions
 (even .pif!)
 
--------------------------------------------------------------------------------
-
 File types that contain "%*" in their "shell\open\command" default values:
+
 Extension  Software       Class registry key a.k.a. ProgID
 .bat       (Win95+)       HKCR\batfile
 .cmd       WinNT4+        HKCR\cmdfile
@@ -281,14 +285,29 @@ default value contains "%*". In Windows Vista, the value is
 
 -------------------------------------------------------------------------------
 
+'usb_vaccine.cmd' only concerns about shortcut types that can execute arbitrary
+code when user opens a file of the type. 'usb_vaccine.cmd' does these to the
+aforementioned shortcut types:
+- Provide optional procedures, activated via '--fix-shortcut-icon' and
+  '--fix-file-icon' command-line options, that restore the shortcut arrow
+  overlay and default icon / icon handler, respectively.
+- For .pif and .shb types and symlinks, suggest to perform registry tweaks to
+  add visual indicators to the files' icon display (for now the tweak is to
+  show file extensions if user didn't hide them via "HideFileExt" option).
+- Move away or delete shortcut files of these types from the root directories
+  of each drive.
+
+We don't try to fix every shortcut type, but only those that are dangerous to
+open. The types that we currently concern about are:
+.pif, .lnk, .shb, .url, .appref-ms, .glk, and symlink.
+
+Note: Regarding showing file extensions, we try to avoid showing extensions for
+types that are common in use in Start Menu or Quick Launch bar, that is, .lnk,
+.url and .scf (.scf is technically not a shortcut, but it launches commands of
+Windows Explorer shell and behaves similar to a shortcut in users' eyes).
+
 List of various shortcut types in Windows and their properties regarding
-security.
-
-The shortcut types that 'usb_vaccine.cmd' is currently concerned about are:
-.pif, .lnk, .shb, .url, .appref-ms, and .glk
-
-We don't try to fix every shortcut type, but only types that may bring
-vulnerabilities to the user's system.
+security:
 
  Shortcut | Format |  May point to  | Custom | Show  | Handles | Proper-
    type   |        |   executable   |  icon  | ext.  | default |  ties
