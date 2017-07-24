@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-12-13)
+REM 'usb_vaccine.cmd' version 3 beta (2017-12-20)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1324,13 +1324,24 @@ REM   themselves rather than link targets.
 
 REM Clears hidden and system attributes of all files in current directory.
 :clear_files_attrib
+    REM "%%~af" would expand before executing 'attrib', so use another FOR to
+    REM retrieve the outcome.
     SETLOCAL DisableDelayedExpansion
     FOR %FOR_OPTS_FOR_DIR_B% %%f IN ('DIR /A:HS-L /B 2^>NUL:') DO (
         SET "name=%%f"
         CALL :is_file_to_skip_NDE HS_ATTRIB
         IF ERRORLEVEL 1 (
-            ECHO Clear Hidden+System attributes of "%%f"
             attrib -H -S "%%f"
+            FOR %%I IN ("%%f") DO (
+                SETLOCAL EnableDelayedExpansion
+                CALL :has_ci_substr "%%~aI" "h" "s"
+                IF ERRORLEVEL 1 (
+                    ECHO Cleared Hidden+System attributes of "%%f"
+                ) ELSE (
+                    ECHO Can't clear Hidden+System attributes of "%%f">&2
+                )
+                ENDLOCAL
+            )
         ) ELSE (
             ECHO Skip file "%%f" ^(Hidden+System attributes^) for safety.
         )
@@ -1339,8 +1350,17 @@ REM Clears hidden and system attributes of all files in current directory.
         SET "name=%%f"
         CALL :is_file_to_skip_NDE H_ATTRIB
         IF ERRORLEVEL 1 (
-            ECHO Clear Hidden attribute of "%%f"
             attrib -H "%%f"
+            FOR %%I IN ("%%f") DO (
+                SETLOCAL EnableDelayedExpansion
+                CALL :has_ci_substr "%%~aI" "h"
+                IF ERRORLEVEL 1 (
+                    ECHO Cleared Hidden attribute of "%%f"
+                ) ELSE (
+                    ECHO Can't clear Hidden attribute of "%%f">&2
+                )
+                ENDLOCAL
+            )
         ) ELSE (
             ECHO Skip file "%%f" ^(Hidden attribute^) for safety.
         )
@@ -1349,8 +1369,17 @@ REM Clears hidden and system attributes of all files in current directory.
         SET "name=%%f"
         CALL :is_file_to_skip_NDE S_ATTRIB
         IF ERRORLEVEL 1 (
-            ECHO Clear System attribute of "%%f"
             attrib -S "%%f"
+            FOR %%I IN ("%%f") DO (
+                SETLOCAL EnableDelayedExpansion
+                CALL :has_ci_substr "%%~aI" "s"
+                IF ERRORLEVEL 1 (
+                    ECHO Cleared System attribute of "%%f"
+                ) ELSE (
+                    ECHO Can't clear System attribute of "%%f">&2
+                )
+                ENDLOCAL
+            )
         ) ELSE (
             ECHO Skip file "%%f" ^(System attribute^) for safety.
         )
