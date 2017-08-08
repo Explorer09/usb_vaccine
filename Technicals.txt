@@ -765,6 +765,13 @@ Windows Vista. Old directory layout and names are created as NTFS junction
 points for backward compatibility. For brevity, directory names and junctions
 for backward compatibility are omitted in this document.
 
+A new virtual user account, "NT SERVICE\TrustedInstaller", has been introduced,
+with its SID permanently being:
+S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464
+All Windows files and directories, including the root directory of the drive,
+are now owned by this TrustedInstaller account upon installation. Before Vista
+they have been owned by the "BUILTIN\Administrators" group (SID: S-1-5-32-544).
+
 Profiles directories are now by default in "%SystemDrive%\Users".
 
 UsrClass.dat for each user is now in
