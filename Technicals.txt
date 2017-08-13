@@ -394,15 +394,125 @@ Notes:
 
 -------------------------------------------------------------------------------
 
+  Access  | Name as defined in API constant[1]  | icacls | SDDL abbreviation
+   Mask   | (Name as shown in GUI)              |  abbr. | (and mnemonic)[2]
+----------+-------------------------------------+--------+---------------------
+Bits  0-15  Object-specific Access Rights:
+       0x1  List directory / Read data
+            ("List folder / read data")           RD       CC (Create child)
+       0x2  Add file / Write data
+            ("Create files / write data")         WD       DC (Delete child)
+       0x4  Add subdirectory / Append data / Create pipe instance
+            ("Create folders / append data")      AD       LC (List children)
+       0x8  Read EA[3]
+            ("Read extended attributes")          REA      SW (Self write)
+      0x10  Write EA[3]
+            ("Write extended attributes")         WEA      RP (Read property)
+      0x20  Traverse / Execute
+            ("Traverse folder / execute file")    X        WP (Write property)
+      0x40  Delete child
+            ("Delete subfolders and files")       DC       DT (Delete tree)
+      0x80  Read attributes ("Read attributes")   RA       LO (List object)
+     0x100  Write attributes
+            ("Write attributes")                  WA       CR (Control access)
+Bits 16-23  Standard Access Rights:
+   0x10000  Delete ("Delete")                     DE       SD (Standard delete)
+   0x20000  Read control ("Read permissions")     Rc       RC (Read control)
+   0x40000  Write DAC ("Change permissions")      WDAC     WD (Write DAC)
+   0x80000  Write owner ("Take ownership")        WO       WO (Write owner)
+  0x100000  Synchronize[4]                        S        0x100000
+Bit     24  SACL Access Right:
+ 0x1000000  Access system security       (IO)[5]  AS       0x1000000
+Bit     25:
+ 0x2000000  Maximum allowed              (IO)[5]  MA       0x2000000
+Bits 26-27  (Reserved)
+Bits 28-31  Generic Access Rights:
+0x10000000  Generic all                  (IO)[6]  GA       GA (Generic all)
+0x20000000  Generic execute              (IO)[6]  GE       GX (Generic execute)
+0x40000000  Generic write                (IO)[6]  GW       GW (Generic write)
+0x80000000  Generic read                 (IO)[6]  GR       GR (Generic read)
+
+Other constants and sets of access rights[7]:
+  0x1f0000  STANDARD_RIGHTS_ALL                   -        0x1f0000
+   0xf0000  STANDARD_RIGHTS_REQUIRED              -        SDRCWDWO
+   0x20000  STANDARD_RIGHTS_EXECUTE               Rc       RC
+   0x20000  STANDARD_RIGHTS_WRITE                 Rc       RC
+   0x20000  STANDARD_RIGHTS_READ                  Rc       RC
+  0x1f01ff  FILE_ALL_ACCESS ("Full control")      F        FA
+  0x1301bf  ("Modify")                            M        0x1301bf
+  0x1200a9  ("Read & execute")                    RX       0x1200a9
+  0x1200a9  ("List folder contents")     (CI)[8]  RX       0x1200a9
+  0x1200a0  FILE_GENERIC_EXECUTE                  -        FX
+  0x120089  FILE_GENERIC_READ ("Read")            R        FR
+  0x100116  ("Write")                             W        0x100116
+  0x120116  FILE_GENERIC_WRITE                    -        FW
+  0x110000  (Used by 'icacls' only; no GUI name)  D        0x110000
+
+Notes:
+[1] For ease of reading, sentence case is applied on the names, and the "FILE_"
+    prefix is omitted for File and Directory Access Rights that are in object-
+    specific bits range. The original constants are in SCREAMING_SNAKE_CASE.
+    For example, the constant for read control right is READ_CONTROL, and
+    constant for read data right is FILE_READ_DATA.
+    (<https://msdn.microsoft.com/en-us/library/windows/desktop/gg258116(v=vs.85).aspx>)
+    The GUI refers to the "Security" tab in files' "Properties" dialog box and
+    the "Advanced Security Settings" dialog box. No GUI name listed means the
+    right (a.k.a. permission) is not visible nor changeable in the GUI.
+[2] The SDDL access right strings were intended for Active Directory objects,
+    hence they don't match the masks that File and Directory Access Rights use.
+    (<https://msdn.microsoft.com/en-us/library/windows/desktop/aa374928(v=vs.85).aspx>)
+    (<https://msdn.microsoft.com/en-us/library/aa772285(v=vs.85).aspx>)
+    A hexadecimal value on this field means no string is defined for the access
+    right, and that hexadecimal value must be used in SDDL ACE for the right.
+[3] These mean OS/2 extended attributes.
+[4] Synchronize right is noted in Windows help files but not changeable in GUI.
+[5] These rights have no effect on file or directory access, however they may
+    be applied on directories, with Inherit Only flag (IO), for applicable
+    objects to inherit these.
+[6] These generic rights can only be applied on directories with Inherit Only
+    flag (IO). Files and directories that inherit these will grant FA, FX, FW,
+    and FR rights to the specified user, respectively.
+[7] Except for STANDARD_RIGHTS_ALL and STANDARD_RIGHTS_REQUIRED, the access
+    masks of all other sets might change in the future.
+[8] "List folder contents" checkbox only appears when changing permissions of a
+    folder. While other basic permission checkboxes will apply to "This folder,
+    subfolders and files" (inheritance flags (OI)(CI)) when checked, "List
+    folder contents" applies to "This folder and subfolders" (inheritance flag
+    (OI) only).
+
+It is generally unwise to set to Deny the Generic access rights or rights with
+"FILE_GENERIC_" prefix, because all of said Generic rights include Synchronize
+right, which may cause problems when explicitly denied. Read this for details:
+<https://msdn.microsoft.com/en-us/library/windows/desktop/aa364399(v=vs.85).aspx>
+
+-------------------------------------------------------------------------------
+
 Important notes about commands behaviors:
-- 'attrib' utility refuses to change attributes for Hidden or System files if
-  the respective '+H'/'-H' or '+S'/'-S' option are not also specified on the
-  command line. For files with both Hidden and System attributes set, 'attrib'
-  would require both H and S options specified.
-- 'attrib' without '/L' option follows symlinks when reading or changing
-  attributes. '/L' is not available before Windows Vista.
-- 'attrib' seems to always exit with status 0 despite any error, and it seems
-  to output every message, including error messages, to stdout.
+1. Regarding 'icacls':
+   - '/L' is not available before Windows Vista.
+   - The following flags and access rights have been working from the beginning
+     despite being undocumented or wrongly documented in help text (all
+     corrected in Windows 7): (I) (N) (D) (DE)
+   - '/Q' option doesn't supress the final "Successfully processed X files;
+     Failed processing Y files" message line. Windows Server 2003 SP2 'icacls'
+     accepts '/Q' option although it was undocumented and buggy (would always
+     output "Successfully processed 0 files" ignoring facts).
+   - '/setintegritylevel' is not available before Windows Vista.
+   - '/inheritance' is not available before Windows Vista SP1.
+   - (N) "no access" as described in "simple rights" list is only a shorthand
+     for (DENY)(F). (N) is invalid when specified in arguments.
+   - Bug: A sole (DE) right being denied on a file will display as (DENY)(D)
+     instead of (DENY)(DE). '/save' option output not affected.
+2. Regarding 'attrib':
+  - Refuses to change attributes for Hidden or System files if the respective
+    '+H'/'-H' or '+S'/'-S' option is not also specified on the command line.
+    Requires specifying both H and S options in order to process files with
+    both Hidden and System attributes set.
+  - Follows symlinks when reading or changing attributes unless '/L' option is
+    specified. '/L' is not available before Windows Vista.
+  - Seems to always exit with status 0 despite any error; seems to output every
+    message, including error messages, to stdout.
+
 - The %~a1 method will retrieve attributes of the link itself, if the file
   referenced by %1 is a link (junction or symlink).
 - DEL command exits with 1 only when arguments syntax or path is invalid. It's
