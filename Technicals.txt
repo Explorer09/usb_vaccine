@@ -501,8 +501,10 @@ Important notes about commands behaviors:
    - '/inheritance' is not available before Windows Vista SP1.
    - (N) "no access" as described in "simple rights" list is only a shorthand
      for (DENY)(F). (N) is invalid when specified in arguments.
-   - Bug: A sole (DE) right being denied on a file will display as (DENY)(D)
-     instead of (DENY)(DE). '/save' option output not affected.
+   - Bug: Upon querying a Deny ACE entry, Synchronize right is always displayed
+     as denied, ignoring facts. For example, a sole denied (RD) right displays
+     as (DENY)(S,RD) instead of (DENY)(RD), a sole denied (DE) right displays
+     as (DENY)(D) instead of (DENY)(DE). Doesn't affect '/save' option output.
 2. Regarding 'attrib':
   - Refuses to change attributes for Hidden or System files if the respective
     '+H'/'-H' or '+S'/'-S' option is not also specified on the command line.
