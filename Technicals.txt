@@ -488,38 +488,38 @@ right, which may cause problems when explicitly denied. Read this for details:
 -------------------------------------------------------------------------------
 
 Important notes about commands behaviors:
-1. Regarding 'icacls':
-   - For user names with spaces, quotes must be used. For example:
-         icacls foo /grant "ANONYMOUS LOGON:(OI)(CI)(RX)"
-     Quotes are stripped during processing of the argument. It's enough to only
-     quote the spaces, so this works:
-         icacls foo /grant ANONYMOUS" "LOGON:^(OI^)^(CI^)^(RX^)
-   - '/L' is not available before Windows Vista.
-   - The following flags and access rights have been working from the beginning
-     despite being undocumented or wrongly documented in help text (all
-     corrected in Windows 7): (I) (N) (D) (DE)
-   - '/Q' option doesn't supress the final "Successfully processed X files;
-     Failed processing Y files" message line. Windows Server 2003 SP2 'icacls'
-     accepts '/Q' option although it was undocumented and buggy (would always
-     output "Successfully processed 0 files" ignoring facts).
-   - '/setintegritylevel' is not available before Windows Vista.
-   - '/inheritance' is not available before Windows Vista SP1.
-   - (N) "no access" as described in "simple rights" list is only a shorthand
-     for (DENY)(F). (N) is invalid when specified in arguments.
-   - Bug: Upon querying a Deny ACE entry, Synchronize right is always displayed
-     as denied, ignoring facts. For example, a sole denied (RD) right displays
-     as (DENY)(S,RD) instead of (DENY)(RD), a sole denied (DE) right displays
-     as (DENY)(D) instead of (DENY)(DE). Doesn't affect '/save' option output.
-2. Regarding 'attrib':
-  - Refuses to change attributes for Hidden or System files if the respective
-    '+H'/'-H' or '+S'/'-S' option is not also specified on the command line.
-    Requires specifying both H and S options in order to process files with
-    both Hidden and System attributes set.
-  - Follows symlinks when reading or changing attributes unless '/L' option is
-    specified. '/L' is not available before Windows Vista.
-  - Seems to always exit with status 0 despite any error; seems to output every
-    message, including error messages, to stdout.
-
+1. 'icacls':
+- For user names with spaces, quotes must be used. For example:
+      icacls foo /grant "ANONYMOUS LOGON:(OI)(CI)(RX)"
+  Quotes are stripped during processing of the argument. It's enough to only
+  quote the spaces, so this works:
+      icacls foo /grant ANONYMOUS" "LOGON:^(OI^)^(CI^)^(RX^)
+- '/L' is not available before Windows Vista.
+- The following flags and access rights have been working from the beginning
+  despite being undocumented or wrongly documented in help text (all corrected
+  in Windows 7): (I) (N) (D) (DE)
+- '/Q' option doesn't supress the final "Successfully processed X files; Failed
+  processing Y files" message line. Windows Server 2003 SP2 'icacls' accepts
+  '/Q' option although it was undocumented and buggy (would always output
+  "Successfully processed 0 files" ignoring facts).
+- '/setintegritylevel' is not available before Windows Vista.
+- '/inheritance' is not available before Windows Vista SP1.
+- (N) "no access" as described in "simple rights" list is only a shorthand for
+  (DENY)(F). (N) is invalid when specified in arguments.
+- Bug: Upon querying a Deny ACE entry, Synchronize right is always displayed as
+  denied, ignoring facts. For example, a sole denied (RD) right displays as
+  (DENY)(S,RD) instead of (DENY)(RD); a sole denied (DE) right displays as
+  (DENY)(D) instead of (DENY)(DE). Doesn't affect '/save' option output.
+2. 'attrib':
+- Refuses to change attributes for Hidden or System files if the respective
+  '+H'/'-H' or '+S'/'-S' option is not also specified on the command line.
+  Requires specifying both H and S options in order to process files with both
+  Hidden and System attributes set.
+- Follows symlinks when reading or changing attributes unless '/L' option is
+  specified. '/L' is not available before Windows Vista.
+- Seems to always exit with status 0 despite any error; seems to output every
+  message, including error messages, to stdout.
+3. Others:
 - The %~a1 method will retrieve attributes of the link itself, if the file
   referenced by %1 is a link (junction or symlink).
 - DEL command exits with 1 only when arguments syntax or path is invalid. It's
