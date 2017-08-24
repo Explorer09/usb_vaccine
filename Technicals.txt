@@ -489,6 +489,11 @@ right, which may cause problems when explicitly denied. Read this for details:
 
 Important notes about commands behaviors:
 1. Regarding 'icacls':
+   - For user names with spaces, quotes must be used. For example:
+         icacls foo /grant "ANONYMOUS LOGON:(OI)(CI)(RX)"
+     Quotes are stripped during processing of the argument. It's enough to only
+     quote the spaces, so this works:
+         icacls foo /grant ANONYMOUS" "LOGON:^(OI^)^(CI^)^(RX^)
    - '/L' is not available before Windows Vista.
    - The following flags and access rights have been working from the beginning
      despite being undocumented or wrongly documented in help text (all
