@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-06-30)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-09-23)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -89,9 +89,9 @@ FOR %%i IN (
 "SUHDLOG.DAT" "SUHDLOG.---" "BOOTLOG.TXT" "BOOTLOG.PRV" "SETUPLOG.TXT"
 "SETUPLOG.OLD" "ASD.LOG" "CLASSES.1ST" "system.1st" "W95UNDO.DAT" "W95UNDO.INI"
 "WINUNDO.DAT" "WINUNDO.INI" "W98UNDO.DAT" "W98UNDO.INI" "W9XUNDO.DAT"
-"W9XUNDO.INI" "$INPLACE.~TR\" "$WINDOWS.~Q\" "$Windows.~BT\" "_Restore\"
-"$WINRE_BACKUP_PARTITION.MARKER" "DOS00I.400" "DOS01L.400" "ProgramData\"
-"MSOCache\"
+"W9XUNDO.INI" "$INPLACE.~TR\" "$WINDOWS.~Q\" "$Windows.~BT\" "$Windows.~WS\"
+"_Restore\" "$WINRE_BACKUP_PARTITION.MARKER" "DOS00I.400" "DOS01L.400"
+"ProgramData\" "MSOCache\"
 ) DO (
     SET KEEP_H_ATTRIB_FILES=!KEEP_H_ATTRIB_FILES! %%i
 )
