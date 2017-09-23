@@ -349,7 +349,7 @@ H, "$INPLACE.~TR\", Vista W7, Backup during upgrade
 H, "$WINDOWS.~Q\", Vista W7, Backup during upgrade
 H, "$Windows.~BT\", W8, Backup during upgrade
 HI, "$Windows.~BT\", W10, Backup during upgrade
-# Not tested, attribute unknown: H, "$Windows.~WS\", W10, Backup during upgrade
+HI, "$Windows.~WS\", W10, Backup during upgrade
 
 # Recovery
 # --------
