@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-09-23)
+REM 'usb_vaccine.cmd' version 3 beta (2017-12-13)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1171,29 +1171,36 @@ REM @return 0 (true) if file name contains all valid characters
     )
     IF NOT "!name!"==^"!name:*^"=!^" (
         REM ^"
-        ECHO WARNING: File name contains invalid character. File system might be corrupt.>&2
+        ECHO WARNING: "!name!">&2
+        ECHO contains invalid file name character. The file system might be corrupt.>&2
         EXIT /B 1
     )
     IF "!g_cmdfor_unquoted_opts!"=="0" (
         CALL :has_path_char "\/:*?<>|" || EXIT /B 0
     )
     CALL :has_path_char "/:*" && (
-        ECHO WARNING: File name contains invalid character. File system might be corrupt.>&2
+        REM TODO: We might handle NTFS alternate data stream in the future so
+        REM ":" might be significant.
+        ECHO WARNING: "!name!">&2
+        ECHO contains invalid file name character. The file system might be corrupt.>&2
         EXIT /B 1
     )
     CALL :has_path_char "<>" && (
-        ECHO WARNING: File name contains invalid character "<" or ">". File system is>&2
-        ECHO corrupt or is not compatible with DOS 2 or later or Windows.>&2
+        ECHO WARNING: "!name!">&2
+        ECHO contains invalid flle name character "<" or ">". The file system is either>&2
+        ECHO corrupt or incompatible with DOS 2 or later or Windows.>&2
         EXIT /B 1
     )
     CALL :has_path_char "?" && (
-        ECHO WARNING: File name contains invalid character "?". The name may be in an>&2
-        ECHO encoding not supported in your current system locale.>&2
+        ECHO WARNING: "!name!">&2
+        ECHO contains invalid file name character "?". The name may be in a character>&2
+        ECHO encoding incompatible with your current system locale.>&2
         EXIT /B 1
     )
-    ECHO WARNING: File name contains invalid character "\" or "|". The name may be in an>&2
-    ECHO encoding not supported in your current system locale, or the file system is not>&2
-    ECHO compatible with DOS 2 or later or Windows.>&2
+    ECHO WARNING: "!name!">&2
+    ECHO contains invalid file name character "\" or "|". The name may be in a character>&2
+    ECHO encoding incompatible with your current system locale, or the file system is>&2
+    ECHO incompatible with DOS 2 or later or Windows.>&2
 EXIT /B 1
 
 :is_valid_file_name_NDE

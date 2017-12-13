@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-09-23)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2017-12-13)
 REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1137,28 +1137,35 @@ REM @return 0 (true) if file name contains all valid characters
     )
     IF NOT "!name!"==^"!name:*^"=!^" (
         REM ^"
-        ECHO 警告：檔案名稱包含無效字元。檔案系統可能已損壞。>&2
+        ECHO 警告："!name!">&2
+        ECHO 包含無效的檔案名稱字元。檔案系統可能已損壞。>&2
         EXIT /B 1
     )
     IF "!g_cmdfor_unquoted_opts!"=="0" (
         CALL :has_path_char "\/:*?<>|" || EXIT /B 0
     )
     CALL :has_path_char "/:*" && (
-        ECHO 警告：檔案名稱包含無效字元。檔案系統可能已損壞。>&2
+        REM TODO: We might handle NTFS alternate data stream in the future so
+        REM ":" might be significant.
+        ECHO 警告："!name!">&2
+        ECHO 包含無效的檔案名稱字元。檔案系統可能已損壞。>&2
         EXIT /B 1
     )
     CALL :has_path_char "<>" && (
-        ECHO 警告：檔案名稱包含無效字元「^<」或「^>」。檔案系統已損壞或與 DOS 2 或更新版本或>&2
+        ECHO 警告："!name!">&2
+        ECHO 包含無效的檔案名稱字元「^<」或「^>」。檔案系統已損壞或與 DOS 2 或更新版本或>&2
         ECHO Windows 不相容。>&2
         EXIT /B 1
     )
     CALL :has_path_char "?" && (
-        ECHO 警告：檔案名稱包含無效字元「?」。此檔案名稱可能使用了您目前系統地區設定中不支援>&2
-        ECHO 的編碼。>&2
+        ECHO 警告："!name!">&2
+        ECHO 包含無效的檔案名稱字元「?」。此檔案名稱可能使用了與您目前系統地區設定不相容的>&2
+        ECHO 字元編碼。>&2
         EXIT /B 1
     )
-    ECHO 警告：檔案名稱包含無效字元「\」或「^|」。此檔案名稱可能使用了您目前系統地區設定>&2
-    ECHO 中不支援的編碼，或是檔案系統與 DOS 2 或更新版本或 Windows 不相容。>&2
+    ECHO 警告："!name!">&2
+    ECHO 包含無效的檔案名稱字元「\」或「^|」。此檔案名稱可能使用了與您目前系統地區設定不>&2
+    ECHO 相容的字元編碼，或是檔案系統與 DOS 2 或更新版本或 Windows 不相容。>&2
 EXIT /B 1
 
 :is_valid_file_name_NDE
