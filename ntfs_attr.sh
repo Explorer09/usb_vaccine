@@ -16,7 +16,7 @@
 # Use find(1) together with this script instead.
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2015-2016 Kang-Che Sung <explorer09 @ gmail.com>
+# Copyright (C) 2015-2016,2018 Kang-Che Sung <explorer09 @ gmail.com>
 
 # The MIT License (MIT)
 
@@ -52,10 +52,14 @@ attr_h=0
 attr_s=0
 attr_a=0
 attr_t=0 # Changeable in ntfs-3g. Never worked with Windows's attrib.
-attr_c=0 # Changeable only in recovery console and not in normal Windows.
-attr_o=0 # Changeable in ntfs-3g. Never worked with Windows's attrib.
+attr_c=0 # Changeable only in Recovery Console and not in normal Windows.
+attr_o=0 # Changeable in Windows 10, version 1703 or later.
 attr_i=0 # Changeable in Windows Vista or later.
 # 'X' (No scrub) is changeable in attrib in Windows 8.
+# 'P' (Pinned) and 'U' (Unpinned) are introduced in Windows 10, version 1703,
+# and changeable in attrib there. They correspond to OneDrive "always available
+# files" and "online-only files" respectively and are shown as OneDrive status
+# icons in Status column in Explorer.
 
 # The 'Not content indexed' attribute is displayed as 'N' instead of 'I' in
 # Explorer in Windows Vista (bug, fixed in Windows 7):
@@ -98,16 +102,18 @@ Attributes: ( ! = unchangeable with this utility )
   l ! Symbolic link / Junction / Mount point / has a reparse point
   c - Compressed (flag changeable with directories only)
   o - Offline
-  i - Not content indexed (displayed as 'N' in Explorer in Windows Vista)
+  i - Not content indexed (shown as 'N' in Explorer in Windows Vista)
   e ! Encrypted
-  V ! Integrity (Windows 8 ReFS only; attribute not displayed in Explorer)
-  X ! No scrub (Windows 8 ReFS only; attribute not displayed in Explorer)
+  V ! Integrity (for ReFS volume only; attribute not shown in Explorer)
+  X ! No scrub (for ReFS volume only; attribute not shown in Explorer)
+  P ! Pinned (OneDrive "always available files")
+  U ! Unpinned (OneDrive "online-only files")
 USAGE
 }
 # Order of attribute letters in "%~a1" output: "drahscotl-x"
 # ('x' = No scrub. One slot is unknown; tell me if you discovered what it is.)
-# Order of attribute letters in 'attrib' output: "A  SHR  I VX"
-# ('V' = Integrity, 'X' = No scrub. Five slots are unknown.)
+# Order of attribute letters in 'attrib' output: "A  SHR OI VX P U  "
+# ('V' = Integrity, 'X' = No scrub, 'P' = Pinned. Eight slots are unknown.)
 
 # If a file has a FILE_ATTRIBUTE_DEVICE set (for example an autorun.inf created
 # by Panda USB Vaccine), then the "%~a1" method will refuse to show the
@@ -171,9 +177,12 @@ for f in "$@"; do
     [ "$attr_show_hex" ] && printf '%s ' "$attr_hex"
     if [ "$attr_mode" = show ]; then
         attr_mask=0x1
-        # Attribute that is reserved and never has an abbreviated letter:
+        # Attribute that are reserved and never have letters:
         # FILE_ATTRIBUTE_VIRTUAL (0x10000)
-        for i in r h s v d a x n t p l c o i e V + X; do
+        # FILE_ATTRIBUTE_RECALL_ON_OPEN (0x40000)
+        # 0x200000
+        # FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS (0x400000)
+        for i in r h s v d a x n t p l c o i e V + X + P U + +; do
             if [ $(($attr_hex & $attr_mask)) -gt 0 ]; then
                 printf '%c' "$i"
             else
