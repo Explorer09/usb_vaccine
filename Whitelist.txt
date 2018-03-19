@@ -235,6 +235,14 @@ HS, "SUHDLOG.DAT", Me, Boot sector backup (generated during setup)
 RH, "SUHDLOG.---", 95 98, SUHDLOG.DAT backup during upgrade
 HS, "SUHDLOG.---", Me, SUHDLOG.DAT backup during upgrade
 
+, "ldlinux.sys", SYSLINUX1+, SYSLINUX boot loader file
+# Since SYSLINUX 1.10, the SYSLINUX DOS installer will set read-only attribute
+# on ldlinux.sys. If ldlinux.sys is installed via SYSLINUX Linux installer, the
+# read-only attribute will remain unset (this behavior is until 3.02).
+R, "ldlinux.sys", SYSLINUX1.10+, SYSLINUX boot loader file
+RHS, "ldlinux.sys", SYSLINUX3+, SYSLINUX boot loader file
+RHS, "ldlinux.c32", SYSLINUX5+, SYSLINUX boot loader module file
+
 RHS, "arcldr.exe", 2000, Unknown (file does not appear after upgrade)
 RHS, "arcsetup.exe", 2000, Unknown (file does not appear after upgrade)
 # It seems these 2 files are related to booting and Advanced RISC Computing
