@@ -14,8 +14,8 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2017-12-13)
-REM Copyright (C) 2013-2017 Kang-Che Sung <explorer09 @ gmail.com>
+REM 'usb_vaccine.cmd' version 3 beta (2018-03-19)
+REM Copyright (C) 2013-2018 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
 REM modify it under the terms of the GNU Lesser General Public
@@ -68,11 +68,12 @@ FOR %%i IN (
 "DRVSPACE.BIN" "DBLSPACE.INI" "DRVSPACE.INI" "DBLSPACE.000" "DRVSPACE.000"
 "FAILSAFE.DRV\" "@DLWATCH.DAT" "Recycled\" "RECYCLER\" "$Recycle.Bin\"
 "boot.ini" "Boot.BAK" "bootfont.bin" "bootsect.dos" "NTDETECT.COM" "ntldr"
-"@oldboot.ui" "SUHDLOG.DAT" "SUHDLOG.---" "arcldr.exe" "arcsetup.exe" "Boot\"
-"bootmgr" "BOOTNXT" "BOOTSECT.BAK" "BOOTTGT" "BOOTLOG.TXT" "BOOTLOG.PRV"
-"DETLOG.TXT" "DETLOG.OLD" "NETLOG.TXT" "SETUPLOG.TXT" "SETUPLOG.OLD"
-"system.1st" "UNINSTAL.INI" "WINLFN.INI" "System Volume Information\"
-"cmdcons\" "cmldr" "Recovery\" "SECURITY.BIN" "VIDEOROM.BIN" "EBD.SYS"
+"@oldboot.ui" "SUHDLOG.DAT" "SUHDLOG.---" "ldlinux.sys" "ldlinux.c32"
+"arcldr.exe" "arcsetup.exe" "Boot\" "bootmgr" "BOOTNXT" "BOOTSECT.BAK"
+"BOOTTGT" "BOOTLOG.TXT" "BOOTLOG.PRV" "DETLOG.TXT" "DETLOG.OLD" "NETLOG.TXT"
+"SETUPLOG.TXT" "SETUPLOG.OLD" "system.1st" "UNINSTAL.INI" "WINLFN.INI"
+"System Volume Information\" "cmdcons\" "cmldr" "Recovery\" "SECURITY.BIN"
+"VIDEOROM.BIN" "EBD.SYS"
 ) DO (
     SET KEEP_HS_ATTRIB_FILES=!KEEP_HS_ATTRIB_FILES! %%i
 )
