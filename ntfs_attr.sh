@@ -173,7 +173,7 @@ for f in "$@"; do
         continue
     fi
     attr_hex=$(getfattr $attr_no_deref -e hex -n system.ntfs_attrib_be "$f" 2>/dev/null |
-        awk '/system\.ntfs_attrib_be=/ {sub(/^[^0]*0[Xx]/, "0x"); print; exit}')
+        sed '/system\.ntfs_attrib_be=/ { s/^[^0]*0[Xx]/0x/; q; }; d')
     [ "$attr_show_hex" ] && printf '%s ' "$attr_hex"
     if [ "$attr_mode" = show ]; then
         attr_mask=0x1
