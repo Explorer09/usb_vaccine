@@ -14,7 +14,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta zh-TW (2018-03-19)
+REM 'usb_vaccine.cmd' version 3 beta zh-TW (2018-04-10)
 REM Copyright (C) 2013-2018 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
@@ -1464,8 +1464,8 @@ REM @return 0 if directory exists or is created successfully, or 1 on error
         FOR %%I IN ("!name!") DO (
             SETLOCAL DisableDelayedExpansion
             IF NOT %%I=="%%~nxsI" (
-                REM MOVE cannot rename a directory if the new name only differs
-                REM from old name in letter case. However, REN can do so.
+                REM Use REN because MOVE cannot rename a directory if the new
+                REM name differs from old name only in letter case.
                 REN %%I "%%~nxsI"
             )
             ENDLOCAL
