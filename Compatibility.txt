@@ -62,12 +62,16 @@ environment is okay. The code is copied below, with annotations:
     @REM OS/2 and Win NT 3.x will halt upon syntax "IF CMDEXTVERSION 2 ...".
     @REM Using "==" as delimiter makes syntax backward compatible to those not
     @REM supporting cmd extensions (treating that like string comparison which
-    @REM always evaluates to false). ("=" is a documented, legit parameter
-    @REM delimiter since PC DOS 1; not accepting this syntax is a bug.)
+    @REM always evaluates to false). (The valid parameter delimiters documented
+    @REM ever since PC DOS 1 are tab, space, ",", ";" and "=".)
     IF CMDEXTVERSION==2 GOTO cmd_ext_ok
-    @REM Note a space inserted after ENDLOCAL word to prevent '\r' (CR) from
-    @REM being interpreted as part of command name in Unix shells.
-    ENDLOCAL 
+    @REM " ;" is inserted after ENDLOCAL word and 'exit' line below to prevent
+    @REM '\r' (CR) from being interpreted as part of command name or argument
+    @REM in Unix shells. ("exit\r" or "exit 1\r" would fail to tell shells to
+    @REM exit. ";" is recognized as a command delimiter in many shells, and a
+    @REM character that begins comment in 'tclsh' and 'wish'. I didn't see any
+    @REM side effect when using ";" this way.)
+    ENDLOCAL ;
     @REM Error message. No ">&2" redirection because DOS COMMAND.COM doesn't
     @REM recognize it and will instead write to a file named "&2".
     echo Requires Windows 2000 or later.
@@ -75,12 +79,10 @@ environment is okay. The code is copied below, with annotations:
     @REM nothing when the batch is run on the topmost shell (in real DOS), or
     @REM it kills the current layer of the shell (command interpreter).
     @REM It's more reliable to GOTO an end label, but we keep EXIT command as a
-    @REM fallback. Unix sh and ports expect a lowercase 'exit' while letter
-    @REM case doesn't matter in DOS command shells. We also add "exit 1;" for
-    @REM shells that would complain about '\r' in argument and don't exit.
+    @REM fallback. Unix shells expect a lowercase 'exit' while letter case
+    @REM doesn't matter in DOS command shells.
     GOTO EOF
     exit 1;
-    exit 
     @REM IBM PC DOS / MS-DOS 1.x doesn't support ECHO, EXIT, GOTO or SET.
     @REM Fallback using a (user-visible) REM and a non-loop hanger ("COPY CON:
     @REM NUL:"). It won't protect against Ctrl-C and then N (which effectively

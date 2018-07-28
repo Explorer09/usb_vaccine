@@ -1,11 +1,10 @@
 @ECHO OFF
 SETLOCAL EnableExtensions
 IF CMDEXTVERSION==2 GOTO cmd_ext_ok
-ENDLOCAL 
+ENDLOCAL ;
 echo Requires Windows 2000 or later.
 GOTO EOF
 exit 1;
-exit 
 REM Press Ctrl-C and answer Y to terminate.
 COPY CON: NUL:
 %0
@@ -14,7 +13,7 @@ ENDLOCAL
 SETLOCAL EnableExtensions EnableDelayedExpansion
 
 REM ---------------------------------------------------------------------------
-REM 'usb_vaccine.cmd' version 3 beta (2018-06-04)
+REM 'usb_vaccine.cmd' version 3 beta (2018-07-28)
 REM Copyright (C) 2013-2018 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or

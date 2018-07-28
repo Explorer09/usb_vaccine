@@ -1,11 +1,10 @@
 @ECHO OFF
 SETLOCAL EnableExtensions
 IF CMDEXTVERSION==2 GOTO cmd_ext_ok
-ENDLOCAL 
+ENDLOCAL ;
 echo Requires Windows 2000 or later.
 GOTO EOF
 exit 1;
-exit 
 REM Press Ctrl-C and answer Y to terminate.
 COPY CON: NUL:
 %0
@@ -17,7 +16,7 @@ REM Generates the whitelist (files to keep) code from "..\Whitelist.txt" for
 REM use in 'usb_vaccine.cmd'. This script is intended for maintainer only.
 
 REM ---------------------------------------------------------------------------
-REM Copyright (C) 2015-2017 Kang-Che Sung <explorer09 @ gmail.com>
+REM Copyright (C) 2015-2018 Kang-Che Sung <explorer09 @ gmail.com>
 
 REM This program is free software; you can redistribute it and/or
 REM modify it under the terms of the GNU Lesser General Public
