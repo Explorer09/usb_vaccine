@@ -16,7 +16,9 @@
 # Use find(1) together with this script instead.
 
 # -----------------------------------------------------------------------------
-# Copyright (C) 2015-2016,2018 Kang-Che Sung <explorer09 @ gmail.com>
+# Last update: 2024-08-09
+
+# Copyright (C) 2015-2024 Kang-Che Sung <explorer09 @ gmail.com>
 
 # The MIT License (MIT)
 
@@ -55,11 +57,27 @@ attr_t=0 # Changeable in ntfs-3g. Never worked with Windows's attrib.
 attr_c=0 # Changeable only in Recovery Console and not in normal Windows.
 attr_o=0 # Changeable in Windows 10, version 1703 or later.
 attr_i=0 # Changeable in Windows Vista or later.
+
 # 'X' (No scrub) is changeable in attrib in Windows 8.
 # 'P' (Pinned) and 'U' (Unpinned) are introduced in Windows 10, version 1703,
 # and changeable in attrib there. They correspond to OneDrive "always available
 # files" and "online-only files" respectively and are shown as OneDrive status
 # icons in Status column in Explorer.
+
+# TODO:
+# Figure out the precise version where this behavior change in File Explorer
+# happened. (This violates previous use of the attribute letters!)
+# Between Windows 10 version 1703 and version 1903, inclusive (that is,
+# 1703, 1709, 1803, 1809, 1903)
+# 'P' (Pinned), 'U' (Unpinned) and 'M' (Recall on Data Access) show up;
+# "Sparse" attribute no longer displayed in Attributes column in Explorer.
+# (This forum thread noted the discovery:
+# https://www.tenforums.com/general-support/102804-why-these-p-u-file-attributes-suddenly-appearing.html )
+
+# TODO:
+# Figure out the precise version where the "SMR Blob" attribute is introduced.
+# First discovered in attrib.exe help text of Windows 10 version 1903
+# https://strontic.github.io/xcyclopedia/library/attrib.exe-9354A963EBD46087AAB57CD23FDCD0D2.html
 
 # The 'Not content indexed' attribute is displayed as 'N' instead of 'I' in
 # Explorer in Windows Vista (bug, fixed in Windows 7):
@@ -92,14 +110,14 @@ Attributes: ( ! = unchangeable with this utility )
   r - Read-only
   h - Hidden
   s - System
-  v ! Volume label (obsolete in NTFS and must not be set)
+  v ! FAT volume label (obsolete in NTFS and must not be set)
   d ! Directory
   a - Archive
   x ! Device (reserved by system and must not be set)
   n ! Normal (i.e. no other attributes set)
   t - Temporary
   p ! Sparse file
-  l ! Symbolic link / Junction / Mount point / has a reparse point
+  l ! Symbolic link / Junction / Mount point / Reparse point
   c - Compressed (flag changeable with directories only)
   o - Offline
   i - Not content indexed (shown as 'N' in Explorer in Windows Vista)
@@ -108,6 +126,8 @@ Attributes: ( ! = unchangeable with this utility )
   X ! No scrub (for ReFS volume only; attribute not shown in Explorer)
   P ! Pinned (OneDrive "always available files")
   U ! Unpinned (OneDrive "online-only files")
+  M ! Recall on data access
+  B ! SMR blob / Strictly sequential
 USAGE
 }
 # Order of attribute letters in "%~a1" output: "drahscotl-x"
@@ -181,8 +201,10 @@ for f in "$@"; do
         # FILE_ATTRIBUTE_VIRTUAL (0x10000)
         # FILE_ATTRIBUTE_RECALL_ON_OPEN (0x40000)
         # 0x200000
-        # FILE_ATTRIBUTE_RECALL_ON_DATA_ACCESS (0x400000)
-        for i in r h s v d a x n t p l c o i e V + X + P U + +; do
+        # 0x800000 to 0x10000000
+        # 0x40000000 to 0x80000000
+        for i in \
+            r h s v d a x n t p l c o i e V + X + P U + M + + + + + + B; do
             if [ $(($attr_hex & $attr_mask)) -gt 0 ]; then
                 printf '%c' "$i"
             else
